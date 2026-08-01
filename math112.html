@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>加法勇者傳說</title>
+    <script src="./sync-client.js"></script>
+    <style>
+        /* ================= 遊戲全域與字體 ================= */
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Noto+Sans+TC:wght@700;900&display=swap');
+        
+        * { box-sizing: border-box; user-select: none; }
+        
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+            background-color: #1a252c;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 遊戲主容器 */
+        #game-container {
+            width: 1000px;
+            height: 700px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F7FA 100%);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6), inset 0 0 50px rgba(255,255,255,0.5);
+            position: relative;
+            overflow: hidden;
+            border: 6px solid #5D4037;
+            
+            /* 🚀 新增手機端自適應縮放核心 CSS */
+            transform: scale(var(--scale, 1));
+            transform-origin: center center;
+            flex-shrink: 0; /* 防止被 flex 壓縮變形 */
+        }
+
+        /* ================= 背景裝飾元素 ================= */
+        /* 耶穌光 */
+        .god-rays {
+            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: repeating-conic-gradient(from 0deg, rgba(255,255,255,0.15) 0deg 15deg, transparent 15deg 30deg);
+            animation: rotate-rays 90s linear infinite;
+            z-index: 1; pointer-events: none;
+        }
+        @keyframes rotate-rays { 100% { transform: rotate(360deg); } }
+
+        /* 瀑布與雲海 (底部) */
+        .waterfall {
+            position: absolute; bottom: 0; left: 10%; width: 20%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.8) 100%);
+            z-index: 2; opacity: 0.7; pointer-events: none;
+        }
+        .clouds {
+            position: absolute; bottom: -20px; width: 100%; height: 100px;
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 20" xmlns="http://www.w3.org/2000/svg"><path d="M0,20 Q10,0 20,20 Q30,0 40,20 Q50,0 60,20 Q70,0 80,20 Q90,0 100,20 Z" fill="white" opacity="0.9"/></svg>');
+            background-size: 200px 100px; z-index: 3; pointer-events: none;
+            animation: move-clouds 10s linear infinite;
+        }
+        @keyframes move-clouds { 100% { background-position: 200px 0; } }
+
+        /* 古代石造建築與藤蔓 */
+        .ruins-vine {
+            position: absolute; top: 0; width: 100%; height: 40px;
+            background-image: radial-gradient(circle at 20px 0, #2E7D32 20px, transparent 21px);
+            background-size: 40px 40px; z-index: 4; pointer-events: none;
+        }
+        .crystal {
+            position: absolute; width: 30px; height: 60px; background: #00E5FF;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            box-shadow: 0 0 25px #00E5FF; z-index: 2; pointer-events: none;
+            animation: float-crystal 3s ease-in-out infinite alternate;
+        }
+        @keyframes float-crystal { 100% { transform: translateY(-15px); } }
+        .crystal-1 { left: 80px; bottom: 150px; transform: scale(0.8) rotate(-15deg); }
+        .crystal-2 { right: 100px; top: 200px; transform: scale(1.2) rotate(20deg); }
+        .crystal-3 { right: 30px; bottom: 50px; transform: scale(0.6); }
+
+        /* ================= 視窗管理 ================= */
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10; display: flex; flex-direction: column;
+            transition: opacity 0.3s ease;
+        }
+        .hidden { display: none !important; }
+        .fade-out { opacity: 0; pointer-events: none; }
+
+        /* ================= 世界地圖 (浮空島) ================= */
+        #map-screen {
+            background: rgba(255,255,255,0.2); backdrop-filter: blur(5px);
+            padding: 30px; align-items: center; justify-content: flex-start;
+            overflow-y: auto;
+        }
+        .map-title {
+            font-size: 36px; color: #3E2723; text-shadow: 2px 2px 0px #fff;
+            margin-top: 20px; margin-bottom: 20px; z-index: 5;
+        }
+        .terrain-container {
+            width: 80%; background: rgba(255,255,255,0.7);
+            border-radius: 15px; border: 4px solid #fff; margin-bottom: 20px;
+            padding: 15px; box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; align-items: center; z-index: 5;
+            position: relative; overflow: hidden;
+        }
+        .terrain-title {
+            font-size: 24px; margin-bottom: 15px; width: 100%; text-align: left;
+            padding-bottom: 5px; display: flex; align-items: center; gap: 10px;
+            position: relative; z-index: 2;
+        }
+        /* 大頭目縮圖徽章：放在每個地形標題左邊，讓玩家一眼認出這關的頭目 */
+        .boss-thumb {
+            width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.85);
+            display: flex; align-items: center; justify-content: center; font-size: 26px;
+            border: 3px solid rgba(255,255,255,0.9); box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+            flex-shrink: 0;
+        }
+        .stage-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; position: relative; z-index: 2; }
+
+        /* 🥷 玩家目前位置標記：浮在「目前正要挑戰的關卡」節點正上方，會跟著過關往後移動 */
+        .player-marker {
+            position: absolute; top: -34px; left: 50%; transform: translateX(-50%);
+            font-size: 26px; animation: marker-bounce 1s ease-in-out infinite; z-index: 3;
+            filter: drop-shadow(0 3px 4px rgba(0,0,0,0.4));
+        }
+        @keyframes marker-bounce { 0%,100%{ transform: translateX(-50%) translateY(0); } 50%{ transform: translateX(-50%) translateY(-8px); } }
+        
+        .stage-node {
+            width: 70px; height: 70px; border-radius: 50%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            font-size: 20px; font-weight: 900; cursor: pointer;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+            transition: transform 0.1s, filter 0.2s;
+            position: relative; border: 4px solid #fff;
+        }
+        .stage-node:hover:not(.locked) { transform: scale(1.1); }
+        .stage-node:active:not(.locked) { transform: scale(0.95); }
+        .stage-node.locked { background: #9E9E9E; color: #E0E0E0; cursor: not-allowed; filter: grayscale(1); }
+        .stage-node.unlocked { background: #FFCA28; color: #3E2723; }
+        .stage-node.cleared { background: #66BB6A; color: #fff; }
+        
+        .stars-display {
+            position: absolute; bottom: -22px; font-size: 14px; color: #FBC02D;
+            text-shadow: 1px 1px 1px #000; letter-spacing: -2px; width: 100px; text-align: center;
+        }
+
+        /* ================= 戰鬥畫面 ================= */
+        #battle-screen { padding: 20px; z-index: 10; }
+        
+        /* 頂部資訊列 */
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.9); padding: 10px 20px;
+            border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); margin-bottom: 20px;
+        }
+        .hp-bar-container { display: flex; align-items: center; gap: 10px; font-size: 18px; color: #333; font-weight: bold;}
+        .hearts { color: #e74c3c; font-size: 24px; letter-spacing: 2px;}
+        
+        .boss-hp-bg {
+            width: 200px; height: 25px; background: #ddd;
+            border-radius: 12px; overflow: hidden; border: 3px solid #333; position: relative;
+        }
+        .boss-hp-fill {
+            width: 100%; height: 100%; background: linear-gradient(90deg, #9b59b6, #e74c3c);
+            transition: width 0.3s ease-out;
+        }
+        .boss-hp-text {
+            position: absolute; width: 100%; text-align: center; top: 0; left: 0;
+            line-height: 20px; font-size: 14px; color: white; text-shadow: 1px 1px 2px #000;
+        }
+
+        /* 戰鬥區 */
+        .battle-area {
+            flex: 1; display: flex; justify-content: space-between; align-items: center;
+            padding: 0 40px; margin-top: 10px;
+        }
+        .character-box {
+            text-align: center; background: rgba(255,255,255,0.85); padding: 20px;
+            border-radius: 20px; border: 4px solid #fff; width: 180px; box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            position: relative; overflow: visible;
+        }
+        .hero-avatar { font-size: 70px; line-height: 1; position: relative; display: inline-block; filter: drop-shadow(0 0 10px rgba(255,0,0,0.4)); }
+        .hero-avatar::after { content: "🪓"; position: absolute; right: -25px; bottom: -5px; font-size: 45px; transform: rotate(-20deg); }
+        .boss-avatar { font-size: 80px; line-height: 1; animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        .char-name { font-size: 20px; font-weight: 900; margin-top: 10px; color: #2C3E50; }
+
+        /* ================= 戰鬥攻擊動畫 ================= */
+        @keyframes hero-lunge { 0%{transform:translateX(0) rotate(0);} 40%{transform:translateX(26px) rotate(-10deg);} 100%{transform:translateX(0) rotate(0);} }
+        @keyframes boss-lunge { 0%{transform:translateX(0) rotate(0);} 40%{transform:translateX(-26px) rotate(10deg);} 100%{transform:translateX(0) rotate(0);} }
+        @keyframes hit-flash { 0%{filter:brightness(1);} 30%{filter:brightness(2.4) drop-shadow(0 0 12px #ff5252);} 100%{filter:brightness(1);} }
+        .lunge { animation: hero-lunge 0.4s ease; }
+        .lunge-reverse { animation: boss-lunge 0.4s ease; }
+        .hit-flash { animation: hit-flash 0.4s ease; }
+
+        /* 飄浮傷害/回血數字：從角色頭上飄出後淡出 */
+        .floating-dmg {
+            position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+            font-size: 24px; font-weight: 900; text-shadow: 1px 1px 3px #000;
+            animation: float-up 0.9s ease forwards; pointer-events: none; z-index: 6;
+        }
+        @keyframes float-up { 0%{opacity:1; transform:translate(-50%,0);} 100%{opacity:0; transform:translate(-50%,-45px);} }
+
+        /* 題目區 */
+        .center-area { display: flex; flex-direction: column; align-items: center; }
+        .question-box {
+            background: #fff; padding: 25px 50px; border-radius: 20px;
+            font-size: 56px; color: #2C3E50; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 5px solid #F1C40F; text-align: center; min-width: 300px; font-weight: 900;
+        }
+        .timer-box { font-size: 24px; color: #E74C3C; margin-top: 15px; font-weight: 900; background: rgba(255,255,255,0.8); padding: 5px 20px; border-radius: 10px;}
+
+        /* 操作區 */
+        .control-area {
+            background: rgba(255,255,255,0.9); padding: 20px; border-radius: 20px;
+            display: flex; justify-content: center; align-items: center; gap: 20px; margin-top: auto; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        input[type="number"] {
+            font-size: 32px; padding: 10px 20px; width: 200px;
+            border: 4px solid #3498db; border-radius: 15px; text-align: center; outline: none;
+            font-family: inherit; font-weight: bold;
+        }
+        button {
+            background: #E74C3C; color: white; border: none; padding: 15px 40px; font-size: 28px;
+            border-radius: 15px; cursor: pointer; box-shadow: 0 6px 0 #C0392B; font-family: inherit;
+            font-weight: 900; transition: all 0.1s;
+        }
+        button:active { transform: translateY(6px); box-shadow: 0 0 0 #C0392B; }
+        .btn-map { background: #34495E; box-shadow: 0 6px 0 #2C3E50; }
+        .btn-map:active { box-shadow: 0 0 0 #2C3E50; }
+
+        .message-log {
+            text-align: center; color: #fff; font-size: 22px; font-weight: 900;
+            text-shadow: 2px 2px 4px rgba(0,0,0,1); height: 35px; margin-top: 15px;
+        }
+        .potion-badge { background: #2ECC71; color: white; padding: 5px 12px; border-radius: 20px; font-size: 14px; margin-left: 10px; border: 2px solid #27AE60; }
+        .combo-text { font-size: 14px; color: #E67E22; font-weight: bold; margin-top: 5px;}
+
+        /* ================= 彈出視窗 (Overlay) ================= */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(26, 37, 44, 0.9); z-index: 100;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center;
+        }
+        .modal-box {
+            background: #fff; color: #333; padding: 40px; border-radius: 20px;
+            border: 5px solid #F1C40F; box-shadow: 0 20px 50px rgba(0,0,0,0.5); width: 600px;
+        }
+        .modal-box h1 { font-size: 48px; margin: 0 0 20px 0; color: #D35400; }
+        .modal-box p { font-size: 20px; margin-bottom: 20px; line-height: 1.6; }
+        .star-result { font-size: 60px; letter-spacing: 5px; color: #F1C40F; margin: 20px 0; text-shadow: 2px 2px 0px #333;}
+        .stats-details { background: #F8F9F9; padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: left; font-size: 18px; border: 2px solid #BDC3C7;}
+        .modal-buttons { display: flex; justify-content: center; gap: 20px; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- 💰 代幣餘額徽章：兩個畫面都看得到，沒登入學號時會自動隱藏 -->
+    <div id="gbit-badge" style="position:absolute; top:12px; right:12px; z-index:20; background:rgba(255,255,255,0.92); padding:6px 16px; border-radius:20px; font-weight:900; color:#8E44AD; box-shadow:0 4px 10px rgba(0,0,0,0.2); font-size:16px;">
+        💰 <span id="gbit-display">0</span>
+    </div>
+    <!-- 共通背景裝飾 -->
+    <div class="god-rays"></div>
+    <div class="ruins-vine"></div>
+    <div class="waterfall"></div>
+    <div class="clouds"></div>
+    <div class="crystal crystal-1"></div>
+    <div class="crystal crystal-2"></div>
+    <div class="crystal crystal-3"></div>
+
+    <!-- Start 畫面 -->
+    <div id="start-screen" class="screen overlay">
+        <div class="modal-box" style="background: rgba(255,255,255,0.95);">
+            <h1 style="color:#2C3E50; font-size: 56px;">加法勇者傳說</h1>
+            <p>
+                <strong>主角設定：</strong> 冷酷銀髮勇者，右眼戰術眼罩，手持黑曜石雙刃鐮刀，手臂閃爍紅光咒印。<br><br>
+                <strong>遊戲規則：</strong> 擊敗地圖上5大地形的魔王！<br>
+                ✨ 魔王10滴血，答錯加0.5血。<br>
+                ✨ 勇者4滴血，答錯扣1血，限時60秒。<br>
+                ✨ <strong>時間加成：</strong> 10秒內答對攻擊x2，20秒內x1.5。<br>
+                ✨ <strong>道具：</strong> 連對5題獲得「甦醒藥」(死後自動滿血復活)。<br>
+                挑戰全關卡 5 星評價吧！
+            </p>
+            <button onclick="showMap()">進入浮空島</button>
+        </div>
+    </div>
+
+    <!-- 世界地圖畫面 -->
+    <div id="map-screen" class="screen hidden">
+        <div class="map-title">🌍 浮空島嶼遺跡 - 關卡選擇</div>
+        <div id="terrains-wrapper" style="width: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 50px;">
+            <!-- 地形區塊會由 JS 動態生成 -->
+        </div>
+    </div>
+
+    <!-- 戰鬥畫面 -->
+    <div id="battle-screen" class="screen hidden">
+        <div class="top-bar">
+            <button class="btn-map" style="padding: 10px 20px; font-size: 18px;" onclick="quitToMap()">逃跑</button>
+            <div class="hp-bar-container">
+                <div>勇者 HP: <span id="player-hp" class="hearts">❤️❤️❤️❤️</span></div>
+                <div id="potion-ui" class="potion-badge hidden">🧪 甦醒藥 x1</div>
+            </div>
+            <div style="font-size: 24px; color: #8E44AD; font-weight: 900;" id="battle-level-display">關卡 1-1</div>
+            <div class="hp-bar-container">
+                <span id="boss-name">魔王</span> 
+                <div class="boss-hp-bg">
+                    <div id="boss-hp-fill" class="boss-hp-fill"></div>
+                    <div class="boss-hp-text"><span id="boss-hp-number">10</span> / 10</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="battle-area">
+            <!-- 勇者 -->
+            <div class="character-box" id="hero-box">
+                <div class="hero-avatar" id="hero-avatar-el" title="冷酷少年勇者">🥷🏻</div>
+                <div class="char-name">加法勇者</div>
+                <div class="combo-text">連擊: <span id="combo-count">0</span></div>
+            </div>
+
+            <!-- 題目 -->
+            <div class="center-area">
+                <div id="question" class="question-box">1 + 1 = ?</div>
+                <div class="timer-box">剩餘時間: <span id="time-left">60</span>s</div>
+                <div class="message-log" id="message">準備戰鬥！</div>
+            </div>
+
+            <!-- 魔王 -->
+            <div class="character-box" id="boss-box" style="border-color: #E74C3C;">
+                <div id="boss-emoji" class="boss-avatar">👾</div>
+                <div class="char-name" id="boss-label">史萊姆</div>
+            </div>
+        </div>
+
+        <div class="control-area">
+            <input type="number" id="answer-input" placeholder="答案..." autocomplete="off">
+            <button id="attack-btn">發射 / 攻擊！</button>
+        </div>
+    </div>
+
+    <!-- 結算彈窗 (勝利/失敗) -->
+    <div id="result-overlay" class="overlay hidden">
+        <div class="modal-box">
+            <h1 id="result-title">戰鬥結果</h1>
+            <div id="result-stars" class="star-result"></div>
+            <div class="stats-details" id="result-stats">
+                <!-- 統計資料 -->
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-map" onclick="showMap()">回大地圖</button>
+                <button id="next-stage-btn" onclick="startNextStageIfAvailable()">下一關</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ================= 關卡與地形設定 =================
+    const terrains = [
+        { id: 1, name: "地形一：史萊姆棲地", boss: "史萊姆", emoji: "🦠", stages: [
+            { id: "1-1", d1: 1, d2: 1, desc: "一位數 + 一位數" },
+            { id: "1-2", d1: 1, d2: 1, desc: "一位數 + 一位數" }
+        ]},
+        { id: 2, name: "地形二：木妖森林", boss: "木妖", emoji: "🌲", stages: [
+            { id: "2-1", d1: 2, d2: 1, desc: "兩位數 + 一位數" },
+            { id: "2-2", d1: 1, d2: 2, desc: "一位數 + 兩位數" },
+            { id: "2-3", d1: 2, d2: 2, desc: "兩位數 + 兩位數" }
+        ]},
+        { id: 3, name: "地形三：吸血鬼古堡", boss: "吸血鬼", emoji: "🧛", stages: [
+            { id: "3-1", d1: 3, d2: 1, desc: "三位+一位" },
+            { id: "3-2", d1: 1, d2: 3, desc: "一位+三位" },
+            { id: "3-3", d1: 3, d2: 2, desc: "三位+兩位" },
+            { id: "3-4", d1: 2, d2: 3, desc: "兩位+三位" },
+            { id: "3-5", d1: 3, d2: 3, desc: "三位+三位" }
+        ]},
+        { id: 4, name: "地形四：殭屍墓穴", boss: "殭屍", emoji: "🧟", stages: [
+            { id: "4-1", d1: 4, d2: 1, desc: "四位+一位" },
+            { id: "4-2", d1: 1, d2: 4, desc: "一位+四位" },
+            { id: "4-3", d1: 4, d2: 2, desc: "四位+兩位" },
+            { id: "4-4", d1: 2, d2: 4, desc: "兩位+四位" },
+            { id: "4-5", d1: 4, d2: 3, desc: "四位+三位" },
+            { id: "4-6", d1: 3, d2: 4, desc: "三位+四位" },
+            { id: "4-7", d1: 4, d2: 4, desc: "四位+四位" }
+        ]},
+        { id: 5, name: "地形五：法老王金字塔", boss: "法老王 (大魔王)", emoji: "🫅🏽", stages: [
+            { id: "5-1", d1: 0, d2: 0, desc: "隨機所有組合" }
+        ]}
+    ];
+
+    // 所有關卡扁平化索引，方便切換「下一關」
+    const allStagesList = [];
+    terrains.forEach(t => {
+        t.stages.forEach(s => {
+            allStagesList.push({ ...s, terrainId: t.id, boss: t.boss, emoji: t.emoji });
+        });
+    });
+
+    // ================= 地形視覺主題 =================
+    // 每個地形一種底色風格，讓玩家一眼就能分辨走到哪個場景了。
+    // titleColor 是淺色/深色背景要搭配的文字顏色（避免背景太深字看不到）。
+    const terrainTheme = {
+        1: { bg: "linear-gradient(135deg, #A8E6CF 0%, #56C596 100%)", titleColor: "#1B4332" }, // 史萊姆棲地：沼澤綠
+        2: { bg: "linear-gradient(135deg, #C8E6C9 0%, #2E7D32 100%)", titleColor: "#FFFFFF" },  // 木妖森林：森林綠
+        3: { bg: "linear-gradient(135deg, #6A1B9A 0%, #2C0735 100%)", titleColor: "#F3E5F5" },  // 吸血鬼古堡：暗夜紫
+        4: { bg: "linear-gradient(135deg, #546E7A 0%, #263238 100%)", titleColor: "#ECEFF1" },  // 殭屍墓穴：陰森灰
+        5: { bg: "linear-gradient(135deg, #FFD54F 0%, #E65100 100%)", titleColor: "#3E2723" }   // 法老王金字塔：金沙橘
+    };
+
+    // ================= 每大關背景音樂 =================
+    // 目前 5 大關先全部共用同一首（Eric 之後上傳新曲目時，把對應地形 id
+    // 的路徑換成新檔名即可，不用改程式碼其他地方）。
+    const TERRAIN_MUSIC = {
+        1: "./audio/terrain-1.mp3",
+        2: "./audio/terrain-1.mp3", // 🔶 預留位置，之後換成地形二專屬曲目
+        3: "./audio/terrain-1.mp3", // 🔶 預留位置，之後換成地形三專屬曲目
+        4: "./audio/terrain-1.mp3", // 🔶 預留位置，之後換成地形四專屬曲目
+        5: "./audio/terrain-1.mp3"  // 🔶 預留位置，之後換成地形五專屬曲目
+    };
+
+    const bgmAudio = new Audio();
+    bgmAudio.loop = true;
+    bgmAudio.volume = 0.45;
+    let currentBgmTerrain = null;
+
+    function playTerrainMusic(terrainId) {
+        const src = TERRAIN_MUSIC[terrainId];
+        if (!src) return;
+        if (currentBgmTerrain !== terrainId) {
+            bgmAudio.src = src;
+            currentBgmTerrain = terrainId;
+        }
+        // 瀏覽器的自動播放限制：一定要在使用者點擊之後呼叫才會真的出聲，
+        // 這裡都是從點擊事件（選關卡/進入浮空島）觸發，所以沒問題；
+        // 萬一被擋下來，安靜失敗就好，不影響遊戲進行。
+        bgmAudio.play().catch(() => {});
+    }
+
+    function stopMusic() {
+        bgmAudio.pause();
+        currentBgmTerrain = null;
+    }
+
+    // ================= 按鈕音效 =================
+    // 目前先用瀏覽器內建的音訊功能做一個簡單的「嗶」聲當按鈕音效，
+    // 如果之後想換成真正錄好的音效檔，跟我說一聲，我再幫忙換掉這個函式。
+    let clickAudioCtx = null;
+    function playClickSound() {
+        try {
+            clickAudioCtx = clickAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+            const osc = clickAudioCtx.createOscillator();
+            const gain = clickAudioCtx.createGain();
+            osc.type = "square";
+            osc.frequency.value = 880;
+            gain.gain.setValueAtTime(0.12, clickAudioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, clickAudioCtx.currentTime + 0.12);
+            osc.connect(gain).connect(clickAudioCtx.destination);
+            osc.start();
+            osc.stop(clickAudioCtx.currentTime + 0.12);
+        } catch (e) { /* 舊瀏覽器沒有 Web Audio API 就安靜跳過 */ }
+    }
+    // 所有按鈕跟關卡節點統一在這裡綁音效，不用每個按鈕各自加
+    document.addEventListener("click", function (e) {
+        if (e.target.closest && e.target.closest("button, .stage-node")) playClickSound();
+    }, true);
+
+    // ================= 學號登入串接 =================
+    // 跟塔防/ETP/看打共用同一組登入身分（login.html 存進 localStorage 的
+    // "keyagent_active_student"），這樣進度跟代幣才能記在同一個學生名下、
+    // 也才能被 sync-client.js 一起同步到雲端。
+    const studentNumber = (typeof keyagentGetActiveStudentNumber === 'function')
+        ? keyagentGetActiveStudentNumber() : null;
+
+    function loadSharedSave() {
+        if (!studentNumber || typeof keyagentSaveKeyFor !== 'function') return {};
+        try {
+            const raw = localStorage.getItem(keyagentSaveKeyFor(studentNumber));
+            return raw ? JSON.parse(raw) : {};
+        } catch (e) { return {}; }
+    }
+
+    function writeSharedSave(save) {
+        if (!studentNumber || typeof keyagentSaveKeyFor !== 'function') return;
+        save.lastModified = Date.now();
+        try { localStorage.setItem(keyagentSaveKeyFor(studentNumber), JSON.stringify(save)); } catch (e) {}
+    }
+
+    // 玩家關卡進度：放在共用存檔的 additionHero 欄位下，
+    // 跟塔防(towerDefense)、ETP(etp)、看打(lookType) 各自獨立、互不覆蓋。
+    let sharedSave = loadSharedSave();
+    let playerProgress = (sharedSave.additionHero && sharedSave.additionHero.stages)
+        ? sharedSave.additionHero.stages
+        : { "1-1": { unlocked: true, stars: 0 } };
+    if (!playerProgress["1-1"]) playerProgress["1-1"] = { unlocked: true, stars: 0 };
+
+    function saveProgress() {
+        sharedSave = loadSharedSave(); // 先讀最新的，避免蓋掉存檔裡其他系統剛寫入的資料
+        sharedSave.additionHero = { stages: playerProgress };
+        writeSharedSave(sharedSave);
+    }
+
+    // 過關發代幣：只在「星等進步」時發（見 endGame），避免反覆打同一關無限刷代幣。
+    // 規則：每提升 1 顆星 = 2 GBit。
+    function awardTokens(amount) {
+        if (amount <= 0) return;
+        sharedSave = loadSharedSave();
+        sharedSave.gbit = (sharedSave.gbit || 0) + amount;
+        sharedSave.gbitEarnedLifetime = (sharedSave.gbitEarnedLifetime || 0) + amount;
+        writeSharedSave(sharedSave);
+        updateGbitDisplay();
+
+        // 排進待同步佇列，讓老師電腦之後能把這筆紀錄收進校內資料庫；
+        // 沒設定雲端中繼站或離線時，這兩個呼叫都會安靜跳過，不影響遊戲。
+        if (typeof keyagentQueuePendingAttempt === 'function') {
+            keyagentQueuePendingAttempt('additionHero', {
+                stageId: currentStageObj ? currentStageObj.id : null,
+                stars: (currentStageObj && playerProgress[currentStageObj.id]) ? playerProgress[currentStageObj.id].stars : null,
+                tokensEarned: amount,
+                attemptedAt: Date.now()
+            });
+        }
+        if (typeof keyagentCloudSyncNow === 'function') {
+            keyagentCloudSyncNow();
+        }
+    }
+
+    function updateGbitDisplay() {
+        const el = document.getElementById('gbit-display');
+        if (!el) return;
+        el.innerText = (loadSharedSave().gbit) || 0;
+    }
+
+ 
+    // ================= 戰鬥狀態變數 =================
+    let currentStageObj = null;
+    let playerHP = 4, maxPlayerHP = 4;
+    let bossHP = 10, maxBossHP = 10;
+    let combo = 0, hasRevive = false;
+    let currentAnswer = 0, timeLeft = 60;
+    let timerInterval = null, questionStartTime = 0;
+
+    let stageStats = { total: 0, mistakes: 0, correct: 0, times: [] };
+
+    // ================= DOM 元素 =================
+    const screens = {
+        start: document.getElementById('start-screen'),
+        map: document.getElementById('map-screen'),
+        battle: document.getElementById('battle-screen'),
+        result: document.getElementById('result-overlay')
+    };
+
+    const ui = {
+        playerHp: document.getElementById('player-hp'),
+        bossHpFill: document.getElementById('boss-hp-fill'),
+        bossHpNum: document.getElementById('boss-hp-number'),
+        bossName: document.getElementById('boss-name'),
+        bossLabel: document.getElementById('boss-label'),
+        bossEmoji: document.getElementById('boss-emoji'),
+        levelDisp: document.getElementById('battle-level-display'),
+        question: document.getElementById('question'),
+        answer: document.getElementById('answer-input'),
+        timeLeft: document.getElementById('time-left'),
+        msg: document.getElementById('message'),
+        combo: document.getElementById('combo-count'),
+        potion: document.getElementById('potion-ui'),
+        btnAttack: document.getElementById('attack-btn')
+    };
+
+    // ================= 畫面切換 =================
+    function switchScreen(screenName) {
+        Object.values(screens).forEach(s => s.classList.add('hidden'));
+        screens[screenName].classList.remove('hidden');
+    }
+
+    // ================= 產生世界地圖 =================
+    // 「目前位置」= 第一個「已解鎖但還沒過關」的關卡；如果全部關卡都過了，
+    // 標記就停在最後一關，讓玩家知道自己破完全部關卡了。
+    function findFrontierStageId() {
+        for (const s of allStagesList) {
+            const pData = playerProgress[s.id] || { unlocked: false, stars: 0 };
+            if (pData.unlocked && pData.stars === 0) return s.id;
+        }
+        return allStagesList[allStagesList.length - 1].id;
+    }
+
+    function showMap() {
+        switchScreen('map');
+        stopMusic(); // 回到地圖就先停掉戰鬥音樂，進下一場戰鬥時會依地形重新播放
+        const wrapper = document.getElementById('terrains-wrapper');
+        wrapper.innerHTML = '';
+        const frontierId = findFrontierStageId();
+
+        // 倒序渲染地形 (從下到上爬升感)
+        [...terrains].reverse().forEach(terrain => {
+            const theme = terrainTheme[terrain.id] || {};
+            const tDiv = document.createElement('div');
+            tDiv.className = 'terrain-container';
+            if (theme.bg) tDiv.style.background = theme.bg;
+            tDiv.innerHTML = `
+                <div class="terrain-title" style="color:${theme.titleColor || '#1565C0'};">
+                    <span class="boss-thumb">${terrain.emoji}</span>${terrain.name}
+                </div>`;
+
+            const grid = document.createElement('div');
+            grid.className = 'stage-grid';
+
+            terrain.stages.forEach(stage => {
+                const pData = playerProgress[stage.id] || { unlocked: false, stars: 0 };
+                const node = document.createElement('div');
+                node.className = `stage-node ${pData.unlocked ? (pData.stars > 0 ? 'cleared' : 'unlocked') : 'locked'}`;
+                node.innerText = stage.id;
+                node.title = stage.desc;
+
+                if (pData.stars > 0) {
+                    const starsHTML = "★".repeat(pData.stars) + "☆".repeat(5 - pData.stars);
+                    node.innerHTML += `<div class="stars-display">${starsHTML}</div>`;
+                }
+
+                // 🥷 玩家目前位置標記：跟著過關往下一個節點移動
+                if (stage.id === frontierId) {
+                    node.innerHTML += `<div class="player-marker">🥷🏻</div>`;
+                }
+
+                if (pData.unlocked) {
+                    node.onclick = () => startBattle(stage.id);
+                }
+                grid.appendChild(node);
+            });
+
+            tDiv.appendChild(grid);
+            wrapper.appendChild(tDiv);
+        });
+    }
+
+    // ================= 戰鬥邏輯 =================
+    function startBattle(stageId) {
+        currentStageObj = allStagesList.find(s => s.id === stageId);
+        if(!currentStageObj) return;
+
+        // 初始化狀態
+        playerHP = maxPlayerHP;
+        bossHP = maxBossHP;
+        combo = 0;
+        hasRevive = false;
+        stageStats = { total: 0, mistakes: 0, correct: 0, times: [] };
+
+        // 設置 UI
+        ui.bossName.innerText = currentStageObj.boss;
+        ui.bossLabel.innerText = currentStageObj.boss;
+        ui.bossEmoji.innerText = currentStageObj.emoji;
+        ui.levelDisp.innerText = `關卡 ${currentStageObj.id}`;
+        
+        showMessage("戰鬥開始！", "#2ECC71");
+        updateUI();
+        switchScreen('battle');
+        playTerrainMusic(currentStageObj.terrainId);
+        nextQuestion();
+    }
+
+    function quitToMap() {
+        clearInterval(timerInterval);
+        showMap();
+    }
+
+    function getRandomNumber(digits) {
+        if (digits === 0) digits = Math.floor(Math.random() * 4) + 1; // 隨機 1~4 位數
+        const min = Math.pow(10, digits - 1);
+        const max = Math.pow(10, digits) - 1;
+        // 確保 1位數時是 1~9，避免0
+        if (digits === 1) return Math.floor(Math.random() * 9) + 1;
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function nextQuestion() {
+        clearInterval(timerInterval);
+        ui.answer.value = "";
+        ui.answer.focus();
+        
+        const num1 = getRandomNumber(currentStageObj.d1);
+        const num2 = getRandomNumber(currentStageObj.d2);
+        currentAnswer = num1 + num2;
+        
+        ui.question.innerText = `${num1} + ${num2} = ?`;
+        
+        timeLeft = 60;
+        questionStartTime = Date.now();
+        ui.timeLeft.innerText = timeLeft;
+        
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            ui.timeLeft.innerText = timeLeft;
+            if (timeLeft <= 0) processAnswer(false, true); // 超時
+        }, 1000);
+    }
+
+    function processAnswer(isAttempt, isTimeout = false) {
+        clearInterval(timerInterval);
+        const timeTaken = (Date.now() - questionStartTime) / 1000;
+        stageStats.total++;
+        
+        let isCorrect = false;
+        if (!isTimeout) {
+            const playerAns = parseInt(ui.answer.value, 10);
+            if (playerAns === currentAnswer) isCorrect = true;
+        }
+
+        if (isCorrect) {
+            stageStats.correct++;
+            stageStats.times.push(timeTaken);
+            combo++;
+            
+            let damage = 1;
+            let bonusText = "";
+            if (timeTaken <= 10) { damage = 2; bonusText = "(極速攻擊 x2!)"; }
+            else if (timeTaken <= 20) { damage = 1.5; bonusText = "(快速攻擊 x1.5!)"; }
+
+            bossHP -= damage;
+            let msg = `答對了！造成 ${damage} 傷害 ${bonusText}`;
+            
+            if (combo >= 5 && !hasRevive) {
+                hasRevive = true;
+                msg += " 【獲得甦醒藥！】";
+            }
+            showMessage(msg, "#F1C40F");
+            playAttackAnim('hero');
+            showFloatingDamage('boss', `-${damage}`, '#E74C3C');
+
+        } else {
+            stageStats.mistakes++;
+            combo = 0;
+            bossHP = Math.min(maxBossHP, bossHP + 0.5); // 扣錯魔王加血不超過上限
+            playerHP -= 1;
+            
+            let msg = isTimeout ? "時間到！" : "答錯了！";
+            msg += " 受到 1 傷害，魔王回復 0.5 血。";
+            
+            if (playerHP <= 0 && hasRevive) {
+                playerHP = maxPlayerHP;
+                hasRevive = false;
+                msg += " 【甦醒藥發動！滿血復活！】";
+            }
+            showMessage(msg, "#E74C3C");
+            playAttackAnim('boss');
+            showFloatingDamage('hero', '-1', '#E74C3C');
+        }
+
+        updateUI();
+
+        setTimeout(() => {
+            if (playerHP <= 0) endGame(false);
+            else if (bossHP <= 0) endGame(true);
+            else nextQuestion();
+        }, 1200);
+    }
+
+    function updateUI() {
+        let heartsStr = "❤️".repeat(playerHP) + "🖤".repeat(maxPlayerHP - playerHP);
+        ui.playerHp.innerText = heartsStr;
+
+        const hpPercent = Math.max(0, (bossHP / maxBossHP) * 100);
+        ui.bossHpFill.style.width = hpPercent + "%";
+        ui.bossHpNum.innerText = Math.max(0, bossHP).toFixed(1).replace('.0','');
+
+        ui.combo.innerText = combo;
+        if (hasRevive) ui.potion.classList.remove('hidden');
+        else ui.potion.classList.add('hidden');
+    }
+
+    function showMessage(text, color) {
+        ui.msg.innerText = text;
+        ui.msg.style.color = color;
+    }
+
+    // ================= 戰鬥攻擊動畫 =================
+    // attacker: 'hero' = 玩家答對，勇者衝上前攻擊、頭目被打中閃白光；
+    //           'boss' = 玩家答錯，頭目衝上前攻擊、勇者被打中閃白光。
+    function playAttackAnim(attacker) {
+        const heroEl = document.getElementById('hero-avatar-el');
+        const bossEl = document.getElementById('boss-emoji');
+        if (!heroEl || !bossEl) return;
+        if (attacker === 'hero') {
+            heroEl.classList.add('lunge');
+            bossEl.classList.add('hit-flash');
+            setTimeout(() => { heroEl.classList.remove('lunge'); bossEl.classList.remove('hit-flash'); }, 400);
+        } else {
+            bossEl.classList.add('lunge-reverse');
+            heroEl.classList.add('hit-flash');
+            setTimeout(() => { bossEl.classList.remove('lunge-reverse'); heroEl.classList.remove('hit-flash'); }, 400);
+        }
+    }
+
+    // 在角色頭上飄出一個傷害/回復數字，飄完自動消失
+    function showFloatingDamage(target, text, color) {
+        const boxEl = document.getElementById(target === 'boss' ? 'boss-box' : 'hero-box');
+        if (!boxEl) return;
+        const dmgEl = document.createElement('div');
+        dmgEl.className = 'floating-dmg';
+        dmgEl.style.color = color;
+        dmgEl.innerText = text;
+        boxEl.appendChild(dmgEl);
+        setTimeout(() => dmgEl.remove(), 900);
+    }
+
+    // ================= 結算與星級計算 =================
+    function calculateStars() {
+        let stars = 1;
+        const acc = stageStats.correct / stageStats.total;
+        
+        if (stageStats.mistakes === 0) {
+            const allUnder10 = stageStats.times.every(t => t <= 10);
+            const allUnder20 = stageStats.times.every(t => t <= 20);
+            if (allUnder10) stars = 5;
+            else if (allUnder20) stars = 4;
+            else stars = 3;
+        } else {
+            if (acc >= 0.6) stars = 2;
+            else stars = 1;
+        }
+        return stars;
+    }
+
+    function endGame(isWin) {
+        screens.result.classList.remove('hidden');
+        const title = document.getElementById('result-title');
+        const starsEl = document.getElementById('result-stars');
+        const statsEl = document.getElementById('result-stats');
+        const nextBtn = document.getElementById('next-stage-btn');
+
+        if (isWin) {
+            const stars = calculateStars();
+            title.innerText = "⭐ 關卡克里爾！⭐";
+            title.style.color = "#2ECC71";
+            starsEl.innerHTML = "★".repeat(stars) + `<span style="color:#7F8C8D;">${"☆".repeat(5-stars)}</span>`;
+            
+            let acc = Math.round((stageStats.correct / stageStats.total) * 100) || 0;
+            let avgTime = (stageStats.times.reduce((a,b)=>a+b,0) / (stageStats.times.length||1)).toFixed(1);
+
+            // 只在星等進步時發代幣（每進步 1 顆星 = 2 GBit），避免同一關無限刷代幣。
+            const prevStars = playerProgress[currentStageObj.id] ? playerProgress[currentStageObj.id].stars : 0;
+            const tokensEarned = Math.max(0, stars - prevStars) * 2;
+            const tokensLine = tokensEarned > 0
+                ? `<div><strong>獲得代幣：</strong> <span style="color:#8E44AD;">+${tokensEarned} GBit</span></div>`
+                : `<div style="color:#7F8C8D;">（星等沒有進步，這次沒有新增代幣）</div>`;
+
+            statsEl.innerHTML = `
+                <div><strong>作答題數：</strong> ${stageStats.total} 題</div>
+                <div><strong>失誤次數：</strong> <span style="color:${stageStats.mistakes===0?'#27AE60':'#E74C3C'}">${stageStats.mistakes}</span> 次</div>
+                <div><strong>答對率：</strong> ${acc}%</div>
+                <div><strong>平均作答時間：</strong> ${avgTime} 秒</div>
+                ${tokensLine}
+            `;
+
+            // 更新進度與解鎖下一關
+            if (playerProgress[currentStageObj.id].stars < stars) {
+                playerProgress[currentStageObj.id].stars = stars;
+            }
+            
+            const currIdx = allStagesList.findIndex(s => s.id === currentStageObj.id);
+            if (currIdx < allStagesList.length - 1) {
+                const nextId = allStagesList[currIdx + 1].id;
+                if (!playerProgress[nextId]) playerProgress[nextId] = { unlocked: true, stars: 0 };
+                playerProgress[nextId].unlocked = true;
+                nextBtn.style.display = "inline-block";
+            } else {
+                nextBtn.style.display = "none"; // 全破
+                title.innerText = "🏆 完美通關 🏆";
+                statsEl.innerHTML += `<div style="color:#8E44AD; font-weight:bold; margin-top:10px;">你已經擊敗了法老王，拯救了浮空島！</div>`;
+            }
+            saveProgress();
+            if (tokensEarned > 0) awardTokens(tokensEarned);
+
+        } else {
+            title.innerText = "💀 挑戰失敗 💀";
+            title.style.color = "#E74C3C";
+            starsEl.innerHTML = "勇者倒下了...";
+            starsEl.style.fontSize = "36px";
+            statsEl.innerHTML = `你受到了致命的傷害，請回到大地圖重新編整再出發。`;
+            nextBtn.style.display = "none";
+        }
+    }
+
+    function startNextStageIfAvailable() {
+        const currIdx = allStagesList.findIndex(s => s.id === currentStageObj.id);
+        if (currIdx < allStagesList.length - 1) {
+            screens.result.classList.add('hidden');
+            startBattle(allStagesList[currIdx + 1].id);
+        }
+    }
+
+    // ================= 綁定事件 =================
+    ui.btnAttack.addEventListener('click', () => {
+        if (ui.answer.value.trim() !== "") processAnswer(true, false);
+    });
+
+    ui.answer.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && ui.answer.value.trim() !== "") processAnswer(true, false);
+    });
+
+ <!-- 🚀 手機自動等比例縮放＋防止虛擬鍵盤遮擋腳本 -->
+        function resizeGame() {
+            const container = document.getElementById('game-container');
+            if (!container) return;
+
+            const designWidth = 1000;
+            const designHeight = 700;
+
+            // 關鍵修改：優先使用 visualViewport 取得扣除鍵盤後的「真正可視寬高」
+            let windowWidth = window.innerWidth;
+            let windowHeight = window.innerHeight;
+            
+            if (window.visualViewport) {
+                windowWidth = window.visualViewport.width;
+                windowHeight = window.visualViewport.height;
+            }
+
+            const scaleX = windowWidth / designWidth;
+            const scaleY = windowHeight / designHeight;
+
+            // 保持等比例縮放
+            const scale = Math.min(scaleX, scaleY);
+
+            container.style.setProperty('--scale', scale);
+            
+            // 修正 iOS 在鍵盤彈出時會亂滾動網頁的 Bug
+            window.scrollTo(0, 0);
+        }
+
+        // 監聽所有尺寸變動事件（包含手機鍵盤彈出）
+        window.addEventListener('resize', resizeGame);
+        window.addEventListener('load', resizeGame);
+        
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', resizeGame);
+            window.visualViewport.addEventListener('scroll', resizeGame);
+        }
+
+        // 當輸入框失去焦點時，確保畫面完美歸位
+        document.addEventListener('focusout', () => {
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+                resizeGame();
+            }, 100);
+        });
+
+        // 初始化
+        resizeGame();
+</script>
+</body>
+</html>
