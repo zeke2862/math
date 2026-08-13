@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分數運算大冒險 - 勇者討伐戰</title>
+    <link rel="stylesheet" href="tailwind-lite.css">
+    <style>
+        body {
+            background: radial-gradient(circle at top, #2d1b4e 0%, #150a28 70%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+        }
+        #mg-fit-stage { width: 480px; }
+        #app {
+            background: linear-gradient(180deg, #241239 0%, #180a26 100%);
+            border: 3px solid #6b3fa0;
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.5);
+        }
+        /* ---- 地圖畫面 ---- */
+        .chapter-card {
+            background: linear-gradient(145deg, #2e1a4d, #1c0e33);
+            border: 2px solid #5a3b82;
+            border-radius: 14px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            position: relative;
+        }
+        .chapter-card:hover:not(.locked) { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(168,85,247,0.5); }
+        .chapter-card.cleared { border-color: #ffd700; box-shadow: 0 0 14px rgba(255,215,0,0.4); }
+        .chapter-card.locked { opacity: 0.45; cursor: not-allowed; filter: grayscale(1); }
+        .chapter-boss-img { width: 64px; height: 64px; object-fit: contain; margin: 0 auto; display: block; }
+        .chapter-boss-emoji { font-size: 44px; line-height: 64px; }
+        .chapter-badge {
+            position: absolute; top: -8px; right: -8px; background: #ffd700; color: #402a00;
+            font-size: 11px; font-weight: bold; border-radius: 999px; padding: 2px 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+        /* ---- 戰鬥畫面 ---- */
+        .battle-stage {
+            background: linear-gradient(180deg, #3a2159 0%, #1c0e33 100%);
+            border-radius: 14px;
+            padding: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+        .path-dots { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
+        .path-dot { width: 14px; height: 14px; border-radius: 50%; background: #4a3369; border: 2px solid #6b3fa0; }
+        .path-dot.done { background: #ffd700; border-color: #ffd700; }
+        .path-dot.current { background: #ff6b6b; border-color: #ff6b6b; animation: mgfx-twinkle 1s ease-in-out infinite; }
+
+        .combatant { text-align: center; }
+        .combatant-frame {
+            width: 88px; height: 88px; margin: 0 auto 6px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.25); border: 3px solid #6b3fa0; overflow: hidden;
+            box-shadow: 0 0 16px rgba(139,92,246,0.4);
+        }
+        .combatant-frame img { width: 100%; height: 100%; object-fit: contain; }
+        .combatant-frame .emoji-fallback { font-size: 46px; }
+        .hp-bar-outer { width: 100%; background: #2a1a44; border-radius: 999px; height: 14px; overflow: hidden; border: 1px solid #6b3fa0; }
+        .hp-bar-inner { height: 100%; border-radius: 999px; transition: width 0.4s ease-out; }
+        .hp-hero .hp-bar-inner { background: linear-gradient(90deg, #34d399, #10b981); }
+        .hp-boss .hp-bar-inner { background: linear-gradient(90deg, #f87171, #dc2626); }
+        .hp-label { font-size: 12px; color: #d8c8f5; margin-top: 2px; }
+
+        .vs-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+        .vs-mid { font-size: 22px; font-weight: 900; color: #ffd700; text-shadow: 0 0 8px rgba(255,215,0,0.6); }
+
+        .shake-hit { animation: mgfx-shake 0.35s; }
+        .flash-hurt { animation: hurt-flash 0.35s; }
+        @keyframes hurt-flash { 0%,100% { filter: brightness(1); } 40% { filter: brightness(2.2) saturate(0); } }
+        .atk-lunge-hero { animation: lunge-right 0.3s ease-out; }
+        .atk-lunge-boss { animation: lunge-left 0.3s ease-out; }
+        @keyframes lunge-right { 0%{transform:translateX(0);} 50%{transform:translateX(14px);} 100%{transform:translateX(0);} }
+        @keyframes lunge-left { 0%{transform:translateX(0);} 50%{transform:translateX(-14px);} 100%{transform:translateX(0);} }
+
+        .combo-badge {
+            display: inline-block; background: linear-gradient(135deg,#ff9d00,#ff3d81);
+            color: #fff; font-weight: 900; padding: 3px 12px; border-radius: 999px;
+            font-size: 13px; box-shadow: 0 0 10px rgba(255,80,120,0.6);
+            opacity: 0; transform: scale(0.6); transition: all 0.25s;
+        }
+        .combo-badge.show { opacity: 1; transform: scale(1); }
+
+        .qbox { background: rgba(0,0,0,0.3); border: 1px solid #5a3b82; border-radius: 12px; padding: 14px; margin: 12px 0; text-align: center; font-size: 1.15rem; font-weight: bold; }
+        .battle-option-btn {
+            width: 100%; text-align: left; padding: 12px 14px; border-radius: 10px; border: 2px solid #5a3b82;
+            background: rgba(255,255,255,0.05); color: #fff; font-size: 1rem; font-weight: 600; margin-bottom: 8px;
+            transition: all 0.15s; cursor: pointer;
+        }
+        .battle-option-btn:hover { border-color: #a855f7; background: rgba(168,85,247,0.15); }
+
+        .overlay-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 999;
+        }
+        .overlay-card { background: #241239; border: 2px solid #6b3fa0; border-radius: 16px; padding: 24px; max-width: 340px; text-align: center; }
+
+        .icon-btn { background: rgba(255,255,255,0.08); border: 1px solid #6b3fa0; border-radius: 8px; padding: 6px 10px; color: #fff; font-size: 13px; }
+        .icon-btn:hover { background: rgba(255,255,255,0.18); }
+
+        .customize-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; background:rgba(255,255,255,0.05); padding:8px; border-radius:8px; }
+        .customize-row label { font-size: 13px; color:#d8c8f5; }
+    </style>
+</head>
+<body>
+
+<div id="mg-fit-stage">
+<div id="app" class="rounded-2xl shadow-xl overflow-hidden p-4">
+
+    <!-- ============ 地圖畫面：8個大關魔王 ============ -->
+    <div id="screen-map">
+        <div class="text-center mb-3">
+            <div class="text-3xl mb-1">⚔️</div>
+            <h1 class="text-2xl font-bold" style="color:#ffd700;">分數運算大冒險</h1>
+            <p class="text-sm" style="color:#c9b8ea;">討伐魔王，證明你的分數實力！</p>
+        </div>
+        <div id="chapterGrid" class="grid grid-cols-2 gap-3 mb-3"></div>
+        <div class="text-center">
+            <button class="icon-btn" onclick="openCustomizePanel()">🎨 自訂角色圖片（本機預覽）</button>
+        </div>
+    </div>
+
+    <!-- ============ 戰鬥畫面 ============ -->
+    <div id="screen-battle" class="hidden">
+        <div class="flex justify-between items-center mb-2">
+            <button class="icon-btn" onclick="confirmLeaveBattle()">← 返回地圖</button>
+            <div class="text-sm font-bold" id="battleChapterTitle" style="color:#ffd700;"></div>
+        </div>
+
+        <div class="path-dots" id="pathDots"></div>
+
+        <div class="battle-stage">
+            <div class="vs-row">
+                <div class="combatant" style="flex:1;">
+                    <div class="combatant-frame" id="heroFrame">
+                        <span class="emoji-fallback" id="heroEmoji">🧑‍🎓</span>
+                    </div>
+                    <div class="font-bold text-sm">勇者</div>
+                    <div class="hp-bar-outer hp-hero"><div class="hp-bar-inner" id="heroHpBar" style="width:100%;"></div></div>
+                    <div class="hp-label" id="heroHpLabel">5 / 5</div>
+                </div>
+                <div class="vs-mid">VS</div>
+                <div class="combatant" style="flex:1;">
+                    <div class="combatant-frame" id="bossFrame">
+                        <span class="emoji-fallback" id="bossEmoji">👹</span>
+                    </div>
+                    <div class="font-bold text-sm" id="bossNameLabel">魔王</div>
+                    <div class="hp-bar-outer hp-boss"><div class="hp-bar-inner" id="bossHpBar" style="width:100%;"></div></div>
+                    <div class="hp-label" id="bossHpLabel">15 / 15</div>
+                </div>
+            </div>
+            <div class="text-center">
+                <span class="combo-badge" id="comboBadge">🔥 COMBO x2！</span>
+            </div>
+
+            <div class="qbox" id="qText">計算 1/2 + 1/3 = ?</div>
+            <div id="qFeedback" class="text-center font-bold mb-2" style="min-height:1.3em;"></div>
+            <div id="optionsContainer"></div>
+        </div>
+    </div>
+
+    <!-- ============ 魔王逃跑轉場 ============ -->
+    <div id="screen-flee" class="hidden text-center p-6">
+        <div class="text-5xl mb-3" id="fleeEmoji">👹</div>
+        <h2 class="text-xl font-bold mb-2" style="color:#ffd700;">魔王逃跑了！</h2>
+        <p style="color:#c9b8ea;">牠往下一個地方逃去，緊追上去！</p>
+    </div>
+
+    <!-- ============ 大關結算（魔王死亡） ============ -->
+    <div id="screen-victory" class="hidden p-4 text-center">
+        <div class="text-6xl mb-2">🏆</div>
+        <h2 class="text-2xl font-bold mb-1" style="color:#ffd700;">討伐成功！</h2>
+        <p style="color:#c9b8ea;" class="mb-3"><span id="victoryBossName"></span> 已被擊敗！</p>
+        <div class="text-lg font-bold mb-1"><span id="victoryDisplayName"></span> 的戰績</div>
+        <p style="color:#c9b8ea;">答對 <span id="victoryCorrect"></span> / <span id="victoryTotal"></span> 題</p>
+        <div id="gbitLine" class="text-lg font-bold my-3" style="color:#ffd700;">代幣結算中…</div>
+        <div id="uploadStatus" class="mb-3"></div>
+        <button onclick="submitData()" id="btnSubmit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-lg transition mb-2">📤 上傳成績給老師(Google表單)</button>
+        <button onclick="returnToMap()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-lg shadow transition">回到地圖</button>
+    </div>
+
+</div>
+</div><!-- /mg-fit-stage -->
+
+<!-- ============ 勇者倒下（重新挑戰本小關）============ -->
+<div id="modalDefeat" class="overlay-modal hidden">
+    <div class="overlay-card">
+        <div class="text-5xl mb-2">💀</div>
+        <h2 class="text-xl font-bold mb-2" style="color:#ff6b6b;">勇者倒下了...</h2>
+        <p style="color:#c9b8ea;" class="mb-4">魔王的力量太強大，再挑戰一次吧！</p>
+        <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg" onclick="retryBattle()">🔄 重新挑戰</button>
+    </div>
+</div>
+
+<!-- ============ 自訂角色圖片面板 ============ -->
+<div id="modalCustomize" class="overlay-modal hidden">
+    <div class="overlay-card" style="max-width:380px;">
+        <h2 class="text-lg font-bold mb-1" style="color:#ffd700;">🎨 自訂角色圖片</h2>
+        <p class="text-sm mb-3" style="color:#c9b8ea;">這裡上傳的圖片只會存在「這台電腦、這個瀏覽器」，屬於本機預覽。如果要讓全班都看到新圖片，請把圖片檔案放進遊戲同一層的 <code>images/</code> 資料夾（檔名規則見下方）。</p>
+        <div class="customize-row">
+            <label>勇者圖片</label>
+            <input type="file" accept="image/*" onchange="handleCustomImageUpload('hero', this)">
+        </div>
+        <div class="customize-row">
+            <label>魔王圖片（<select id="customizeBossSelect" style="color:#000; border-radius:4px;"></select>）</label>
+            <input type="file" accept="image/*" onchange="handleCustomizeBossUpload(this)">
+        </div>
+        <p class="text-xs mb-3" style="color:#9b86c4;">正式檔名規則：<code>images/hero.png</code>、<code>images/boss-約分.png</code>（依此類推，用各大關的分類名稱命名）</p>
+        <div class="flex gap-2">
+            <button class="icon-btn" style="flex:1;" onclick="clearCustomImages()">清除本機預覽圖</button>
+            <button class="icon-btn" style="flex:1;" onclick="closeCustomizePanel()">關閉</button>
+        </div>
+    </div>
+</div>
+
+<!-- 💡 保護殼：如果下面共用檔案沒有跟這個html放在同一個資料夾、讀取失敗，
+遊戲本身還是能正常開始玩，只是暫時沒有登入/代幣/音效/特效/自動縮放這些
+附加功能。等檔案補齊、重新整理網頁後就會自動恢復正常。 -->
+<script>
+    window.MathGameCommon = window.MathGameCommon || {
+        renderIdentityBadge: function () {},
+        finishAttempt: function () { return Promise.resolve({ gbitAwarded: 0, newBalance: 0 }); },
+        reportResult: function () { return Promise.resolve(); },
+        awardGbit: function () { return 0; },
+        getActiveStudent: function () { return null; }
+    };
+    window.MathGameAudio = window.MathGameAudio || {
+        setMusicMap: function () {}, playBgm: function () {}, stopBgm: function () {},
+        setBgmVolume: function () {}, setSfxMap: function () {}, playSfx: function () {},
+        bindClickSfx: function () {}
+    };
+    window.MathGameFX = window.MathGameFX || {
+        burst: function () {}, shake: function () {}, flash: function () {},
+        popText: function () {}, confetti: function () {}, floatStars: function () {}
+    };
+</script>
+<script src="math-game-common.js"></script>
+<script src="mobile-fit.js"></script>
+<script src="math-game-audio.js"></script>
+<script src="math-game-fx.js"></script>
+<script>
+    MathGameCommon.renderIdentityBadge();
+
+    // 💡 背景音樂設定：八個大關＝八個大關卡。目前先共用同一首，
+    // 之後要換成各大關專屬的音樂，把右邊路徑換成你自己的檔名就好。
+    MathGameAudio.setMusicMap({
+        '約分': "./audio/fraction-adv-bgm.mp3", '擴分': "./audio/fraction-adv-bgm.mp3",
+        '通分': "./audio/fraction-adv-bgm.mp3", '加法': "./audio/fraction-adv-bgm.mp3",
+        '減法': "./audio/fraction-adv-bgm.mp3", '乘法': "./audio/fraction-adv-bgm.mp3",
+        '除法': "./audio/fraction-adv-bgm.mp3", '綜合': "./audio/fraction-adv-bgm.mp3"
+    });
+    MathGameAudio.setSfxMap({
+        // correct: "./audio/sfx-correct.mp3",
+        // wrong:   "./audio/sfx-wrong.mp3",
+        // click:   "./audio/sfx-click.mp3",
+        // win:     "./audio/sfx-win.mp3",
+        // lose:    "./audio/sfx-lose.mp3"
+    });
+    MathGameAudio.bindClickSfx('button');
+
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwVsNUmhpicvrNRmqcsZhIl2TMuImIMBwO40P9Oxma0fWPgT_j2sEDu4IPegXjr4K9c/exec";
+
+    // --- 數學與隨機生成輔助函數 ---
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+    const lcm = (a, b) => (a * b) / gcd(a, b);
+    const simplify = (n, d) => { let g = gcd(n, d); return [n / g, d / g]; };
+    const toFracStr = (n, d) => d === 1 ? `${n}` : (n === 0 ? "0" : `${n}/${d}`);
+
+    function getDistractors(ansStr, isFraction = true, n = 1, d = 2) {
+        let set = new Set([ansStr]);
+        let attempts = 0;
+        while (set.size < 4 && attempts < 100) {
+            attempts++;
+            if (isFraction) {
+                let newN = Math.max(1, n + rand(-3, 4));
+                let newD = Math.max(2, d + rand(-3, 4));
+                let [sn, sd] = simplify(newN, newD);
+                if (sd < 100) set.add(toFracStr(sn, sd));
+            } else {
+                let val = parseInt(ansStr);
+                let diff = rand(1, 12) * (rand(0, 1) ? 1 : -1);
+                let dist = Math.max(1, val + diff);
+                set.add(dist.toString());
+            }
+        }
+        while (set.size < 4) set.add(isFraction ? `${rand(1, 9)}/${rand(10, 20)}` : `${rand(1, 50)}`);
+        return Array.from(set).sort(() => Math.random() - 0.5);
+    }
+
+    // --- 各題型生成邏輯 (限制分母最大 99) ---
+    const generators = {
+        "約分": () => {
+            let d = rand(2, 12), n = rand(1, d - 1);
+            [n, d] = simplify(n, d);
+            let k = rand(2, Math.floor(99 / d));
+            let ansN = n, ansD = d;
+            return { category: "約分", question: `將分數 ${n * k}/${d * k} 化為最簡分數，下列何者正確？`, answer: toFracStr(ansN, ansD), options: getDistractors(toFracStr(ansN, ansD), true, ansN, ansD) };
+        },
+        "擴分": () => {
+            let d = rand(2, 15), n = rand(1, d - 1);
+            [n, d] = simplify(n, d);
+            if (d === 1) d = 2;
+            let k = rand(2, Math.floor(99 / d));
+            let targetD = d * k, ans = n * k;
+            return { category: "擴分", question: `將分數 ${n}/${d} 的分母擴分改為 ${targetD}，其分子應為多少？`, answer: ans.toString(), options: getDistractors(ans.toString(), false) };
+        },
+        "通分": () => {
+            let d1 = rand(2, 12), d2 = rand(2, 12);
+            while (lcm(d1, d2) > 99 || d1 === d2) { d1 = rand(2, 12); d2 = rand(2, 12); }
+            let n1 = rand(1, d1 - 1), n2 = rand(1, d2 - 1);
+            let ans = lcm(d1, d2);
+            return { category: "通分", question: `比較 ${n1}/${d1} 與 ${n2}/${d2} 的大小，若以最小公倍數通分，其共同分母為多少？`, answer: ans.toString(), options: getDistractors(ans.toString(), false) };
+        },
+        "加法": () => {
+            let d1 = rand(2, 12), d2 = rand(2, 12);
+            while (lcm(d1, d2) > 99) { d1 = rand(2, 12); d2 = rand(2, 12); }
+            let n1 = rand(1, d1 - 1), n2 = rand(1, d2 - 1);
+            let comD = lcm(d1, d2);
+            let sumN = n1 * (comD / d1) + n2 * (comD / d2);
+            let [ansN, ansD] = simplify(sumN, comD);
+            return { category: "加法", question: `計算 ${n1}/${d1} + ${n2}/${d2} = ?`, answer: toFracStr(ansN, ansD), options: getDistractors(toFracStr(ansN, ansD), true, ansN, ansD) };
+        },
+        "減法": () => {
+            let d1 = rand(2, 12), d2 = rand(2, 12);
+            while (lcm(d1, d2) > 99) { d1 = rand(2, 12); d2 = rand(2, 12); }
+            let n1 = rand(1, d1 - 1), n2 = rand(1, d2 - 1);
+            let v1 = n1 / d1, v2 = n2 / d2;
+            if (v1 < v2) { [n1, d1, n2, d2] = [n2, d2, n1, d1]; }
+            if (v1 === v2) n1 = d1 + 1;
+            let comD = lcm(d1, d2);
+            let subN = n1 * (comD / d1) - n2 * (comD / d2);
+            let [ansN, ansD] = simplify(subN, comD);
+            return { category: "減法", question: `計算 ${n1}/${d1} - ${n2}/${d2} = ?`, answer: toFracStr(ansN, ansD), options: getDistractors(toFracStr(ansN, ansD), true, ansN, ansD) };
+        },
+        "乘法": () => {
+            let d1 = rand(2, 9), d2 = rand(2, 11);
+            let n1 = rand(1, d1 - 1), n2 = rand(1, d2 - 1);
+            let [ansN, ansD] = simplify(n1 * n2, d1 * d2);
+            return { category: "乘法", question: `計算 ${n1}/${d1} × ${n2}/${d2} = ?`, answer: toFracStr(ansN, ansD), options: getDistractors(toFracStr(ansN, ansD), true, ansN, ansD) };
+        },
+        "除法": () => {
+            let d1 = rand(2, 9), n2 = rand(2, 9);
+            let n1 = rand(1, d1 - 1), d2 = rand(n2 + 1, 15);
+            let [ansN, ansD] = simplify(n1 * d2, d1 * n2);
+            return { category: "除法", question: `計算 ${n1}/${d1} ÷ ${n2}/${d2} = ?`, answer: toFracStr(ansN, ansD), options: getDistractors(toFracStr(ansN, ansD), true, ansN, ansD) };
+        }
+    };
+
+    // ============================================================
+    // 💡 大關魔王設定。想調整魔王名稱/小關數量，改這裡就好。
+    // ============================================================
+    const CHAPTERS = [
+        { id: '約分', name: '約分', bossName: '縮影妖',   emoji: '👹', subLevels: 3 },
+        { id: '擴分', name: '擴分', bossName: '膨脹魔',   emoji: '👺', subLevels: 3 },
+        { id: '通分', name: '通分', bossName: '同盟魔王', emoji: '🧟', subLevels: 3 },
+        { id: '加法', name: '加法', bossName: '合體巨人', emoji: '🧌', subLevels: 3 },
+        { id: '減法', name: '減法', bossName: '削減妖',   emoji: '👻', subLevels: 3 },
+        { id: '乘法', name: '乘法', bossName: '倍增魔',   emoji: '🐉', subLevels: 3 },
+        { id: '除法', name: '除法', bossName: '分裂獸',   emoji: '🦑', subLevels: 3 },
+        { id: '綜合', name: '綜合', bossName: '混沌之王', emoji: '👑', subLevels: 4 }
+    ];
+    const HERO_HP_MAX = 5;
+    const BOSS_HP_MAX = 15;
+    const ALL_TYPES = ["約分", "擴分", "通分", "加法", "減法", "乘法", "除法"];
+
+    // ============================================================
+    // 💡 圖片載入：優先用 images/ 資料夾裡的檔案（正式做法，全班都看得到），
+    // 找不到的話改用這台電腦本機上傳過的預覽圖（只有這台電腦看得到），
+    // 兩個都沒有就用 emoji 頂著，畫面不會壞掉。
+    // ============================================================
+    function imgKey(key) { return 'fracAdventureImg_' + key; }
+    function getLocalPreviewImage(key) {
+        try { return localStorage.getItem(imgKey(key)); } catch (e) { return null; }
+    }
+    function setLocalPreviewImage(key, dataUrl) {
+        try { localStorage.setItem(imgKey(key), dataUrl); } catch (e) {}
+    }
+    function clearCustomImages() {
+        CHAPTERS.forEach(c => localStorage.removeItem(imgKey('boss-' + c.id)));
+        localStorage.removeItem(imgKey('hero'));
+        alert('已清除本機預覽圖，重新整理頁面後生效。');
+    }
+
+    // 套用圖片到一個「圓框＋emoji備援」的元素上
+    function applyCharacterImage(frameEl, emojiFallbackText, folderPath, localKey) {
+        frameEl.innerHTML = '';
+        const preview = getLocalPreviewImage(localKey);
+        const img = document.createElement('img');
+        img.src = preview || folderPath;
+        img.onerror = function () {
+            frameEl.innerHTML = `<span class="emoji-fallback">${emojiFallbackText}</span>`;
+        };
+        frameEl.appendChild(img);
+    }
+
+    function handleCustomImageUpload(kind, inputEl) {
+        const file = inputEl.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            setLocalPreviewImage(kind, e.target.result);
+            alert('已套用本機預覽圖！');
+        };
+        reader.readAsDataURL(file);
+    }
+    function handleCustomizeBossUpload(inputEl) {
+        const chapterId = document.getElementById('customizeBossSelect').value;
+        handleCustomImageUpload('boss-' + chapterId, inputEl);
+    }
+
+    function openCustomizePanel() {
+        const sel = document.getElementById('customizeBossSelect');
+        sel.innerHTML = CHAPTERS.map(c => `<option value="${c.id}">${c.name}（${c.bossName}）</option>`).join('');
+        document.getElementById('modalCustomize').classList.remove('hidden');
+    }
+    function closeCustomizePanel() { document.getElementById('modalCustomize').classList.add('hidden'); }
+
+    // ============================================================
+    // 💡 每個學生的地圖進度，存在 localStorage（依學號分開存）
+    // ============================================================
+    function progressKey() {
+        const student = MathGameCommon.getActiveStudent();
+        const num = (student && student.studentNumber) ? student.studentNumber : 'guest';
+        return 'fracAdventureProgress_' + num;
+    }
+    function loadProgress() {
+        try { return JSON.parse(localStorage.getItem(progressKey())) || {}; } catch (e) { return {}; }
+    }
+    function saveProgress(p) {
+        try { localStorage.setItem(progressKey(), JSON.stringify(p)); } catch (e) {}
+    }
+
+    let studentName = '';
+    let battle = null; // { chapterId, subLevel, heroHP, bossHP, combo }
+    let currentQuestion = null;
+    let answered = false;
+    let runCorrect = 0, runTotal = 0; // 這次挑戰（整個大關，含所有小關）的累計答對/總題數
+
+    function showScreen(id) {
+        ['screen-map', 'screen-battle', 'screen-flee', 'screen-victory'].forEach(s => document.getElementById(s).classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    // ---------------- 地圖 ----------------
+    function renderMap() {
+        const student = MathGameCommon.getActiveStudent();
+        studentName = (student && (student.name || student.studentNumber)) || '訪客';
+        const progress = loadProgress();
+        const grid = document.getElementById('chapterGrid');
+        grid.innerHTML = '';
+
+        CHAPTERS.forEach((ch, idx) => {
+            const chProg = progress[ch.id] || { cleared: false, subLevel: 0 };
+            const prevCleared = idx === 0 || (progress[CHAPTERS[idx - 1].id] && progress[CHAPTERS[idx - 1].id].cleared);
+            const locked = !prevCleared;
+
+            const card = document.createElement('div');
+            card.className = 'chapter-card' + (chProg.cleared ? ' cleared' : '') + (locked ? ' locked' : '');
+            card.onclick = () => { if (!locked) enterChapter(ch.id); };
+
+            const frameId = 'mapBossFrame_' + ch.id;
+            card.innerHTML = `
+                ${chProg.cleared ? '<div class="chapter-badge">✅已討伐</div>' : ''}
+                <div class="combatant-frame" id="${frameId}" style="width:56px;height:56px;">
+                    <span class="emoji-fallback" style="font-size:34px;">${locked ? '🔒' : ch.emoji}</span>
+                </div>
+                <div class="font-bold text-sm mt-1">${ch.name}關</div>
+                <div class="text-xs" style="color:#c9b8ea;">${ch.bossName}</div>
+                <div class="text-xs mt-1" style="color:#9b86c4;">${locked ? '完成上一關解鎖' : (chProg.subLevel + '/' + ch.subLevels + ' 逃亡路徑')}</div>
+            `;
+            grid.appendChild(card);
+            if (!locked) applyCharacterImage(document.getElementById(frameId), ch.emoji, `images/boss-${ch.id}.png`, 'boss-' + ch.id);
+        });
+
+        showScreen('screen-map');
+    }
+
+    function returnToMap() {
+        MathGameAudio.stopBgm();
+        renderMap();
+    }
+
+    // ---------------- 進入大關 / 開始戰鬥 ----------------
+    function enterChapter(chapterId) {
+        const progress = loadProgress();
+        const startSub = (progress[chapterId] && !progress[chapterId].cleared) ? progress[chapterId].subLevel : 0;
+        runCorrect = 0; runTotal = 0;
+        startBattle(chapterId, startSub);
+    }
+
+    function chapterObj(id) { return CHAPTERS.find(c => c.id === id); }
+
+    function startBattle(chapterId, subLevel) {
+        battle = { chapterId, subLevel, heroHP: HERO_HP_MAX, bossHP: BOSS_HP_MAX, combo: 0 };
+        const ch = chapterObj(chapterId);
+        document.getElementById('battleChapterTitle').innerText = `${ch.name}關 · ${ch.bossName}`;
+        document.getElementById('bossNameLabel').innerText = ch.bossName;
+        applyCharacterImage(document.getElementById('heroFrame'), '🧑‍🎓', 'images/hero.png', 'hero');
+        applyCharacterImage(document.getElementById('bossFrame'), ch.emoji, `images/boss-${ch.id}.png`, 'boss-' + ch.id);
+        renderPathDots();
+        updateHUD();
+        MathGameAudio.playBgm(chapterId);
+        showScreen('screen-battle');
+        askQuestion();
+    }
+
+    function renderPathDots() {
+        const ch = chapterObj(battle.chapterId);
+        const dots = document.getElementById('pathDots');
+        dots.innerHTML = '';
+        for (let i = 0; i < ch.subLevels; i++) {
+            const d = document.createElement('div');
+            d.className = 'path-dot' + (i < battle.subLevel ? ' done' : (i === battle.subLevel ? ' current' : ''));
+            dots.appendChild(d);
+        }
+    }
+
+    function updateHUD() {
+        document.getElementById('heroHpBar').style.width = Math.max(0, (battle.heroHP / HERO_HP_MAX) * 100) + '%';
+        document.getElementById('heroHpLabel').innerText = `${Math.max(0, battle.heroHP)} / ${HERO_HP_MAX}`;
+        document.getElementById('bossHpBar').style.width = Math.max(0, (battle.bossHP / BOSS_HP_MAX) * 100) + '%';
+        document.getElementById('bossHpLabel').innerText = `${Math.max(0, battle.bossHP)} / ${BOSS_HP_MAX}`;
+
+        const badge = document.getElementById('comboBadge');
+        if (battle.combo >= 2) {
+            badge.innerText = `🔥 COMBO x${battle.combo}！`;
+            badge.classList.add('show');
+        } else {
+            badge.classList.remove('show');
+        }
+    }
+
+    function askQuestion() {
+        const ch = chapterObj(battle.chapterId);
+        const typeToGen = ch.id === '綜合' ? ALL_TYPES[rand(0, ALL_TYPES.length - 1)] : ch.id;
+        currentQuestion = generators[typeToGen]();
+        answered = false;
+
+        document.getElementById('qText').innerText = currentQuestion.question;
+        document.getElementById('qFeedback').innerText = '';
+        const optsContainer = document.getElementById('optionsContainer');
+        optsContainer.innerHTML = '';
+        currentQuestion.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'battle-option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => answerQuestion(opt, btn);
+            optsContainer.appendChild(btn);
+        });
+    }
+
+    function answerQuestion(opt, btn) {
+        if (answered) return;
+        answered = true;
+        runTotal++;
+
+        const isCorrect = (opt === currentQuestion.answer);
+        const allBtns = document.querySelectorAll('.battle-option-btn');
+        allBtns.forEach(b => {
+            b.onclick = null;
+            b.style.cursor = 'default';
+            if (b.innerText === currentQuestion.answer) b.style.borderColor = '#22c55e';
+            else if (b === btn) b.style.borderColor = '#ef4444';
+        });
+
+        const feedback = document.getElementById('qFeedback');
+        const heroFrame = document.getElementById('heroFrame');
+        const bossFrame = document.getElementById('bossFrame');
+
+        if (isCorrect) {
+            runCorrect++;
+            battle.combo++;
+            const dmg = battle.combo >= 2 ? 2 : 1;
+            battle.bossHP -= dmg;
+            MathGameAudio.playSfx('correct');
+            feedback.style.color = '#4ade80';
+            feedback.innerText = `⚔️ 攻擊命中！魔王減少 ${dmg} 滴血！`;
+            heroFrame.classList.add('atk-lunge-hero');
+            bossFrame.classList.add('flash-hurt');
+            const r = bossFrame.getBoundingClientRect();
+            MathGameFX.burst(r.left + r.width / 2, r.top + r.height / 2);
+            MathGameFX.popText(r.left + r.width / 2, r.top, `-${dmg}`, null, '#ff4d4d');
+            setTimeout(() => { heroFrame.classList.remove('atk-lunge-hero'); bossFrame.classList.remove('flash-hurt'); }, 350);
+        } else {
+            battle.combo = 0;
+            battle.heroHP -= 1;
+            MathGameAudio.playSfx('wrong');
+            feedback.style.color = '#f87171';
+            feedback.innerText = `💥 被反擊了！正確答案是：${currentQuestion.answer}`;
+            bossFrame.classList.add('atk-lunge-boss');
+            heroFrame.classList.add('flash-hurt', 'shake-hit');
+            MathGameFX.popText(heroFrame.getBoundingClientRect().left + 30, heroFrame.getBoundingClientRect().top, '-1', null, '#ff4d4d');
+            setTimeout(() => { bossFrame.classList.remove('atk-lunge-boss'); heroFrame.classList.remove('flash-hurt', 'shake-hit'); }, 350);
+        }
+
+        updateHUD();
+
+        setTimeout(() => {
+            if (battle.heroHP <= 0) { showDefeat(); return; }
+            if (battle.bossHP <= 0) { handleBossDefeated(); return; }
+            askQuestion();
+        }, 1100);
+    }
+
+    function showDefeat() {
+        document.getElementById('modalDefeat').classList.remove('hidden');
+    }
+    function retryBattle() {
+        document.getElementById('modalDefeat').classList.add('hidden');
+        startBattle(battle.chapterId, battle.subLevel);
+    }
+
+    function handleBossDefeated() {
+        const ch = chapterObj(battle.chapterId);
+        const isFinal = battle.subLevel >= ch.subLevels - 1;
+        const progress = loadProgress();
+
+        if (isFinal) {
+            progress[ch.id] = { cleared: true, subLevel: ch.subLevels };
+            saveProgress(progress);
+            chapterComplete(ch);
+        } else {
+            progress[ch.id] = { cleared: false, subLevel: battle.subLevel + 1 };
+            saveProgress(progress);
+            showFleeTransition(ch);
+        }
+    }
+
+    function showFleeTransition(ch) {
+        document.getElementById('fleeEmoji').innerText = ch.emoji;
+        showScreen('screen-flee');
+        MathGameAudio.playSfx('win');
+        setTimeout(() => {
+            battle.subLevel++;
+            battle.heroHP = HERO_HP_MAX;
+            battle.bossHP = BOSS_HP_MAX;
+            battle.combo = 0;
+            renderPathDots();
+            updateHUD();
+            showScreen('screen-battle');
+            askQuestion();
+        }, 1600);
+    }
+
+    function chapterComplete(ch) {
+        MathGameAudio.stopBgm();
+        MathGameAudio.playSfx('win');
+
+        document.getElementById('victoryBossName').innerText = ch.bossName;
+        document.getElementById('victoryDisplayName').innerText = studentName;
+        document.getElementById('victoryCorrect').innerText = runCorrect;
+        document.getElementById('victoryTotal').innerText = runTotal;
+        showScreen('screen-victory');
+        MathGameFX.confetti(document.getElementById('app'));
+
+        const finalScore = runTotal > 0 ? Math.round((runCorrect / runTotal) * 100) : 0;
+        window.finalData = {
+            name: studentName,
+            score: finalScore,
+            correctCount: runCorrect,
+            totalCount: runTotal,
+            errorDetails: ch.name
+        };
+
+        // 💡 回傳這次討伐成績給老師的電腦、依答對率發代幣
+        document.getElementById('gbitLine').textContent = '代幣結算中…';
+        MathGameCommon.finishAttempt({
+            game: '分數運算大冒險',
+            mode: ch.id,
+            topic: `${ch.name}關-${ch.bossName}`,
+            correct: runCorrect,
+            total: runTotal
+        }).then(result => {
+            const line = document.getElementById('gbitLine');
+            if (line) line.textContent = `🪙 這次獲得 ${result.gbitAwarded} 枚代幣（目前共有 ${result.newBalance} 枚）`;
+        });
+    }
+
+    function confirmLeaveBattle() {
+        if (confirm('確定要離開戰鬥、回到地圖嗎？本小關的進度會重新開始。')) {
+            MathGameAudio.stopBgm();
+            renderMap();
+        }
+    }
+
+    function submitData() {
+        const btn = document.getElementById('btnSubmit');
+        const status = document.getElementById('uploadStatus');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spin-icon">⏳</span> 上傳中...';
+
+        fetch(GAS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(window.finalData)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                status.innerHTML = '<span class="text-green-600 font-bold">✅ 上傳成功！老師已經收到你的成績。</span>';
+                btn.classList.add('hidden');
+            } else {
+                throw new Error("伺服器錯誤");
+            }
+        })
+        .catch(err => {
+            status.innerHTML = '<span class="text-red-500">上傳失敗，請稍後再試。</span>';
+            btn.disabled = false;
+            btn.innerHTML = '📤 重新嘗試上傳';
+        });
+    }
+
+    // 開場
+    renderMap();
+</script>
+</body>
+</html>
