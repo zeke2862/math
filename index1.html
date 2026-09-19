@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>代數異世界：符號之城的覺醒</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-deep:#150E2B;
+  --bg-panel:#221639;
+  --bg-panel-2:#2C1D4D;
+  --accent-gold:#E8B94D;
+  --accent-gold-dim:#a5883c;
+  --accent-teal:#49C6B0;
+  --accent-rose:#E8637A;
+  --text-cream:#F3ECDD;
+  --text-muted:#B7A6D9;
+  --border-glow:#7C5CC4;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(circle at 20% 10%, #2a1b4d 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, #1d2f52 0%, transparent 50%),
+    var(--bg-deep);
+  color:var(--text-cream);
+  font-family:'Noto Sans TC', sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+h1,h2,h3,.rune-font{font-family:'Noto Serif TC', serif;}
+
+/* ---------- layout shells ---------- */
+#app{max-width:920px;margin:0 auto;padding:20px 16px 60px;}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-radius:16px;
+  background:linear-gradient(135deg, var(--bg-panel), var(--bg-panel-2));
+  border:1px solid rgba(232,185,77,0.25);
+  box-shadow:0 8px 24px rgba(0,0,0,0.35);
+  margin-bottom:22px;
+}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand-icon{font-size:26px;}
+.brand-title{font-weight:900;font-size:18px;letter-spacing:1px;color:var(--accent-gold);}
+.brand-sub{font-size:11px;color:var(--text-muted);margin-top:1px;}
+.hud{display:flex;align-items:center;gap:16px;font-size:14px;}
+.hud-item{display:flex;align-items:center;gap:6px;}
+.hud-star{color:var(--accent-gold);font-weight:700;}
+
+/* ---------- map screen ---------- */
+.map-intro{
+  text-align:center;margin:10px 0 30px;
+}
+.map-intro h1{font-size:26px;margin:0 0 8px;color:var(--text-cream);}
+.map-intro p{color:var(--text-muted);font-size:14px;line-height:1.7;max-width:600px;margin:0 auto;}
+
+.path{
+  position:relative;padding:10px 0 10px;
+}
+.node-row{
+  display:flex;align-items:center;gap:14px;margin-bottom:6px;
+}
+.node{
+  flex:1;
+  display:flex;align-items:center;gap:14px;
+  background:linear-gradient(135deg, var(--bg-panel), var(--bg-panel-2));
+  border:1px solid rgba(124,92,196,0.4);
+  border-radius:16px;
+  padding:16px 18px;
+  cursor:pointer;
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  position:relative;
+}
+.node:hover:not(.locked){transform:translateY(-3px);box-shadow:0 10px 24px rgba(124,92,196,0.35);border-color:var(--accent-gold);}
+.node.locked{opacity:.4;cursor:not-allowed;filter:grayscale(0.6);}
+.node.boss{border-color:var(--accent-rose);background:linear-gradient(135deg,#3a1530,#221639);}
+.node-icon{
+  width:46px;height:46px;border-radius:12px;
+  background:rgba(232,185,77,0.12);
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+  flex-shrink:0;
+}
+.node-body{flex:1;}
+.node-title{font-weight:700;font-size:15px;margin-bottom:2px;}
+.node-desc{font-size:12px;color:var(--text-muted);}
+.node-stars{display:flex;gap:2px;font-size:14px;color:var(--accent-gold);min-width:54px;justify-content:flex-end;}
+.node-stars .dim{color:#4a3f6b;}
+.chapter-label{
+  font-size:12px;color:var(--accent-teal);font-weight:700;letter-spacing:2px;
+  margin:22px 0 8px 4px;
+}
+
+/* ---------- quiz screen ---------- */
+.quiz-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;flex-wrap:wrap;gap:10px;
+}
+.quiz-title{font-weight:700;font-size:16px;color:var(--accent-gold);}
+.progress-pill{
+  font-size:12px;background:rgba(255,255,255,0.06);
+  padding:4px 12px;border-radius:20px;color:var(--text-muted);
+}
+.mana-wrap{display:flex;align-items:center;gap:8px;flex:1;min-width:160px;max-width:240px;}
+.mana-label{font-size:11px;color:var(--text-muted);white-space:nowrap;}
+.mana-bar{flex:1;height:10px;border-radius:6px;background:#2b1e4a;overflow:hidden;border:1px solid rgba(255,255,255,0.08);}
+.mana-fill{height:100%;background:linear-gradient(90deg,var(--accent-teal),#7fe3d0);transition:width .3s ease;}
+.streak{font-size:12px;color:var(--accent-rose);font-weight:700;visibility:hidden;}
+.streak.show{visibility:visible;}
+
+.quiz-card{
+  background:linear-gradient(160deg, var(--bg-panel), var(--bg-panel-2));
+  border:1px solid rgba(124,92,196,0.4);
+  border-radius:20px;
+  padding:28px 22px;
+  min-height:280px;
+  position:relative;
+  overflow:hidden;
+}
+.quiz-card::before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 90% -10%, rgba(232,185,77,0.12), transparent 55%);
+  pointer-events:none;
+}
+.q-scenario{font-size:12px;color:var(--text-muted);margin-bottom:6px;letter-spacing:.5px;}
+.q-prompt{
+  font-family:'Noto Serif TC', serif;
+  font-size:clamp(22px,5vw,32px);
+  font-weight:700;
+  color:var(--text-cream);
+  margin:6px 0 26px;
+  line-height:1.5;
+  text-align:center;
+}
+.q-prompt .op-hl{color:var(--accent-gold);}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;margin:0 3px;text-align:center;line-height:1.05;font-size:0.75em;}
+.frac .num{border-bottom:2px solid currentColor;padding:0 4px 1px;}
+.frac .den{padding:1px 4px 0;}
+
+.options{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;
+}
+.options.opt3{grid-template-columns:1fr 1fr 1fr;}
+.options.opt2{grid-template-columns:1fr 1fr;}
+@media (max-width:520px){.options,.options.opt3{grid-template-columns:1fr;}}
+
+.opt-btn{
+  background:rgba(255,255,255,0.04);
+  border:1.5px solid rgba(183,166,217,0.3);
+  color:var(--text-cream);
+  border-radius:14px;
+  padding:14px 12px;
+  font-size:17px;font-family:'Noto Serif TC',serif;font-weight:600;
+  cursor:pointer;transition:all .15s ease;
+  text-align:center;
+}
+.opt-btn:hover:not(:disabled){border-color:var(--accent-gold);background:rgba(232,185,77,0.1);transform:translateY(-2px);}
+.opt-btn:disabled{cursor:default;}
+.opt-btn.correct{background:rgba(73,198,176,0.22);border-color:var(--accent-teal);animation:pulseGood .5s ease;}
+.opt-btn.wrong{background:rgba(232,99,122,0.22);border-color:var(--accent-rose);animation:shake .4s ease;}
+@keyframes pulseGood{0%{transform:scale(1);}40%{transform:scale(1.06);}100%{transform:scale(1);}}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+
+.feedback{
+  margin-top:18px;font-size:13px;color:var(--text-muted);
+  min-height:20px;text-align:center;
+}
+.feedback.good{color:var(--accent-teal);}
+.feedback.bad{color:var(--accent-rose);}
+
+.controls-row{display:flex;justify-content:space-between;align-items:center;margin-top:16px;}
+.link-btn{
+  background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;text-decoration:underline;
+}
+.next-btn{
+  background:linear-gradient(135deg,var(--accent-gold),#c99938);
+  color:#241639;border:none;border-radius:12px;padding:10px 22px;
+  font-weight:700;font-size:14px;cursor:pointer;visibility:hidden;
+}
+.next-btn.show{visibility:visible;}
+
+/* ---------- summary screen ---------- */
+.summary{
+  text-align:center;background:linear-gradient(160deg, var(--bg-panel), var(--bg-panel-2));
+  border:1px solid rgba(232,185,77,0.35);border-radius:20px;padding:40px 24px;
+}
+.summary h2{font-size:24px;margin:0 0 6px;color:var(--accent-gold);}
+.summary .stars-big{font-size:44px;margin:14px 0;letter-spacing:6px;}
+.summary .stat-row{display:flex;justify-content:center;gap:28px;margin:18px 0 26px;font-size:14px;color:var(--text-muted);}
+.summary .stat-num{font-size:22px;color:var(--text-cream);font-weight:700;display:block;}
+.summary-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn-primary{background:linear-gradient(135deg,var(--accent-gold),#c99938);color:#241639;border:none;border-radius:12px;padding:12px 26px;font-weight:700;cursor:pointer;font-size:14px;}
+.btn-secondary{background:rgba(255,255,255,0.06);color:var(--text-cream);border:1px solid rgba(183,166,217,0.35);border-radius:12px;padding:12px 26px;cursor:pointer;font-size:14px;}
+
+.hidden{display:none !important;}
+footer.hint{text-align:center;color:var(--text-muted);font-size:11px;margin-top:26px;line-height:1.7;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">🔮</div>
+      <div>
+        <div class="brand-title">代數異世界：符號之城的覺醒</div>
+        <div class="brand-sub">國一數學・一元一次方程式篇</div>
+      </div>
+    </div>
+    <div class="hud">
+      <div class="hud-item"><span class="hud-star">★</span><span id="totalStars">0</span> / 27</div>
+    </div>
+  </div>
+
+  <!-- ===== MAP SCREEN ===== -->
+  <div id="mapScreen">
+    <div class="map-intro">
+      <h1>歡迎回來，符號使者</h1>
+      <p>符號之城因混亂風暴而崩解，請依序完成試煉、修復咒語。每一關題目都是即時生成的全新咒語，多挑戰幾次就能練到滾瓜爛熟！</p>
+    </div>
+    <div class="path" id="pathList"></div>
+  </div>
+
+  <!-- ===== QUIZ SCREEN ===== -->
+  <div id="quizScreen" class="hidden">
+    <div class="quiz-header">
+      <div>
+        <div class="quiz-title" id="quizTitle"></div>
+        <div class="progress-pill" id="quizProgress"></div>
+      </div>
+      <div class="mana-wrap">
+        <span class="mana-label">法力</span>
+        <div class="mana-bar"><div class="mana-fill" id="manaFill" style="width:100%"></div></div>
+      </div>
+      <div class="streak" id="streakLabel">🔥 連擊 x0</div>
+    </div>
+
+    <div class="quiz-card">
+      <div class="q-scenario" id="qScenario"></div>
+      <div class="q-prompt" id="qPrompt"></div>
+      <div class="options" id="qOptions"></div>
+      <div class="feedback" id="qFeedback"></div>
+    </div>
+
+    <div class="controls-row">
+      <button class="link-btn" id="backToMapBtn">← 返回符號地圖</button>
+      <button class="next-btn" id="nextBtn">下一題 →</button>
+    </div>
+  </div>
+
+  <!-- ===== SUMMARY SCREEN ===== -->
+  <div id="summaryScreen" class="hidden">
+    <div class="summary">
+      <div id="summaryEmoji" style="font-size:40px;">🏆</div>
+      <h2 id="summaryTitle">關卡完成！</h2>
+      <div class="stars-big" id="summaryStars">★★★</div>
+      <div class="stat-row">
+        <div><span class="stat-num" id="statCorrect">10/10</span>答對題數</div>
+        <div><span class="stat-num" id="statAcc">100%</span>正確率</div>
+      </div>
+      <div class="summary-btns">
+        <button class="btn-secondary" id="retryBtn">🔁 再挑戰一次</button>
+        <button class="btn-primary" id="mapBtn">回符號地圖</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="hint">每一次挑戰的題目都會重新生成，多練幾輪，你就會成為真正的代數大師 ✨</footer>
+</div>
+
+<script>
+/* ============================================================
+   資料層：關卡設定
+============================================================ */
+const VARS = ['x','y','a','b','m','k','n','c'];
+const rndInt = (min,max)=>Math.floor(Math.random()*(max-min+1))+min;
+const rndPick = (arr)=>arr[Math.floor(Math.random()*arr.length)];
+const rndSign = ()=> Math.random()<0.5 ? 1 : -1;
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+function fmtSignedTerm(coef, isFirst){ // returns {op:'+'|'-', abs:string}
+  const op = coef<0 ? '-' : '+';
+  const abs = Math.abs(coef);
+  return {op, abs};
+}
+function frac(num,den){ return `<span class="frac"><span class="num">${num}</span><span class="den">${den}</span></span>`; }
+function sup(base,exp){ return `${base}<sup>${exp}</sup>`; }
+function linearHTML(coef, cst){ // coef*x + cst -> nice html, coef may be 1/-1/0
+  let s='';
+  if(coef===0){ s = `${cst}`; return s; }
+  if(coef===1) s='x'; else if(coef===-1) s='-x'; else s=`${coef}x`;
+  if(cst!==0){
+    s += cst>0 ? ` + ${cst}` : ` - ${Math.abs(cst)}`;
+  }
+  return s;
+}
+function buildOptions(correctHTML, distractorHTMLs){
+  const opts = shuffle([correctHTML, ...distractorHTMLs]);
+  return {opts, correctIndex: opts.indexOf(correctHTML)};
+}
+// 回傳一個保證跟 v 不同的數字：v 不是 0 就直接取相反數；
+// v 剛好是 0 的話（相反數還是 0，無法造成差異），改用備用值 altBy。
+function altVal(v, altBy){ return v===0 ? altBy : -v; }
+// 產生「數字＋單位」的選擇題選項，保證 4 個選項的數值彼此不重複、
+// 也保證都跟正確答案不同（用來避免多選項文字重複的 bug）。
+function numericOptions(correct, wrongCandidates, suffix=''){
+  const seen = new Set([correct]);
+  const uniqueWrongs = [];
+  for(const w of wrongCandidates){
+    if(!seen.has(w)){ seen.add(w); uniqueWrongs.push(w); }
+    if(uniqueWrongs.length>=3) break;
+  }
+  let guard=0;
+  while(uniqueWrongs.length<3 && guard<30){
+    guard++;
+    const cand = correct + rndPick([-4,-3,-2,-1,1,2,3,4]);
+    if(!seen.has(cand)){ seen.add(cand); uniqueWrongs.push(cand); }
+  }
+  const optsNum = shuffle([correct, ...uniqueWrongs]);
+  return { opts: optsNum.map(n=>`${n}${suffix}`), correctIndex: optsNum.indexOf(correct) };
+}
+
+/* ---------- Type A: 簡記修復（整數／分數／小數皆有） ---------- */
+const DECIMAL_DIV_MAP = {0.5:2, 0.25:4, 0.2:5, 0.1:10};
+function genA(){
+  const v = rndPick(VARS);
+  const kind = rndPick(['mulInt','mulDecimal','mulFrac','oneVar','power','negOne','div','divDecimal']);
+  let promptHTML, correctHTML, distractors;
+  if(kind==='mulInt'){
+    const n = rndInt(2,9);
+    promptHTML = `${v} &times; ${n}`;
+    correctHTML = `${n}${v}`;
+    distractors = [`${v}${n}`, `${n}+${v}`, `${v}<sup>${n}</sup>`];
+  } else if(kind==='mulDecimal'){
+    const n = rndPick([0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]);
+    promptHTML = `${v} &times; ${n}`;
+    correctHTML = `${n}${v}`;
+    distractors = [`${v}${n}`, `${Math.round(n*10)}${v}`, `${n}+${v}`];
+  } else if(kind==='mulFrac'){
+    const den = rndPick([2,3,4,5]);
+    let num = rndInt(1,den-1); if(num<1) num=1;
+    promptHTML = `${v} &times; ${frac(num,den)}`;
+    correctHTML = `${frac(num,den)}${v}`;
+    distractors = [`${frac(den,num)}${v}`, `${frac(num,den)}+${v}`, `${num}${v}`];
+  } else if(kind==='oneVar'){
+    promptHTML = `1 &times; ${v}`;
+    correctHTML = `${v}`;
+    distractors = [`1${v}`, `0${v}`, `${v}<sup>1</sup>${v}`];
+  } else if(kind==='power'){
+    const k = rndInt(2,5);
+    promptHTML = Array(k).fill(v).join(' &times; ');
+    correctHTML = sup(v,k);
+    distractors = [`${k}${v}`, sup(v,k+1), `${k}${v}<sup>${k}</sup>`];
+  } else if(kind==='negOne'){
+    const order = rndSign();
+    promptHTML = order>0 ? `${v} &times; (-1)` : `(-1) &times; ${v}`;
+    correctHTML = `-${v}`;
+    distractors = [`${v}`, `1${v}`, `-1${v}`];
+  } else if(kind==='div'){
+    const n = rndInt(2,9);
+    const isNeg = Math.random()<0.5;
+    promptHTML = isNeg ? `${v} &divide; (-${n})` : `${v} &divide; ${n}`;
+    correctHTML = isNeg ? `-${frac(v,n)}` : frac(v,n);
+    distractors = [ isNeg ? frac(v,n) : `-${frac(v,n)}`, frac(n,v), `${n}${v}` ];
+  } else { // divDecimal：除以小數等於乘以它的倒數
+    const keys = Object.keys(DECIMAL_DIV_MAP).map(Number);
+    const dnum = rndPick(keys);
+    const mult = DECIMAL_DIV_MAP[dnum];
+    promptHTML = `${v} &divide; ${dnum}`;
+    correctHTML = `${mult}${v}`;
+    distractors = [`${frac(1,mult)}${v}`, `${v}${dnum}`, `${dnum}${v}`];
+  }
+  const {opts, correctIndex} = buildOptions(correctHTML, distractors);
+  return {
+    scenario:'咒語碎片捕捉・簡記修復',
+    promptHTML: `修復咒語：<br><span class="op-hl">${promptHTML}</span> = ？`,
+    opts, correctIndex,
+    explain:`正確簡記為 ${correctHTML.replace(/<[^>]+>/g,'')}`,
+    optClass:'opt2'
+  };
+}
+
+/* ---------- Type B: 求值 ---------- */
+function genB(){
+  const useFrac = Math.random()<0.3;
+  let a,x,b, xLabel, val;
+  b = rndInt(-9,9);
+  if(useFrac){
+    const den = rndPick([2,4]);
+    const numChoices = den===2 ? [1,-1,3,-3] : [1,-1,3,-3];
+    const num = rndPick(numChoices);
+    a = rndPick([den, -den, 2*den, -2*den]);
+    x = num/den;
+    xLabel = (num<0? '-':'') + frac(Math.abs(num),den);
+    val = a*x + b;
+  } else {
+    a = rndInt(-9,9); if(a===0) a=3;
+    x = rndInt(-6,6);
+    xLabel = `${x}`;
+    val = a*x + b;
+  }
+  const coefTerm = a===1?'x':(a===-1?'-x':`${a}x`);
+  const exprHTML = `${coefTerm} ${b>=0?'+':'-'} ${Math.abs(b)}`;
+  const {opts, correctIndex} = numericOptions(
+    val,
+    [a*x - b, b - a*x, val+2, val-2, val+4].filter(v=>v!==val),
+    ''
+  );
+  return {
+    scenario:'能量注入・代入求值',
+    promptHTML:`若 ${exprHTML}，當 x = ${xLabel} 時，咒語能量為？`,
+    opts, correctIndex,
+    explain:`代入 x = ${xLabel.replace(/<[^>]+>/g,'')}：結果為 ${val}`,
+    optClass:'opt2'
+  };
+}
+
+/* ---------- Type C: 括號封印解除 ---------- */
+function genC(){
+  const sign1 = rndSign();
+  const a = rndInt(2,9);
+  const b = rndInt(2,9);
+  const innerSign = rndSign();
+  const innerHTML = `${a}x ${innerSign>0?'+':'-'} ${b}`;
+  const promptHTML = `${sign1>0?'+':'-'}(${innerHTML})`;
+  const coefX = sign1 * a;             // a>=2，恆不為 0
+  const cst = sign1 * innerSign * b;   // b>=2，恆不為 0
+  const correctHTML = linearHTML(coefX, cst);
+  // 三種錯誤都用「刻意翻轉正確答案某一項的正負號」來產生，
+  // 因為 coefX、cst 恆不為 0，三個選項保證彼此不同、也保證跟正確答案不同
+  const distractors = [
+    linearHTML(-coefX, cst),   // x 項符號忘記變
+    linearHTML(coefX, -cst),   // 常數項符號忘記變
+    linearHTML(-coefX, -cst)   // 兩項都用反了
+  ];
+  const {opts, correctIndex} = buildOptions(correctHTML, distractors);
+  return {
+    scenario:'分配律天秤・括號封印解除',
+    promptHTML:`解除封印：<br><span class="op-hl">${promptHTML}</span> = ？`,
+    opts, correctIndex,
+    explain:`括號前是「${sign1>0?'正':'負'}」號，${sign1>0?'內部保持不變':'內部每一項都要變號'}`,
+    optClass:'opt2'
+  };
+}
+
+/* ---------- Type D: 複合化簡 ---------- */
+function genD(){
+  const p = rndInt(2,6), q = rndInt(2,6);
+  const a = rndInt(2,9), c = rndInt(2,9);
+  const b = rndInt(2,9), d = rndInt(2,9);
+  const s1 = rndSign(), s2 = rndSign();
+  const op2 = rndSign(); // + or - between the two bracket terms
+  const promptHTML = `${p}(${a}x ${s1>0?'+':'-'} ${b}) ${op2>0?'+':'-'} ${q}(${c}x ${s2>0?'+':'-'} ${d})`;
+  const coefX = p*a + op2*q*c;
+  const cst = p*s1*b + op2*q*s2*d;
+  const correctHTML = linearHTML(coefX, cst);
+  // coefX、cst 有可能剛好等於 0（例如兩項恰好抵銷），
+  // altVal 保證回傳一個「一定跟原本不一樣」的數字，讓三個錯誤選項
+  // 保證彼此不同、也保證跟正確答案不同
+  const altCoef = altVal(coefX, coefX + q);
+  const altCst  = altVal(cst, cst + d);
+  const distractors = [
+    linearHTML(altCoef, cst),      // x 項係數算錯（忘記分配符號）
+    linearHTML(coefX, altCst),     // 常數項算錯（忘記分配符號）
+    linearHTML(altCoef, altCst)    // 兩項都算錯
+  ];
+  const {opts, correctIndex} = buildOptions(correctHTML, distractors);
+  return {
+    scenario:'分配律天秤・複合化簡試煉',
+    promptHTML:`化簡：<br><span class="op-hl">${promptHTML}</span>`,
+    opts, correctIndex,
+    explain:`展開後同類項合併，結果為 ${correctHTML.replace(/<[^>]+>/g,'')}`,
+    optClass:'opt2'
+  };
+}
+
+/* ---------- Type E: 身分鑑定（拆解＋組合兩種模式） ---------- */
+function genE(){
+  const coef = (()=>{let k=rndInt(-9,9); if(k===0)k=rndPick([1,-1,2,-2]); return k;})();
+  let cst = rndInt(-20,20);
+  while(cst===0 || cst===coef){ cst = rndInt(-20,20); }   // 確保常數項不為 0、也不等於係數，避免選項重複
+  const exprHTML = linearHTML(coef, cst);
+  const mode = rndPick(['identify','construct']);
+  if(mode==='identify'){
+    const correctHTML = `一次項係數 ${coef}，常數項 ${cst}`;
+    const distractors = [
+      `一次項係數 ${-coef}，常數項 ${cst}`,
+      `一次項係數 ${coef}，常數項 ${-cst}`,
+      `一次項係數 ${cst}，常數項 ${coef}`
+    ];
+    const {opts, correctIndex} = buildOptions(correctHTML, distractors);
+    return {
+      scenario:'分配律天秤・身分鑑定（拆解代數式）',
+      promptHTML:`鑑定咒語結構：<br><span class="op-hl">${exprHTML}</span><br>它的一次項係數與常數項各是多少？`,
+      opts, correctIndex,
+      explain:`x 前面的數字是一次項係數，單獨的數字是常數項`,
+      optClass:'opt1col'
+    };
+  } else {
+    // construct：反過來，給係數與常數項，要學生組出完整代數式
+    const correctHTML = exprHTML;
+    const distractors = [
+      linearHTML(-coef, cst),
+      linearHTML(coef, -cst),
+      linearHTML(-coef, -cst)
+    ];
+    const {opts, correctIndex} = buildOptions(correctHTML, distractors);
+    return {
+      scenario:'分配律天秤・身分鑑定（組合代數式）',
+      promptHTML:`一次項係數 = ${coef}，常數項 = ${cst}，這個代數式是？`,
+      opts, correctIndex,
+      explain:`把一次項係數放在 x 前面、常數項接在後面，組成完整代數式 ${correctHTML.replace(/<[^>]+>/g,'')}`,
+      optClass:'opt2'
+    };
+  }
+}
+
+/* ---------- Type F1: 解方程式・基礎（單步驟：加減或乘除，含整數/小數/分數） ---------- */
+function genEq1(){
+  const flavor = rndPick(['int','decimal','frac']);
+  const opKind = rndPick(['addsub','muldiv']);
+  let promptHTML, correct, explain;
+  if(flavor==='int'){
+    if(opKind==='addsub'){
+      const isAdd = Math.random()<0.5;
+      const b = rndInt(1,15);
+      const x = rndInt(-12,12);
+      const c = isAdd ? x+b : x-b;
+      promptHTML = `x ${isAdd?'+':'-'} ${b} = ${c}`;
+      correct = x;
+      explain = `兩邊同時${isAdd?'減去':'加上'} ${b}，解得 x = ${x}`;
+    } else {
+      const isMul = Math.random()<0.5;
+      if(isMul){
+        let a = rndInt(2,9)*rndSign(); if(a===0) a=3;
+        const x = rndInt(-9,9);
+        const c = a*x;
+        promptHTML = `${linearHTML(a,0)} = ${c}`;
+        correct = x;
+        explain = `兩邊同時除以 ${a}，解得 x = ${x}`;
+      } else {
+        let a = rndInt(2,9)*rndSign(); if(a===0) a=3;
+        const c = rndInt(-9,9);
+        const x = a*c;
+        promptHTML = `x &divide; ${a} = ${c}`;
+        correct = x;
+        explain = `兩邊同時乘以 ${a}，解得 x = ${x}`;
+      }
+    }
+  } else if(flavor==='decimal'){
+    const decimalSet = [0.5,1.5,2,2.5,4,5,0.2,0.4];
+    if(opKind==='addsub'){
+      const isAdd = Math.random()<0.5;
+      const b = Math.round(rndInt(1,50))/10;
+      const x = Math.round(rndInt(-50,50))/10;
+      const c = Math.round((isAdd? x+b : x-b)*10)/10;
+      promptHTML = `x ${isAdd?'+':'-'} ${b} = ${c}`;
+      correct = x;
+      explain = `兩邊同時${isAdd?'減去':'加上'} ${b}，解得 x = ${x}`;
+    } else {
+      const isMul = Math.random()<0.5;
+      if(isMul){
+        const a = rndPick(decimalSet);
+        const x = rndInt(-9,9);
+        const c = Math.round(a*x*10)/10;
+        promptHTML = `${a}x = ${c}`;
+        correct = x;
+        explain = `兩邊同時除以 ${a}，解得 x = ${x}`;
+      } else {
+        const a = rndPick(decimalSet);
+        const c = rndInt(-9,9);
+        const x = Math.round(a*c*10)/10;
+        promptHTML = `x &divide; ${a} = ${c}`;
+        correct = x;
+        explain = `兩邊同時乘以 ${a}，解得 x = ${x}`;
+      }
+    }
+  } else { // frac
+    const den = rndPick([2,3,4,5]);
+    let num = rndInt(1,den-1); if(num<1) num=1;
+    if(opKind==='addsub'){
+      const x = rndInt(-6,6);
+      const isAdd = Math.random()<0.5;
+      const cNum = den*x + (isAdd? num : -num);
+      const bHTML = frac(num,den);
+      const cHTML = cNum<0 ? `-${frac(Math.abs(cNum),den)}` : frac(cNum,den);
+      promptHTML = `x ${isAdd?'+':'-'} ${bHTML} = ${cHTML}`;
+      correct = x;
+      explain = `兩邊同時${isAdd?'減去':'加上'} ${num}/${den}，解得 x = ${x}`;
+    } else {
+      const k = rndPick([-4,-3,-2,-1,1,2,3,4]);
+      const x = den*k;
+      const c = num*k;
+      promptHTML = `${frac(num,den)}x = ${c}`;
+      correct = x;
+      explain = `兩邊同時乘以 ${den}/${num}，解得 x = ${x}`;
+    }
+  }
+  const {opts, correctIndex} = numericOptions(
+    correct, [correct+1, correct-1, correct+2, -correct].filter(v=>v!==correct), ''
+  );
+  return {
+    scenario:'分配律天秤・解方程式（基礎：單步驟）',
+    promptHTML: `求出 x 的值：<br><span class="op-hl">${promptHTML}</span>`,
+    opts, correctIndex, explain,
+    optClass:'opt2'
+  };
+}
+
+/* ---------- Type F2: 解方程式・綜合（多步驟，含整數/小數/分數） ---------- */
+function genEq2(){
+  const flavor = rndPick(['int','decimal','frac']);
+  const formKind = flavor==='int' ? rndPick(['twoStep','bothSides']) : 'twoStep';
+  let promptHTML, correct, explain;
+  if(flavor==='int'){
+    if(formKind==='twoStep'){
+      let a = rndInt(2,9)*rndSign(); if(a===0) a=3;
+      const x = rndInt(-9,9);
+      const b = rndInt(-15,15);
+      const c = a*x+b;
+      promptHTML = `${linearHTML(a,b)} = ${c}`;
+      correct = x;
+      explain = `先移項變成 ${linearHTML(a,0).replace(/<[^>]+>/g,'')} = ${c-b}，解得 x = ${x}`;
+    } else {
+      let a = rndInt(2,9)*rndSign(); if(a===0) a=3;
+      let cCoef = rndInt(2,9)*rndSign(); if(cCoef===0 || cCoef===a) cCoef = a + (a>0?1:-1);
+      const x = rndInt(-9,9);
+      const b = rndInt(-12,12);
+      const d = (a-cCoef)*x + b;
+      promptHTML = `${linearHTML(a,b)} = ${linearHTML(cCoef,d)}`;
+      correct = x;
+      explain = `把含 x 的項移到同一邊、常數移到另一邊，解得 x = ${x}`;
+    }
+  } else if(flavor==='decimal'){
+    const decimalSet = [0.5,1.5,2,2.5,4,0.2,0.4];
+    const a = rndPick(decimalSet);
+    const x = rndInt(-9,9);
+    const b = Math.round(rndInt(-40,40))/10;
+    const c = Math.round((a*x+b)*10)/10;
+    promptHTML = `${a}x ${b>=0?'+':'-'} ${Math.abs(b)} = ${c}`;
+    correct = x;
+    explain = `先移項變成 ${a}x = ${Math.round((c-b)*10)/10}，解得 x = ${x}`;
+  } else { // frac
+    const den = rndPick([2,3,4,5]);
+    let num = rndInt(1,den-1); if(num<1) num=1;
+    const k = rndPick([-4,-3,-2,-1,1,2,3,4]);
+    const x = den*k;
+    const b = rndInt(-10,10);
+    const c = num*k + b;
+    promptHTML = `${frac(num,den)}x ${b>=0?'+':'-'} ${Math.abs(b)} = ${c}`;
+    correct = x;
+    explain = `先移項變成 ${frac(num,den)}x = ${c-b}，再乘以 ${den}/${num}，解得 x = ${x}`;
+  }
+  const {opts, correctIndex} = numericOptions(
+    correct, [correct+1, correct-1, correct+3, -correct].filter(v=>v!==correct), ''
+  );
+  return {
+    scenario:'分配律天秤・解方程式（綜合：多步驟）',
+    promptHTML: `求出 x 的值：<br><span class="op-hl">${promptHTML}</span>`,
+    opts, correctIndex, explain,
+    optClass:'opt2'
+  };
+}
+
+/* ---------- Type G(舊F): 符號商人的生存戰（多種情境列式應用題） ---------- */
+function genF_discount(){
+  const oldFold = rndPick([0.9,0.85,0.8,0.75,0.7]);
+  const inflatePct = rndPick([5,8,10,12,15,18,20,25,30]);
+  const newFold = rndPick([0.9,0.85,0.8,0.75,0.7,0.6]);
+  const newMult = Math.round((1+inflatePct/100)*newFold*1000)/1000;
+  const diff = Math.round((newMult-oldFold)*1000)/1000;
+  let correctHTML;
+  if(diff>0.005) correctHTML='陷阱！實際變貴了';
+  else if(diff<-0.005) correctHTML='真划算！變便宜了';
+  else correctHTML='沒有差別，一樣的價格';
+  const allOpts = ['陷阱！實際變貴了','真划算！變便宜了','沒有差別，一樣的價格'];
+  const oldFoldText = Math.round(oldFold*100)/10;
+  const newFoldText = Math.round(newFold*100)/10;
+  return {
+    scenario:'符號商人的生存戰・價格偽裝',
+    promptHTML:`商人公告：「原本會員優惠 ${oldFoldText}折，現在調漲 ${inflatePct}%，改為 ${newFoldText}折優惠。」<br>設原價為 x 元，這是真划算還是話術陷阱？`,
+    opts: allOpts, correctIndex: allOpts.indexOf(correctHTML),
+    explain:`新價格＝(1+${inflatePct}%)×${newFoldText}折 = ${newMult}x，原本是 ${oldFoldText}折＝${oldFold}x，比較兩者大小即可判斷`,
+    optClass:'opt3'
+  };
+}
+function genF_age(){
+  const names = [['小安','小新'],['阿凱','阿翔'],['姐姐','妹妹'],['哥哥','弟弟'],['小婷','小雨']];
+  const [nameOld, nameYoung] = rndPick(names);
+  const youngerAge = rndInt(6,16);
+  const diff = rndInt(2,12);
+  const olderAge = youngerAge + diff;
+  const total = youngerAge + olderAge;
+  const promptHTML = `${nameOld}比${nameYoung}大 ${diff} 歲，兩人年齡合計 ${total} 歲。<br>設${nameYoung}的年齡為 x 歲，則 ${nameOld}是 (x + ${diff}) 歲，可列式：<br>x + (x + ${diff}) = ${total}<br>請問 ${nameYoung} 今年幾歲？`;
+  const {opts, correctIndex} = numericOptions(
+    youngerAge,
+    [olderAge, youngerAge+2, youngerAge-2, diff].filter(v=>v>0 && v!==youngerAge),
+    ' 歲'
+  );
+  return {
+    scenario:'符號商人的生存戰・年齡謎題',
+    promptHTML, opts, correctIndex,
+    explain:`化簡得 2x + ${diff} = ${total}，解得 x = ${youngerAge}`,
+    optClass:'opt2'
+  };
+}
+function genF_basketball(){
+  const players = ['小杰','阿翔','小宇','阿凱'];
+  const player = rndPick(players);
+  const twoPt = rndInt(2,12);
+  const totalShots = twoPt + rndInt(1,10);
+  const threePt = totalShots - twoPt;
+  const score = 2*twoPt + 3*threePt;
+  const promptHTML = `${player}在比賽中投進兩分球和三分球，共投進 ${totalShots} 球，總得分 ${score} 分。<br>設兩分球進了 x 球，三分球就進了 (${totalShots} − x) 球，可列式：<br>2x + 3(${totalShots} − x) = ${score}<br>請問${player}投進了幾顆兩分球？`;
+  const {opts, correctIndex} = numericOptions(
+    twoPt,
+    [threePt, twoPt+2, twoPt-2, totalShots-twoPt+1].filter(v=>v>=0 && v<=totalShots && v!==twoPt),
+    ' 球'
+  );
+  return {
+    scenario:'符號商人的生存戰・籃球得分推理',
+    promptHTML, opts, correctIndex,
+    explain:`化簡得 −x + ${3*totalShots} = ${score}，解得 x = ${twoPt}`,
+    optClass:'opt2'
+  };
+}
+function genF_mix(){
+  const pairs = [['雞蛋糕','地瓜球'],['包子','蘿蔔糕'],['珍珠奶茶','紅茶'],['刈包','蔥油餅']];
+  const [itemA, itemB] = rndPick(pairs);
+  const priceA = rndInt(15,40);
+  let priceB = rndInt(10,35);
+  while(priceB === priceA){ priceB = rndInt(10,35); }
+  const xA = rndInt(1,10);
+  const totalCount = xA + rndInt(1,10);
+  const xB = totalCount - xA;
+  const totalPrice = priceA*xA + priceB*xB;
+  const promptHTML = `小美買了${itemA}和${itemB}共 ${totalCount} 份，${itemA}一份 ${priceA} 元，${itemB}一份 ${priceB} 元，總共花了 ${totalPrice} 元。<br>設買了 x 份${itemA}，則買了 (${totalCount} − x) 份${itemB}，可列式：<br>${priceA}x + ${priceB}(${totalCount} − x) = ${totalPrice}<br>請問小美買了幾份${itemA}？`;
+  const {opts, correctIndex} = numericOptions(
+    xA,
+    [xB, xA+2, xA-2, totalCount-xA+1].filter(v=>v>=0 && v<=totalCount && v!==xA),
+    ' 份'
+  );
+  return {
+    scenario:'符號商人的生存戰・混合採購推理',
+    promptHTML, opts, correctIndex,
+    explain:`化簡後可解得 x = ${xA}`,
+    optClass:'opt2'
+  };
+}
+function genF(){
+  const pool = [genF_discount, genF_age, genF_basketball, genF_mix];
+  return rndPick(pool)();
+}
+
+/* ---------- Type G: 合理性之鏡 ---------- */
+const SCENARIOS_G = [
+  {name:'購買披薩的數量', unit:'個', rule:'posInt'},
+  {name:'使者的生日日期', unit:'日', rule:'date'},
+  {name:'分裝糖果的人數', unit:'人', rule:'posInt'},
+  {name:'走路花費的秒數', unit:'秒', rule:'nonNeg'},
+  {name:'班上的座號', unit:'號', rule:'posInt'},
+  {name:'買飲料的杯數', unit:'杯', rule:'posInt'},
+  {name:'使者的年齡', unit:'歲', rule:'posInt'},
+  {name:'折扣後的價錢', unit:'元', rule:'nonNeg'},
+  {name:'探索隊伍人數', unit:'人', rule:'posIntMin1'},
+  {name:'魔法繩的長度', unit:'公分', rule:'posNum'}
+];
+function isReasonable(rule, val){
+  switch(rule){
+    case 'posInt': return Number.isInteger(val) && val>0;
+    case 'posIntMin1': return Number.isInteger(val) && val>=1;
+    case 'date': return Number.isInteger(val) && val>=1 && val<=31;
+    case 'nonNeg': return val>=0;
+    case 'posNum': return val>0;
+  }
+}
+function genG(){
+  const sc = rndPick(SCENARIOS_G);
+  const makeValid = Math.random()<0.5;
+  let val;
+  if(makeValid){
+    if(sc.rule==='date') val=rndInt(1,28);
+    else if(sc.rule==='posNum') val = rndPick([2.5,4,6.5,10,12.2,3]);
+    else if(sc.rule==='nonNeg') val = rndPick([0,3.5,7,12,20]);
+    else val = rndInt(1,20);
+  } else {
+    const badType = rndPick(['neg','decimal','zero']);
+    if(badType==='neg') val = -rndInt(1,10);
+    else if(badType==='decimal' && (sc.rule==='posInt'||sc.rule==='posIntMin1'||sc.rule==='date')) val = rndPick([2.4,3.7,5.5,8.2]);
+    else if(badType==='zero' && sc.rule==='posIntMin1') val = 0;
+    else val = -rndInt(1,10);
+  }
+  const reasonable = isReasonable(sc.rule, val);
+  const valText = Number.isInteger(val) ? val : val.toFixed(1);
+  const opts = ['合理 ✓ 可以成立','不合理 ✗ 必須捨去'];
+  return {
+    scenario:'合理性之鏡・解答真偽判定',
+    promptHTML:`情境：x 代表「${sc.name}」（單位：${sc.unit}）<br>解出 x = ${valText}，這個答案合理嗎？`,
+    opts, correctIndex: reasonable?0:1,
+    explain: reasonable ? `${sc.name}可以是這個數值，答案成立` : `${sc.name}不可能是這個數值（需符合現實限制），此解要捨去`,
+    optClass:'opt2'
+  };
+}
+
+/* ---------- Boss：綜合試煉 ---------- */
+function genBoss(){
+  const pool=[genA,genB,genC,genD,genE,genEq1,genEq2,genF,genG];
+  return rndPick(pool)();
+}
+
+/* ============================================================
+   關卡設定
+============================================================ */
+const STAGES = [
+  {id:'A', chapter:'第一關・符號森林的遺失咒語', icon:'🌲', title:'咒語簡記修復', desc:'把繁瑣的乘除運算，修復成最簡潔的代數簡記', gen:genA},
+  {id:'B', chapter:'第一關・符號森林的遺失咒語', icon:'⚡', title:'能量注入求值', desc:'將指定數值代入咒語，算出真正的能量結果', gen:genB},
+  {id:'C', chapter:'第二關・分配律的平衡天秤', icon:'🔓', title:'括號封印解除', desc:'判斷括號前的正負號，正確展開每一項', gen:genC},
+  {id:'D', chapter:'第二關・分配律的平衡天秤', icon:'⚖️', title:'複合化簡試煉', desc:'展開兩組括號並合併同類項，維持法力平衡', gen:genD},
+  {id:'E', chapter:'第二關・分配律的平衡天秤', icon:'🔍', title:'身分鑑定', desc:'辨認一次項係數與常數項，或反過來組出完整代數式', gen:genE},
+  {id:'F', chapter:'第二關・分配律的平衡天秤', icon:'🧮', title:'解方程式・基礎', desc:'整數、分數、小數的一元一次方程式，單步驟加減或乘除求 x', gen:genEq1},
+  {id:'G', chapter:'第二關・分配律的平衡天秤', icon:'🌀', title:'解方程式・綜合', desc:'更難的多步驟方程式，整數、分數、小數混合出題求 x', gen:genEq2},
+  {id:'H', chapter:'第三關・符號商人的生存戰', icon:'🏪', title:'生活情境列式大挑戰', desc:'年齡問題、籃球得分、混合採購、價格陷阱，練習列方程式並算出答案', gen:genF},
+  {id:'I', chapter:'第三關・符號商人的生存戰', icon:'🪞', title:'合理性之鏡', desc:'判斷解出的未知數在現實情境中是否合理', gen:genG},
+  {id:'BOSS', chapter:'最終試煉', icon:'👑', title:'符號大師認證考試', desc:'綜合九大試煉的所有題型，證明你是真正的代數大師', gen:genBoss, boss:true},
+];
+const TOTAL_Q = 10;
+const STORAGE_KEY = 'algebraWorldProgress_v1';
+
+function loadProgress(){
+  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }catch(e){ return {}; }
+}
+function saveProgress(p){ localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); }
+let progress = loadProgress();
+
+function isUnlocked(idx){
+  if(idx===0) return true;
+  const prev = STAGES[idx-1];
+  return (progress[prev.id]?.stars||0) >= 1;
+}
+
+/* ============================================================
+   畫面切換
+============================================================ */
+const mapScreen = document.getElementById('mapScreen');
+const quizScreen = document.getElementById('quizScreen');
+const summaryScreen = document.getElementById('summaryScreen');
+function showScreen(name){
+  mapScreen.classList.toggle('hidden', name!=='map');
+  quizScreen.classList.toggle('hidden', name!=='quiz');
+  summaryScreen.classList.toggle('hidden', name!=='summary');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ---------- 地圖畫面 ---------- */
+function renderMap(){
+  const container = document.getElementById('pathList');
+  container.innerHTML = '';
+  let lastChapter = '';
+  let totalStars = 0;
+  STAGES.forEach((st, idx)=>{
+    const unlocked = isUnlocked(idx);
+    const stars = progress[st.id]?.stars || 0;
+    totalStars += stars;
+    if(st.chapter !== lastChapter){
+      const label = document.createElement('div');
+      label.className='chapter-label';
+      label.textContent = st.chapter;
+      container.appendChild(label);
+      lastChapter = st.chapter;
+    }
+    const row = document.createElement('div');
+    row.className='node-row';
+    const node = document.createElement('div');
+    node.className = 'node' + (unlocked?'':' locked') + (st.boss?' boss':'');
+    node.innerHTML = `
+      <div class="node-icon">${st.icon}</div>
+      <div class="node-body">
+        <div class="node-title">${st.title}</div>
+        <div class="node-desc">${unlocked ? st.desc : '完成前一關解鎖此試煉'}</div>
+      </div>
+      <div class="node-stars">${renderStarsHTML(stars)}</div>
+    `;
+    if(unlocked){
+      node.addEventListener('click', ()=>startStage(idx));
+    }
+    row.appendChild(node);
+    container.appendChild(row);
+  });
+  document.getElementById('totalStars').textContent = totalStars;
+}
+function renderStarsHTML(stars){
+  let s='';
+  for(let i=0;i<3;i++){ s += `<span class="${i<stars?'':'dim'}">★</span>`; }
+  return s;
+}
+
+/* ---------- 測驗畫面 ---------- */
+let quizState = null;
+function startStage(idx){
+  const st = STAGES[idx];
+  quizState = {
+    stageIdx: idx, stage: st,
+    qIndex: 0, correctCount: 0, mana: 100, streak: 0,
+    answered: false
+  };
+  document.getElementById('quizTitle').textContent = `${st.icon} ${st.title}`;
+  showScreen('quiz');
+  renderQuestion();
+}
+function renderQuestion(){
+  const st = quizState.stage;
+  quizState.current = st.gen();
+  quizState.answered = false;
+  document.getElementById('quizProgress').textContent = `第 ${quizState.qIndex+1} / ${TOTAL_Q} 題`;
+  document.getElementById('manaFill').style.width = quizState.mana + '%';
+  const streakLabel = document.getElementById('streakLabel');
+  if(quizState.streak>=2){ streakLabel.textContent = `🔥 連擊 x${quizState.streak}`; streakLabel.classList.add('show'); }
+  else streakLabel.classList.remove('show');
+
+  document.getElementById('qScenario').textContent = quizState.current.scenario;
+  document.getElementById('qPrompt').innerHTML = quizState.current.promptHTML;
+  document.getElementById('qFeedback').textContent = '';
+  document.getElementById('qFeedback').className = 'feedback';
+  document.getElementById('nextBtn').classList.remove('show');
+
+  const optWrap = document.getElementById('qOptions');
+  optWrap.className = 'options ' + (quizState.current.optClass==='opt3' ? 'opt3' : (quizState.current.optClass==='opt1col' ? '' : ''));
+  if(quizState.current.optClass==='opt1col'){ optWrap.style.gridTemplateColumns='1fr'; } else { optWrap.style.gridTemplateColumns=''; }
+  optWrap.innerHTML = '';
+  quizState.current.opts.forEach((optHTML, i)=>{
+    const btn = document.createElement('button');
+    btn.className='opt-btn';
+    btn.innerHTML = optHTML;
+    btn.addEventListener('click', ()=>handleAnswer(i, btn));
+    optWrap.appendChild(btn);
+  });
+}
+function handleAnswer(i, btnEl){
+  if(quizState.answered) return;
+  quizState.answered = true;
+  const cur = quizState.current;
+  const correct = i === cur.correctIndex;
+  const allBtns = document.querySelectorAll('#qOptions .opt-btn');
+  allBtns.forEach(b=>b.disabled=true);
+  if(correct){
+    btnEl.classList.add('correct');
+    quizState.correctCount++;
+    quizState.streak++;
+    document.getElementById('qFeedback').textContent = '✨ 正確！' + cur.explain;
+    document.getElementById('qFeedback').className = 'feedback good';
+  } else {
+    btnEl.classList.add('wrong');
+    allBtns[cur.correctIndex].classList.add('correct');
+    quizState.streak = 0;
+    quizState.mana = Math.max(0, quizState.mana - 12);
+    document.getElementById('qFeedback').textContent = '💥 再想想～' + cur.explain;
+    document.getElementById('qFeedback').className = 'feedback bad';
+  }
+  document.getElementById('manaFill').style.width = quizState.mana + '%';
+  document.getElementById('nextBtn').classList.add('show');
+}
+document.getElementById('nextBtn').addEventListener('click', ()=>{
+  quizState.qIndex++;
+  if(quizState.qIndex >= TOTAL_Q){ finishStage(); }
+  else { renderQuestion(); }
+});
+document.getElementById('backToMapBtn').addEventListener('click', ()=>{ renderMap(); showScreen('map'); });
+
+function finishStage(){
+  const st = quizState.stage;
+  const acc = quizState.correctCount / TOTAL_Q;
+  let stars = 0;
+  if(quizState.correctCount===10) stars=3;
+  else if(quizState.correctCount>=8) stars=2;
+  else if(quizState.correctCount>=6) stars=1;
+  const prevStars = progress[st.id]?.stars || 0;
+  progress[st.id] = { stars: Math.max(prevStars, stars), best: Math.max(progress[st.id]?.best||0, quizState.correctCount) };
+  saveProgress(progress);
+
+  document.getElementById('summaryEmoji').textContent = stars>=1 ? (st.boss? '👑':'🏆') : '🌀';
+  document.getElementById('summaryTitle').textContent = stars>=1
+    ? (st.boss ? '恭喜！你已成為真正的代數大師！' : `「${st.title}」試煉完成！`)
+    : `「${st.title}」尚未通關，再接再厲！`;
+  document.getElementById('summaryStars').innerHTML = renderStarsHTML(stars);
+  document.getElementById('statCorrect').textContent = `${quizState.correctCount}/${TOTAL_Q}`;
+  document.getElementById('statAcc').textContent = `${Math.round(acc*100)}%`;
+  showScreen('summary');
+}
+document.getElementById('retryBtn').addEventListener('click', ()=>{ startStage(quizState.stageIdx); });
+document.getElementById('mapBtn').addEventListener('click', ()=>{ renderMap(); showScreen('map'); });
+
+/* ---------- 初始化 ---------- */
+renderMap();
+showScreen('map');
+</script>
+</body>
+</html>
