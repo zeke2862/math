@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-fullscreen">
+    <meta name="theme-color" content="#000000">
+    <title>乘法勇者傳說</title>
+    <script src="./sync-client.js"></script>
+    <script src="./math-game-common.js"></script>
+    <style>
+        /* ================= 遊戲全域與字體 ================= */
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Noto+Sans+TC:wght@700;900&display=swap');
+
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+            background-color: #1a252c;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; height: var(--app-h, 100vh);
+            overflow: hidden;
+        }
+
+        /* 遊戲主容器 */
+        #game-container {
+            width: 1000px;
+            height: 700px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F7FA 100%);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6), inset 0 0 50px rgba(255,255,255,0.5);
+            position: relative;
+            overflow: hidden;
+            border: 6px solid #5D4037;
+
+            /* 手機端自適應縮放核心 CSS */
+            transform: scale(var(--scale, 1));
+            transform-origin: center center;
+            flex-shrink: 0;
+        }
+
+        /* ================= 背景裝飾元素 ================= */
+        .god-rays {
+            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: repeating-conic-gradient(from 0deg, rgba(255,255,255,0.15) 0deg 15deg, transparent 15deg 30deg);
+            animation: rotate-rays 90s linear infinite;
+            z-index: 1; pointer-events: none;
+        }
+        @keyframes rotate-rays { 100% { transform: rotate(360deg); } }
+
+        .waterfall {
+            position: absolute; bottom: 0; left: 10%; width: 20%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.8) 100%);
+            z-index: 2; opacity: 0.7; pointer-events: none;
+        }
+        .clouds {
+            position: absolute; bottom: -20px; width: 100%; height: 100px;
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 20" xmlns="http://www.w3.org/2000/svg"><path d="M0,20 Q10,0 20,20 Q30,0 40,20 Q50,0 60,20 Q70,0 80,20 Q90,0 100,20 Z" fill="white" opacity="0.9"/></svg>');
+            background-size: 200px 100px; z-index: 3; pointer-events: none;
+            animation: move-clouds 10s linear infinite;
+        }
+        @keyframes move-clouds { 100% { background-position: 200px 0; } }
+
+        .ruins-vine {
+            position: absolute; top: 0; width: 100%; height: 40px;
+            background-image: radial-gradient(circle at 20px 0, #2E7D32 20px, transparent 21px);
+            background-size: 40px 40px; z-index: 4; pointer-events: none;
+        }
+        .crystal {
+            position: absolute; width: 30px; height: 60px; background: #00E5FF;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            box-shadow: 0 0 25px #00E5FF; z-index: 2; pointer-events: none;
+            animation: float-crystal 3s ease-in-out infinite alternate;
+        }
+        @keyframes float-crystal { 100% { transform: translateY(-15px); } }
+        .crystal-1 { left: 80px; bottom: 150px; transform: scale(0.8) rotate(-15deg); }
+        .crystal-2 { right: 100px; top: 200px; transform: scale(1.2) rotate(20deg); }
+        .crystal-3 { right: 30px; bottom: 50px; transform: scale(0.6); }
+
+        /* ================= 視窗管理 ================= */
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10; display: flex; flex-direction: column;
+            transition: opacity 0.3s ease;
+        }
+        .hidden { display: none !important; }
+        .fade-out { opacity: 0; pointer-events: none; }
+
+        /* ================= 世界大地圖（合併版） ================= */
+        #map-screen {
+            background: rgba(255,255,255,0.2); backdrop-filter: blur(5px);
+            padding: 0; align-items: center; justify-content: center; gap: 6px;
+        }
+        .map-header {
+            height: 50px; width: 100%; display: flex; align-items: center; justify-content: center;
+            flex-direction: column; flex-shrink: 0; z-index: 5;
+        }
+        .map-title { font-size: 28px; color: #3E2723; text-shadow: 2px 2px 0px #fff; line-height: 1.1; }
+        .map-sub { font-size: 14px; color: #5D4037; font-weight: 700; text-shadow: 1px 1px 0 #fff; }
+
+        #map-wrap {
+            position: relative;
+            width: calc(100% - 16px);
+            aspect-ratio: 1695 / 928;
+            border-radius: 10px;
+            box-shadow: 0 0 0 4px #5D4037, 0 10px 24px rgba(0,0,0,0.45);
+            overflow: hidden;
+            flex-shrink: 0;
+            background: #e8d9b0;
+        }
+        #map-wrap .map-img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+
+        /* 迷霧：整張地圖蓋一層很黑的霧，只在「已解鎖的關卡」周圍挖洞；新解鎖時洞慢慢擴大 */
+        .map-fog { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; display: block; }
+        .map-fog circle { transition: r 1.6s ease; }
+
+        /* 關卡熱區：疊在地圖標籤上的透明按鈕 */
+        .map-node {
+            position: absolute; z-index: 3; transform: translate(-50%, -50%);
+            border: 2px dashed transparent; border-radius: 10px; cursor: pointer;
+            transition: background 0.2s, border-color 0.2s, transform 0.15s;
+        }
+        .map-node.unlocked, .map-node.cleared { border-color: rgba(255, 215, 0, 0.9); }
+        .map-node.unlocked:hover, .map-node.cleared:hover {
+            background: rgba(255, 215, 0, 0.35); transform: translate(-50%, -50%) scale(1.08);
+        }
+        .map-node.frontier { border-style: solid; animation: node-pulse 1.2s ease-in-out infinite; }
+        @keyframes node-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.75); }
+            50% { box-shadow: 0 0 0 9px rgba(255, 215, 0, 0); }
+        }
+        .map-node.locked { cursor: not-allowed; }
+        /* 關卡標籤：地圖自己有畫關卡名稱時，把下面 JS 的 SHOW_NODE_LABELS 改成 false 就會隱藏 */
+        .node-label {
+            width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 900; color: #fff; background: rgba(62,39,35,0.82);
+            border-radius: 8px; white-space: nowrap; overflow: hidden; pointer-events: none;
+        }
+        .map-node.locked .node-label { opacity: 0.55; }
+        .lock-badge {
+            position: absolute; right: -6px; top: -10px; font-size: 15px;
+            background: rgba(0,0,0,0.65); border-radius: 50%; width: 22px; height: 22px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .stars-display {
+            position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+            margin-top: 1px; font-size: 14px; color: #FFD600; white-space: nowrap;
+            text-shadow: 0 0 3px #000, 1px 1px 2px #000; letter-spacing: -1px; pointer-events: none;
+        }
+
+        /* 地圖上的勇者（站立/左右跑步） */
+        #map-hero {
+            position: absolute; z-index: 5; width: 7.6%; height: auto;
+            transform: translate(-50%, -100%); pointer-events: none;
+            filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px rgba(255,255,255,0.9)) drop-shadow(0 3px 3px rgba(0,0,0,0.5));
+        }
+
+        #map-toast {
+            position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
+            background: rgba(0,0,0,0.78); color: #fff; font-size: 18px; font-weight: 900;
+            padding: 8px 22px; border-radius: 20px; z-index: 8; opacity: 0;
+            transition: opacity 0.25s; pointer-events: none; white-space: nowrap;
+        }
+        #map-toast.show { opacity: 1; }
+
+        /* ================= 戰鬥畫面 ================= */
+        #battle-screen {
+            padding: 20px; z-index: 10;
+            background-color: #1a252c; background-size: cover; background-position: center bottom; background-repeat: no-repeat;
+        }
+
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.9); padding: 10px 20px;
+            border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); margin-bottom: 12px;
+        }
+        .hp-bar-container { display: flex; align-items: center; gap: 10px; font-size: 18px; color: #333; font-weight: bold;}
+        .hearts { color: #e74c3c; font-size: 24px; letter-spacing: 2px;}
+
+        .boss-hp-bg {
+            width: 200px; height: 25px; background: #ddd;
+            border-radius: 12px; overflow: hidden; border: 3px solid #333; position: relative;
+        }
+        .boss-hp-fill {
+            width: 100%; height: 100%; background: linear-gradient(90deg, #9b59b6, #e74c3c);
+            transition: width 0.3s ease-out;
+        }
+        .boss-hp-text {
+            position: absolute; width: 100%; text-align: center; top: 0; left: 0;
+            line-height: 20px; font-size: 14px; color: white; text-shadow: 1px 1px 2px #000;
+        }
+        .level-display { text-align: center; color: #8E44AD; font-weight: 900; line-height: 1.15; }
+        .level-display .lv-main { font-size: 24px; }
+        .level-display .lv-sub { font-size: 14px; color: #5D4037; }
+
+        .battle-area {
+            flex: 1; display: flex; justify-content: space-between; align-items: center;
+            padding: 0 10px; margin-top: 0; min-height: 0;
+        }
+        .character-box {
+            text-align: center; background: none; padding: 14px 10px; border: none; box-shadow: none;
+            width: 200px; position: relative; overflow: visible; flex-shrink: 0;
+        }
+        .sprite-stage { height: 170px; display: flex; align-items: flex-end; justify-content: center; position: relative; }
+        /* 腳下的淡淡影子，讓角色像站在地面上 */
+        .sprite-stage::before {
+            content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%);
+            width: 120px; height: 18px; border-radius: 50%;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0) 70%);
+        }
+        .sprite-stage > * { position: relative; z-index: 1; }
+        .hero-avatar img { width: 140px; height: auto; display: block; }
+        .boss-avatar { animation: float 3s ease-in-out infinite; }
+        .boss-avatar img { max-width: 170px; max-height: 165px; width: auto; height: auto; display: block; }
+        .boss-avatar img.wide { max-width: 250px; max-height: 150px; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+        .char-name { font-size: 22px; font-weight: 900; margin-top: 10px; color: #fff; text-shadow: 0 0 4px #000, 2px 2px 4px #000, -1px -1px 3px #000; }
+
+        /* ================= 戰鬥攻擊動畫 ================= */
+        @keyframes boss-lunge { 0%{transform:translateX(0) rotate(0);} 40%{transform:translateX(-30px) rotate(6deg);} 100%{transform:translateX(0) rotate(0);} }
+        @keyframes hit-flash { 0%{filter:brightness(1);} 30%{filter:brightness(2.4) drop-shadow(0 0 12px #ff5252);} 100%{filter:brightness(1);} }
+        .lunge-reverse { animation: boss-lunge 0.4s ease; }
+        .hit-flash { animation: hit-flash 0.4s ease; }
+
+        /* 怪物被打敗：閃白光 → 縮小淡出 */
+        @keyframes boss-defeated {
+            0%   { opacity: 1; transform: translateY(0) scale(1) rotate(0); filter: brightness(1); }
+            25%  { opacity: 1; filter: brightness(2.6); }
+            100% { opacity: 0; transform: translateY(45px) scale(0.6) rotate(10deg); filter: grayscale(1) brightness(0.6); }
+        }
+        .boss-defeated { animation: boss-defeated 1.1s ease forwards; }
+
+        .floating-dmg {
+            position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+            font-size: 26px; font-weight: 900; text-shadow: 1px 1px 3px #000;
+            animation: float-up 0.9s ease forwards; pointer-events: none; z-index: 6;
+        }
+        @keyframes float-up { 0%{opacity:1; transform:translate(-50%,0);} 100%{opacity:0; transform:translate(-50%,-45px);} }
+
+        /* 題目區 */
+        .center-area { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 0; padding: 0 8px; }
+        .question-box {
+            background: #fff; padding: 20px 40px; border-radius: 20px;
+            font-size: 52px; color: #2C3E50; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 5px solid #F1C40F; text-align: center; min-width: 300px; font-weight: 900; white-space: nowrap;
+        }
+        .timer-box { font-size: 22px; color: #E74C3C; margin-top: 10px; font-weight: 900; background: rgba(255,255,255,0.8); padding: 4px 20px; border-radius: 10px;}
+        .message-log {
+            text-align: center; color: #fff; font-size: 20px; font-weight: 900;
+            text-shadow: 2px 2px 4px rgba(0,0,0,1); min-height: 40px; margin-top: 8px; line-height: 1.3;
+            background: rgba(0,0,0,0.5); padding: 6px 16px; border-radius: 12px;
+        }
+
+        /* ================= 操作區：螢幕數字鍵盤 ================= */
+        .control-area {
+            background: rgba(255,255,255,0.92); padding: 12px 18px; border-radius: 20px;
+            display: flex; justify-content: center; align-items: center; gap: 18px;
+            margin-top: 8px; margin-bottom: 0; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .answer-display {
+            width: 210px; height: 120px; background: #fff; border: 4px solid #3498db; border-radius: 15px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .answer-label { font-size: 16px; color: #7F8C8D; font-weight: 900; }
+        .answer-value { font-size: 46px; font-weight: 900; color: #2C3E50; min-height: 56px; line-height: 56px; letter-spacing: 2px; }
+        .answer-value.empty { color: #BDC3C7; }
+        .answer-value.len6 { font-size: 36px; letter-spacing: 1px; }
+        .answer-value.len8 { font-size: 28px; letter-spacing: 0; }
+
+        .numpad { display: grid; grid-template-columns: repeat(5, 64px); gap: 8px; }
+        .side-keys { display: flex; flex-direction: column; gap: 8px; }
+
+        button {
+            background: #E74C3C; color: white; border: none; padding: 15px 40px; font-size: 28px;
+            border-radius: 15px; cursor: pointer; box-shadow: 0 6px 0 #C0392B; font-family: inherit;
+            font-weight: 900; transition: all 0.1s; touch-action: manipulation;
+        }
+        button:active { transform: translateY(6px); box-shadow: 0 0 0 #C0392B; }
+        .btn-map { background: #34495E; box-shadow: 0 6px 0 #2C3E50; }
+        .btn-map:active { box-shadow: 0 0 0 #2C3E50; }
+
+        .key-btn { padding: 0; width: 64px; height: 56px; font-size: 30px; border-radius: 12px; background: #3498DB; box-shadow: 0 5px 0 #2980B9; }
+        .key-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #2980B9; }
+        .key-del { width: 150px; font-size: 22px; background: #F39C12; box-shadow: 0 5px 0 #D68910; }
+        .key-del:active { box-shadow: 0 0 0 #D68910; }
+        .key-go { width: 150px; font-size: 24px; background: #E74C3C; box-shadow: 0 5px 0 #C0392B; }
+        .key-go:active { box-shadow: 0 0 0 #C0392B; }
+
+        .potion-badge { background: #2ECC71; color: white; padding: 5px 12px; border-radius: 20px; font-size: 14px; margin-left: 10px; border: 2px solid #27AE60; }
+        .combo-text { font-size: 16px; color: #FFD54F; font-weight: bold; margin-top: 3px; text-shadow: 0 0 4px #000, 1px 1px 3px #000;}
+
+        /* ================= 彈出視窗 (Overlay) ================= */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(26, 37, 44, 0.9); z-index: 100;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center;
+        }
+        .modal-box {
+            background: #fff; color: #333; padding: 40px; border-radius: 20px;
+            border: 5px solid #F1C40F; box-shadow: 0 20px 50px rgba(0,0,0,0.5); width: 600px;
+        }
+        .modal-box h1 { font-size: 48px; margin: 0 0 20px 0; color: #D35400; }
+        .modal-box p { font-size: 20px; margin-bottom: 20px; line-height: 1.6; }
+        .star-result { font-size: 60px; letter-spacing: 5px; color: #F1C40F; margin: 20px 0; text-shadow: 2px 2px 0px #333;}
+        .stats-details { background: #F8F9F9; padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: left; font-size: 18px; border: 2px solid #BDC3C7;}
+        .modal-buttons { display: flex; justify-content: center; gap: 20px; }
+
+        /* ================= 教學版：直式乘法版面 ================= */
+        .teach-panel, .teach-hint { display: none; }
+        #battle-screen.teach .quick-only { display: none; }
+        #battle-screen.teach .character-box { width: 150px; padding: 8px 4px; }
+        #battle-screen.teach .sprite-stage { height: 140px; }
+        #battle-screen.teach .hero-avatar img { width: 110px; }
+        #battle-screen.teach .boss-avatar img { max-width: 135px; max-height: 135px; }
+        #battle-screen.teach .boss-avatar img.wide { max-width: 215px; max-height: 120px; }
+        #battle-screen.teach .char-name { font-size: 18px; margin-top: 6px; }
+        #battle-screen.teach .center-area { justify-content: center; }
+        #battle-screen.teach .question-box { font-size: 22px; padding: 3px 18px; min-width: 0; border-width: 3px; border-radius: 14px; margin-bottom: 6px; }
+        #battle-screen.teach .timer-box { font-size: 17px; margin-top: 6px; padding: 2px 14px; }
+        #battle-screen.teach .message-log { font-size: 16px; min-height: 28px; margin-top: 5px; padding: 4px 12px; }
+
+        #battle-screen.teach .teach-panel {
+            display: flex; flex-direction: column; align-items: flex-end; gap: 0;
+            background: rgba(255,255,255,0.95); border-radius: 16px; padding: 8px 14px;
+            border: 4px solid #F1C40F; box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .tf-row { display: flex; align-items: center; }
+        .tf-cell {
+            width: var(--cw); height: var(--ch); margin: 1px; border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: calc(var(--ch) * 0.66); font-weight: 900; color: #2C3E50; line-height: 1;
+        }
+        .tf-cell.sign { font-size: calc(var(--ch) * 0.5); color: #7F8C8D; }
+        .tf-cell.blank { background: transparent; }
+        .tf-cell.input { background: var(--rt, #fff); border: 3px solid var(--rc, #BDC3C7); cursor: pointer; }
+        .tf-cell.input.active { border-color: #E74C3C; box-shadow: 0 0 0 3px rgba(231,76,60,0.4); background: #FFFDE7; }
+        .tf-cell.prefill { background: #ECF0F1; color: #95A5A6; border: 3px dashed #CFD8DC; }
+        /* 進位格：比較矮、虛線，顏色跟著現在在算的那一列 */
+        .tf-cell.carry {
+            height: calc(var(--ch) * 0.62); font-size: calc(var(--ch) * 0.42);
+            border: 2px dashed var(--cc, #B0BEC5); background: var(--ct, #F4F6F7); color: #607D8B; cursor: pointer;
+        }
+        .tf-cell.carry.active { border-style: solid; border-color: #E74C3C; background: #FFFDE7; }
+        .tf-rule { align-self: stretch; height: 4px; background: #2C3E50; border-radius: 2px; margin: 3px 0; }
+        .tf-cell.ok { background: #D5F5E3 !important; border-color: #27AE60 !important; }
+        .tf-cell.bad { background: #FADBD8 !important; border-color: #E74C3C !important; }
+        .tf-cell.revealed { background: #E74C3C !important; border-color: #C0392B !important; color: #fff !important; }
+        #battle-screen.teach .teach-hint {
+            display: block; margin-top: 6px; min-height: 26px; font-size: 16px; font-weight: 900; color: #fff;
+            background: rgba(0,0,0,0.55); padding: 3px 14px; border-radius: 12px; text-align: center;
+            text-shadow: 1px 1px 2px #000;
+        }
+        /* 下方操作列：數字鍵排成一列 */
+        #battle-screen.teach .control-area { padding: 8px 12px; gap: 8px; margin-top: 6px; }
+        #battle-screen.teach .numpad { display: flex; gap: 6px; }
+        #battle-screen.teach .numpad .key-btn { width: 54px; height: 52px; font-size: 28px; }
+        #battle-screen.teach .side-keys { flex-direction: row; }
+        #battle-screen.teach .key-del { width: 100px; font-size: 20px; }
+        #battle-screen.teach .key-go { width: 130px; font-size: 22px; }
+
+        /* ================= 答錯解說視窗：看完解說、按「確定」才進下一題 ================= */
+        #explain-overlay { z-index: 150; }
+        #explain-overlay .modal-box { width: 740px; max-height: 640px; display: flex; flex-direction: column; padding: 14px 26px 16px; border-color: #E67E22; }
+        #explain-overlay .ex-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 4px; }
+        #explain-overlay .modal-buttons { flex-shrink: 0; margin-top: 8px; }
+        #explain-overlay h1 { font-size: 32px; margin: 0 0 2px; color: #C0392B; }
+        .ex-note { font-size: 15px; font-weight: 900; color: #7F8C8D; margin: 0 0 4px; }
+        .ex-ans { font-size: 21px; font-weight: 900; margin: 2px 0 6px; color: #2C3E50; }
+        .ex-ans .bad { color: #C0392B; } .ex-ans .good { color: #1E8449; }
+        .ex-grid { display: inline-block; text-align: left; background: #FDFEFE; border: 2px solid #BDC3C7; border-radius: 10px; padding: 6px 14px 8px; margin: 2px 0 6px; font-weight: 900; font-size: 26px; color: #2C3E50; }
+        .xr { display: flex; align-items: center; line-height: 1.25; }
+        .xs { display: inline-block; width: var(--sw, 54px); flex-shrink: 0; text-align: right; padding-right: 8px; color: #7F8C8D; font-size: 20px; white-space: nowrap; }
+        .xr.cyrow .xs { font-size: 14px; }
+        .xc { display: inline-block; width: var(--cw, 30px); flex-shrink: 0; text-align: center; }
+        .xn { margin-left: 10px; font-size: 14px; font-weight: 900; color: #7F8C8D; white-space: nowrap; }
+        .xr.top .xc { border-top: 3px solid #2C3E50; }
+        .xr.ans .xc { color: #1E8449; }
+        .xr.cyrow { line-height: 1; }
+        .xc.cy { font-size: 15px; color: #E67E22; }
+        .xc.pre { color: #B0BEC5; } .xc.bd { color: #B0BEC5; } .xc.tp { border-top: 3px solid #2C3E50; }
+        .xc.p0 { color: #27AE60; } .xc.p1 { color: #E67E22; } .xc.p2 { color: #8E44AD; } .xc.p3 { color: #2980B9; }
+        .ex-sub { text-align: left; font-weight: 900; font-size: 15px; color: #7F8C8D; margin: 6px 0 2px; }
+        .ex-steps { list-style: none; margin: 4px 0 2px; padding: 0; text-align: left; font-size: 16px; line-height: 1.5; }
+        .ex-steps li { margin-bottom: 4px; background: #FEF9E7; border-left: 5px solid #F1C40F; padding: 4px 10px; border-radius: 6px; color: #333; }
+        .ex-steps li b { color: #C0392B; }
+        .ex-steps.mist li { background: #FDEDEC; border-left-color: #E74C3C; }
+        .ex-steps .bad { color: #C0392B; font-weight: 900; } .ex-steps .good { color: #1E8449; font-weight: 900; }
+        .ex-check { font-size: 16px; font-weight: 900; color: #5D6D7E; margin: 4px 0 2px; }
+        .ex-steps .sm { display: block; font-size: 14px; color: #7F8C8D; font-weight: 700; margin-top: 1px; }
+
+        /* ================= 角色／大魔王放大：左右各約佔 1/3 畫面，中間留給題目 ================= */
+        .character-box, #battle-screen.teach .character-box { width: 290px; padding: 0; }
+        .sprite-stage, #battle-screen.teach .sprite-stage { height: 290px; }
+        .sprite-stage::before { width: 210px; height: 24px; }
+        .hero-avatar img, #battle-screen.teach .hero-avatar img { width: 260px; height: auto; }
+        .boss-avatar img, .boss-avatar img.wide, #battle-screen.teach .boss-avatar img, #battle-screen.teach .boss-avatar img.wide {
+            width: 270px; height: 280px; max-width: none; max-height: none; object-fit: contain; object-position: bottom center;
+        }
+        .char-name, #battle-screen.teach .char-name { font-size: 24px; margin-top: 6px; }
+        .center-area { padding: 0 4px; }
+        .question-box { font-size: 40px; padding: 10px 16px; min-width: 0; border-width: 4px; border-radius: 16px; }
+        #battle-screen.teach .question-box { font-size: 24px; padding: 3px 14px; }
+        /* ===== 怪物：圖片空間改成「長型」，讓怪物比勇者更高大 ===== */
+        .battle-area { align-items: flex-end; }                  /* 勇者、怪物腳底對齊，怪物長型框會往上長高 */
+        .battle-area .center-area { align-self: center; }
+        #boss-box, #battle-screen.teach #boss-box { padding-bottom: 27px; }   /* 勇者名字下有一行「連擊」，怪物這邊留同樣高度，兩邊名字才會對齊 */
+        #boss-box .sprite-stage, #battle-screen.teach #boss-box .sprite-stage { height: 335px; }
+        #boss-box .sprite-stage::before { width: 250px; }
+        #boss-box .boss-avatar img, #boss-box .boss-avatar img.wide, #battle-screen.teach #boss-box .boss-avatar img, #battle-screen.teach #boss-box .boss-avatar img.wide {
+            width: 312px; height: 335px; max-width: none; max-height: none; object-fit: contain; object-position: bottom center;
+        }
+        .timer-box { font-size: 20px; }
+        .message-log { font-size: 17px; padding: 5px 10px; }
+        #battle-screen.teach .message-log { font-size: 15px; min-height: 24px; margin-top: 4px; padding: 3px 10px; }
+        #battle-screen.teach .teach-hint { font-size: 14px; padding: 3px 10px; margin-top: 4px; min-height: 0; }
+        #battle-screen.teach .timer-box { font-size: 15px; margin-top: 4px; padding: 1px 12px; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- 💰 代幣餘額徽章：兩個畫面都看得到，沒登入學號時會自動隱藏 -->
+    <div id="gbit-badge" style="position:absolute; top:12px; right:12px; z-index:20; background:rgba(255,255,255,0.92); padding:6px 16px; border-radius:20px; font-weight:900; color:#8E44AD; box-shadow:0 4px 10px rgba(0,0,0,0.2); font-size:16px;">
+        💰 <span id="gbit-display">0</span>
+    </div>
+    <!-- 共通背景裝飾 -->
+    <div class="god-rays"></div>
+    <div class="ruins-vine"></div>
+    <div class="waterfall"></div>
+    <div class="clouds"></div>
+    <div class="crystal crystal-1"></div>
+    <div class="crystal crystal-2"></div>
+    <div class="crystal crystal-3"></div>
+
+    <!-- Start 畫面 -->
+    <div id="start-screen" class="screen overlay">
+        <div class="modal-box" style="background: rgba(255,255,255,0.95); padding: 22px 30px;">
+            <h1 style="color:#2C3E50; font-size: 48px; margin-bottom: 10px;">乘法勇者傳說</h1>
+            <p style="font-size: 16px; line-height: 1.5; margin-bottom: 12px;">
+                <strong>主角設定：</strong> 冷酷銀髮勇者，右眼戰術眼罩，手持黑曜石雙刃鐮刀，手臂閃爍紅光咒印。<br><br>
+                <strong>遊戲規則：</strong> 擊敗地圖上所有地方的怪物！<br>
+                ✨ 怪物10滴血，答錯加0.5血。<br>
+                ✨ 勇者4滴血，答錯扣1血，每題都有限時（越後面的關卡，時間越長）。<br>
+                ✨ <strong>時間加成：</strong> 越快答對，攻擊越強（x2、x1.5）。<br>
+                🎮 <strong>兩種玩法：</strong> ⚡快速版＝直接輸入答案；🧮教學版＝用直式乘法一步步算（時間較長）。兩種模式的進度與星星各自獨立計算，隨時可在地圖上換模式。<br>
+                ✨ <strong>道具：</strong> 連對5題獲得「甦醒藥」(死後自動滿血復活)。<br>
+                挑戰全關卡 5 星評價吧！
+            </p>
+            <div style="display:flex; gap:18px; justify-content:center;">
+                <button onclick="chooseMode('quick')" style="font-size:24px; padding:12px 26px; line-height:1.3;">⚡ 快速版<br><span style="font-size:14px; font-weight:700;">直接輸入答案</span></button>
+                <button onclick="chooseMode('teach')" style="font-size:24px; padding:12px 26px; line-height:1.3; background:#27AE60; box-shadow:0 6px 0 #1E8449;">🧮 教學版<br><span style="font-size:14px; font-weight:700;">直式乘法一步步算</span></button>
+            </div>
+            <div id="login-status" style="margin-top:16px; font-size:16px; font-weight:900; line-height:1.5;"></div>
+        </div>
+    </div>
+
+    <!-- 世界大地圖畫面（地圖圖片＋熱區＋勇者，由 JS 動態生成） -->
+    <div id="map-screen" class="screen hidden">
+        <button id="mode-switch" class="btn-map" style="position:absolute; left:14px; top:8px; padding:6px 14px; font-size:15px; box-shadow:0 4px 0 #2C3E50; z-index:6;" onclick="toggleMode()"></button>
+        <div class="map-header">
+            <div class="map-title">🌍 乘法冒險地圖 - 關卡選擇</div>
+            <div class="map-sub">點一下發亮的關卡，勇者就會走過去！</div>
+        </div>
+        <div id="map-wrap">
+            <img class="map-img" src="./assets/maps/multiply.jpg" alt="乘法冒險世界地圖" draggable="false">
+            <img id="map-hero" src="./assets/hero/hero-idle.png" alt="勇者" draggable="false">
+            <div id="map-toast"></div>
+        </div>
+    </div>
+
+    <!-- 戰鬥畫面 -->
+    <div id="battle-screen" class="screen hidden">
+        <div class="top-bar">
+            <button class="btn-map" style="padding: 10px 20px; font-size: 18px;" onclick="quitToMap()">逃跑</button>
+            <div class="hp-bar-container">
+                <div>勇者 HP: <span id="player-hp" class="hearts">❤️❤️❤️❤️</span></div>
+                <div id="potion-ui" class="potion-badge hidden">🧪 甦醒藥 x1</div>
+            </div>
+            <div class="level-display" id="battle-level-display">
+                <div class="lv-main">關卡 1-1</div>
+                <div class="lv-sub">第一關 街道</div>
+            </div>
+            <div class="hp-bar-container">
+                <span id="boss-name">怪物</span>
+                <div class="boss-hp-bg">
+                    <div id="boss-hp-fill" class="boss-hp-fill"></div>
+                    <div class="boss-hp-text"><span id="boss-hp-number">10</span> / 10</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="battle-area">
+            <!-- 勇者 -->
+            <div class="character-box" id="hero-box">
+                <div class="sprite-stage">
+                    <div class="hero-avatar"><img id="hero-avatar-el" src="./assets/hero/hero-idle.png" alt="乘法勇者" draggable="false"></div>
+                </div>
+                <div class="char-name">乘法勇者</div>
+                <div class="combo-text">連擊: <span id="combo-count">0</span></div>
+            </div>
+
+            <!-- 題目 -->
+            <div class="center-area">
+                <div id="question" class="question-box">1 × 1 = ?</div>
+                <div id="teach-panel" class="teach-panel"></div>
+                <div id="teach-hint" class="teach-hint"></div>
+                <div class="timer-box">剩餘時間: <span id="time-left">60</span>s</div>
+                <div class="message-log" id="message">準備戰鬥！</div>
+            </div>
+
+            <!-- 魔王 -->
+            <div class="character-box" id="boss-box">
+                <div class="sprite-stage">
+                    <div id="boss-sprite" class="boss-avatar"><img id="boss-img" src="" alt="怪物" draggable="false"></div>
+                </div>
+                <div class="char-name" id="boss-label">黑道老大與混混小弟們</div>
+            </div>
+        </div>
+
+        <!-- 螢幕數字鍵盤：0-9、修正、攻擊 -->
+        <div class="control-area">
+            <div class="answer-display quick-only">
+                <div class="answer-label">我的答案</div>
+                <div id="answer-value" class="answer-value empty">?</div>
+            </div>
+            <div class="numpad" id="numpad">
+                <button class="key-btn" data-digit="1">1</button>
+                <button class="key-btn" data-digit="2">2</button>
+                <button class="key-btn" data-digit="3">3</button>
+                <button class="key-btn" data-digit="4">4</button>
+                <button class="key-btn" data-digit="5">5</button>
+                <button class="key-btn" data-digit="6">6</button>
+                <button class="key-btn" data-digit="7">7</button>
+                <button class="key-btn" data-digit="8">8</button>
+                <button class="key-btn" data-digit="9">9</button>
+                <button class="key-btn" data-digit="0">0</button>
+            </div>
+            <div class="side-keys">
+                <button class="key-btn key-del" id="key-del">⌫ 修正</button>
+                <button class="key-btn key-go" id="attack-btn">⚔️ 攻擊！</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 答錯解說：看完解說、按「確定」才會進下一題 -->
+    <div id="explain-overlay" class="overlay hidden">
+        <div class="modal-box">
+            <h1 id="ex-title">答錯了</h1>
+            <div class="ex-body">
+                <div class="ex-note" id="ex-note"></div>
+                <div class="ex-ans" id="ex-ans"></div>
+                <div id="ex-vert"></div>
+                <div class="ex-sub">一步一步來看：</div>
+                <ul class="ex-steps" id="ex-steps"></ul>
+                <div id="ex-mist-wrap" class="hidden"><div class="ex-sub">你填錯的地方：</div><ul class="ex-steps mist" id="ex-mist"></ul></div>
+                <div class="ex-check" id="ex-check"></div>
+            </div>
+            <div class="modal-buttons"><button id="ex-ok">確定</button></div>
+        </div>
+    </div>
+
+    <!-- 結算彈窗 (勝利/失敗) -->
+    <div id="result-overlay" class="overlay hidden">
+        <div class="modal-box">
+            <h1 id="result-title">戰鬥結果</h1>
+            <div id="result-stars" class="star-result"></div>
+            <div class="stats-details" id="result-stats">
+                <!-- 統計資料 -->
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-map" onclick="showMap()">回大地圖</button>
+                <button id="next-stage-btn" onclick="startNextStageIfAvailable()">下一關</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ================= 素材路徑 =================
+    const ASSET = './assets/multiply-hero/';
+    const HERO_DIR='./assets/hero/', BG_DIR='./assets/stages/multiply/', BOSS_DIR='./assets/bosses/multiply/';
+    const HERO_IMG = {
+        idle:     HERO_DIR + 'hero-idle.png',
+        runRight: HERO_DIR + 'hero-run-right.gif',
+        runLeft:  HERO_DIR + 'hero-run-left.gif',
+        attack:   HERO_DIR + 'hero-attack.gif',   // 答對：發動攻擊（已縮短起手動作，約 0.8 秒）
+        hurt:     HERO_DIR + 'hero-hurt.gif',     // 答錯：被攻擊（約 2.2 秒）
+        lose:     HERO_DIR + 'hero-lose.gif'      // 倒下：被攻擊後倒地（約 2.8 秒）
+    };
+    const HERO_ANIM_MS = { attack: 770, hurt: 2220, lose: 2760 };
+
+    // ================= 關卡設定 =================
+    // 5 大關、共 11 個小關卡；每個小關卡 = 一組怪物 + 一種乘法題型（依序由簡單到困難）。
+    //   r1 / r2     ：乘數與被乘數的範圍 [最小, 最大]；'mixed' = 兩個乘數各自隨機抽 1～4 位數
+    //   limit       ：每題限時（秒）
+    //   fast / quick：幾秒內答對，傷害 x2 / x1.5（也用來算星等）
+    //                 乘法位數越多越難算，所以後面的關卡時間給得比加法久，想調整改這幾個數字就好
+    //   mx / my / mw：該關卡「標籤」在大地圖圖片（1694×928）上的中心座標與寬度（單位：圖片像素），
+    //                 也就是點擊熱區；勇者的腳會站在標籤正上方一點點
+    //   fx / fy / fr：解鎖該關時，迷霧散開的圓心與半徑（要蓋住整個場景）
+    //   wide        ：怪物圖是橫幅型（又長又扁）時設 true，戰鬥畫面會把它放大一點
+    //                 ★ 換成自己畫的地圖後，只要改這幾個數字，熱區、迷霧、勇者站位都會跟著移動
+    const MAP_W = 1694, MAP_H = 928, NODE_H = 36;
+    const SHOW_NODE_LABELS = false;  // 新地圖已經把「1-1 黑道老大…」等標籤畫在圖上，所以這裡關掉；用別張地圖想顯示編號標籤就改成 true
+    const terrains = [
+        { id: 1, name: "第一關：街道", short: "第一關 街道", stages: [
+            { id: "1-1", boss: "黑道老大與混混小弟們", r1: [1, 9], r2: [1, 9], desc: "一位數 × 一位數", limit: 60, fast: 10, quick: 20, mx: 276, my: 392, mw: 282, fx: 257, fy: 246, fr: 260 }
+        ]},
+        { id: 2, name: "第二關：玩具王國", short: "第二關 玩具王國", stages: [
+            { id: "2-1", boss: "玩具士兵們", r1: [10, 99], r2: [1, 9], desc: "兩位數 × 一位數", limit: 60, fast: 15, quick: 30, mx: 164, my: 785, mw: 175, fx: 171, fy: 685, fr: 230 },
+            { id: "2-2", boss: "玩具戰馬群", r1: [10, 99], r2: [10, 99], desc: "兩位數 × 兩位數", limit: 90, fast: 25, quick: 50, mx: 434, my: 812, mw: 180, fx: 411, fy: 685, fr: 230, wide: true }
+        ]},
+        { id: 3, name: "第三關：海世界", short: "第三關 海世界", stages: [
+            { id: "3-1", boss: "海龜精群", r1: [100, 999], r2: [1, 9], desc: "三位數 × 一位數", limit: 75, fast: 20, quick: 40, mx: 637, my: 310, mw: 148, fx: 697, fy: 223, fr: 220 },
+            { id: "3-2", boss: "大鯊魚精群", r1: [100, 999], r2: [10, 99], desc: "三位數 × 兩位數", limit: 120, fast: 35, quick: 70, mx: 660, my: 552, mw: 152, fx: 697, fy: 520, fr: 220 },
+            { id: "3-3", boss: "海龍王與蝦兵蟹將", r1: [100, 999], r2: [100, 999], desc: "三位數 × 三位數", limit: 180, fast: 60, quick: 120, mx: 734, my: 833, mw: 232, fx: 754, fy: 760, fr: 230 }
+        ]},
+        { id: 4, name: "第四關：失落之地", short: "第四關 失落之地", stages: [
+            { id: "4-1", boss: "土著聚落", r1: [1000, 9999], r2: [1, 9], desc: "四位數 × 一位數", limit: 90, fast: 25, quick: 50, mx: 1050, my: 338, mw: 148, fx: 1051, fy: 246, fr: 220 },
+            { id: "4-2", boss: "三角龍群", r1: [1000, 9999], r2: [10, 99], desc: "四位數 × 兩位數", limit: 150, fast: 45, quick: 90, mx: 1445, my: 300, mw: 150, fx: 1439, fy: 228, fr: 250, wide: true },
+            { id: "4-3", boss: "鳳凰部族", r1: [1000, 9999], r2: [100, 999], desc: "四位數 × 三位數", limit: 240, fast: 80, quick: 160, mx: 1075, my: 536, mw: 150, fx: 1062, fy: 508, fr: 215 },
+            { id: "4-4", boss: "地獄三頭犬家族", r1: [1000, 9999], r2: [1000, 9999], desc: "四位數 × 四位數", limit: 360, fast: 120, quick: 240, mx: 1199, my: 700, mw: 186, fx: 1257, fy: 634, fr: 230 }
+        ]},
+        { id: 5, name: "第五關：雪地", short: "第五關 雪地", stages: [
+            { id: "5-1", boss: "大腳雪怪族群", r1: 'mixed', r2: 'mixed', desc: "隨機(一至四位數) × 隨機(一至四位數)", limit: 240, fast: 80, quick: 160, mx: 1487, my: 796, mw: 165, fx: 1473, fy: 640, fr: 260 }
+        ]}
+    ];
+
+    // 所有關卡扁平化索引，方便切換「下一關」
+    // 怪物圖：assets/multiply-hero/monster-1-1.png …　戰鬥背景：assets/multiply-hero/bg-1-1.jpg …（檔名＝關卡編號）
+    const allStagesList = [];
+    terrains.forEach(t => {
+        t.stages.forEach(s => {
+            allStagesList.push({ ...s, terrainId: t.id, terrainName: t.short, img: BOSS_DIR + 'monster-' + s.id + '.png', bg: BG_DIR + 'bg-' + s.id + '.jpg' });
+        });
+    });
+    const FIRST_STAGE_ID = allStagesList[0].id;
+
+    // ================= 作答模式：quick（快速版）/ teach（教學版）=================
+    // 教學版要一格一格寫直式，比快速版花時間，所以每題限時與加成門檻都乘上這個倍數（想調整改這裡）
+    const TEACH_TIME_FACTOR = 1.5;
+    let playMode = 'quick';
+    try { if (localStorage.getItem('multiplyHero_mode') === 'teach') playMode = 'teach'; } catch (e) {}
+    // 取得目前關卡、目前模式下的 限時 / 極速門檻 / 快速門檻
+    function stageVal(key) {
+        return Math.round(currentStageObj[key] * (playMode === 'teach' ? TEACH_TIME_FACTOR : 1));
+    }
+    function refreshModeUI() {
+        const b = document.getElementById('mode-switch');
+        if (b) b.innerText = playMode === 'teach' ? '🧮 教學版（點我換成⚡快速版）' : '⚡ 快速版（點我換成🧮教學版）';
+    }
+    function setMode(m) {
+        playMode = (m === 'teach') ? 'teach' : 'quick';
+        try { localStorage.setItem('multiplyHero_mode', playMode); } catch (e) {}
+        playerProgress = loadProgress();   // 兩種模式的進度各自獨立，切換時載入該模式自己的存檔
+        heroStageId = null;                // 勇者回到該模式的「目前關卡」
+        refreshModeUI();
+    }
+    function chooseMode(m) { setMode(m); showMap(); }
+    function toggleMode() { if (mapBusy) return; setMode(playMode === 'teach' ? 'quick' : 'teach'); placeHeroInstant(findFrontierStageId()); refreshMap(); showMapToast(playMode === 'teach' ? '🧮 已切換成教學版（進度與快速版各自獨立）' : '⚡ 已切換成快速版（進度與教學版各自獨立）'); }
+
+    // ================= 每大關背景音樂 =================
+    // 目前 5 大關先全部共用乘法極速跑酷原本那首 multiply-run-bgm.mp3（之後要換，
+    // 把對應大關編號的路徑換成新檔名即可，不用改程式碼其他地方）。
+    const TERRAIN_MUSIC = {
+        1: "./audio/multiply-run-bgm.mp3",
+        2: "./audio/multiply-run-bgm.mp3",
+        3: "./audio/multiply-run-bgm.mp3",
+        4: "./audio/multiply-run-bgm.mp3",
+        5: "./audio/multiply-run-bgm.mp3"
+    };
+
+    const bgmAudio = new Audio();
+    bgmAudio.loop = true;
+    bgmAudio.volume = 0.45;
+    let currentBgmTerrain = null;
+
+    function playTerrainMusic(terrainId) {
+        const src = TERRAIN_MUSIC[terrainId];
+        if (!src) return;
+        if (currentBgmTerrain !== terrainId) {
+            bgmAudio.src = src;
+            currentBgmTerrain = terrainId;
+        }
+        // 瀏覽器的自動播放限制：一定要在使用者點擊之後呼叫才會真的出聲，
+        // 這裡都是從點擊事件（選關卡/進入浮空島）觸發，所以沒問題；
+        // 萬一被擋下來，安靜失敗就好，不影響遊戲進行。
+        bgmAudio.play().catch(() => {});
+    }
+
+    function stopMusic() {
+        bgmAudio.pause();
+        currentBgmTerrain = null;
+    }
+
+    // ================= 按鈕音效 =================
+    let clickAudioCtx = null;
+    function playClickSound() {
+        try {
+            clickAudioCtx = clickAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+            const osc = clickAudioCtx.createOscillator();
+            const gain = clickAudioCtx.createGain();
+            osc.type = "square";
+            osc.frequency.value = 880;
+            gain.gain.setValueAtTime(0.12, clickAudioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, clickAudioCtx.currentTime + 0.12);
+            osc.connect(gain).connect(clickAudioCtx.destination);
+            osc.start();
+            osc.stop(clickAudioCtx.currentTime + 0.12);
+        } catch (e) { /* 舊瀏覽器沒有 Web Audio API 就安靜跳過 */ }
+    }
+    // 所有按鈕跟地圖關卡熱區統一在這裡綁音效，不用每個按鈕各自加
+    document.addEventListener("click", function (e) {
+        if (e.target.closest && e.target.closest("button, .map-node")) playClickSound();
+    }, true);
+
+    // ================= 學號登入串接 =================
+    // 跟塔防/ETP/看打共用同一組登入身分（index.html 存進 localStorage 的
+    // "keyagent_active_student"），這樣進度跟代幣才能記在同一個學生名下、
+    // 也才能被 sync-client.js 一起同步到雲端。
+    // 登入狀態判斷：要同時有 sync-client.js（提供 keyagent 函式）與已登入的學號，
+    // 才會存進該學生的共用存檔；否則改存到這台電腦的「備用存檔」，至少重新整理後進度不會消失。
+    const hasSyncLib = (typeof keyagentGetActiveStudentNumber === 'function')
+                    && (typeof keyagentSaveKeyFor === 'function');
+    let studentNumber = null;
+    try { studentNumber = hasSyncLib ? keyagentGetActiveStudentNumber() : null; } catch (e) { studentNumber = null; }
+    const useStudentSave = !!(hasSyncLib && studentNumber);
+    const LOCAL_SAVE_KEY = 'multiplyHero_local_save_v1';
+
+    function currentSaveKey() {
+        return useStudentSave ? keyagentSaveKeyFor(studentNumber) : LOCAL_SAVE_KEY;
+    }
+
+    function loadSharedSave() {
+        try {
+            const raw = localStorage.getItem(currentSaveKey());
+            return raw ? JSON.parse(raw) : {};
+        } catch (e) { return {}; }
+    }
+
+    function writeSharedSave(save) {
+        save.lastModified = Date.now();
+        try { localStorage.setItem(currentSaveKey(), JSON.stringify(save)); }
+        catch (e) { console.warn('乘法勇者：存檔失敗', e); }
+    }
+
+    // 登入狀態文字（顯示在開始畫面，方便老師/學生一眼看出為什麼沒存到）
+    function loginStatusText() {
+        if (useStudentSave) return { ok: true, text: '✅ 已登入學號 ' + studentNumber + '，進度與代幣會自動儲存' };
+        if (!hasSyncLib) return { ok: false, text: '⚠️ 沒有載入到 sync-client.js（請確認它跟本檔放在同一個資料夾，並從學習平台登入後進入）。目前進度只暫存在這台電腦，領不到代幣。' };
+        return { ok: false, text: '⚠️ 沒有偵測到登入的學號（請先從學習平台登入再進入遊戲）。目前進度只暫存在這台電腦，領不到代幣。' };
+    }
+
+    // 玩家關卡進度：放在共用存檔的 multiplyHero 欄位下，
+    // 跟加法勇者(additionHero)、塔防(towerDefense)、ETP(etp)、看打(lookType) 各自獨立、互不覆蓋。
+    let sharedSave = loadSharedSave();
+    // 兩種模式的進度各自獨立：快速版存在 multiplyHero，教學版存在 multiplyHeroTeach
+    function progressKey() { return playMode === 'teach' ? 'multiplyHeroTeach' : 'multiplyHero'; }
+    function loadProgress() {
+        const sv = loadSharedSave();
+        const saved = sv[progressKey()] && sv[progressKey()].stages;
+        const p = saved ? saved : {};
+        if (!p[FIRST_STAGE_ID]) p[FIRST_STAGE_ID] = { unlocked: true, stars: 0 };
+        return p;
+    }
+    let playerProgress = loadProgress();
+
+    function saveProgress() {
+        sharedSave = loadSharedSave(); // 先讀最新的，避免蓋掉存檔裡其他系統剛寫入的資料
+        sharedSave[progressKey()] = { stages: playerProgress };
+        writeSharedSave(sharedSave);
+    }
+
+    // 過關發代幣：只在「星等進步」時發（見 endGame），避免反覆打同一關無限刷代幣。
+    // 規則：每提升 1 顆星 = 2 GBit。
+    function awardTokens(amount) {
+        if (amount <= 0) return;
+        sharedSave = loadSharedSave();
+        sharedSave.gbit = (sharedSave.gbit || 0) + amount;
+        sharedSave.gbitEarnedLifetime = (sharedSave.gbitEarnedLifetime || 0) + amount;
+        writeSharedSave(sharedSave);
+        updateGbitDisplay();
+
+        if (useStudentSave && typeof keyagentQueuePendingAttempt === 'function') {
+            keyagentQueuePendingAttempt('multiplyHero', {
+                mode: playMode,
+                stageId: currentStageObj ? currentStageObj.id : null,
+                stars: (currentStageObj && playerProgress[currentStageObj.id]) ? playerProgress[currentStageObj.id].stars : null,
+                tokensEarned: amount,
+                attemptedAt: Date.now()
+            });
+        }
+        if (useStudentSave && typeof keyagentCloudSyncNow === 'function') {
+            keyagentCloudSyncNow();
+        }
+    }
+
+    function updateGbitDisplay() {
+        const el = document.getElementById('gbit-display');
+        if (!el) return;
+        el.innerText = (loadSharedSave().gbit) || 0;
+    }
+
+    // ================= 戰鬥狀態變數 =================
+    let currentStageObj = null;
+    let playerHP = 4, maxPlayerHP = 4;
+    let bossHP = 10, maxBossHP = 10;
+    let combo = 0, hasRevive = false;
+    let currentAnswer = 0, timeLeft = 60;
+    let timerInterval = null, questionStartTime = 0;
+    let answerStr = "";            // 玩家用螢幕鍵盤輸入的答案（字串）
+    let acceptingInput = false;    // 作答中才接受按鍵，動畫播放時鎖住避免重複送出
+
+    let stageStats = { total: 0, mistakes: 0, correct: 0, times: [] };
+    let curN1 = 0, curN2 = 0;      // 這一題的兩個數字（答錯解說要用）
+    let battleSeq = 0;             // 每次開戰／逃跑就 +1，讓舊的計時動作失效
+
+    // ================= DOM 元素 =================
+    const screens = {
+        start: document.getElementById('start-screen'),
+        map: document.getElementById('map-screen'),
+        battle: document.getElementById('battle-screen'),
+        result: document.getElementById('result-overlay')
+    };
+
+    const ui = {
+        playerHp: document.getElementById('player-hp'),
+        bossHpFill: document.getElementById('boss-hp-fill'),
+        bossHpNum: document.getElementById('boss-hp-number'),
+        bossName: document.getElementById('boss-name'),
+        bossLabel: document.getElementById('boss-label'),
+        bossSprite: document.getElementById('boss-sprite'),
+        bossImg: document.getElementById('boss-img'),
+        heroImg: document.getElementById('hero-avatar-el'),
+        levelDisp: document.getElementById('battle-level-display'),
+        question: document.getElementById('question'),
+        answerValue: document.getElementById('answer-value'),
+        timeLeft: document.getElementById('time-left'),
+        msg: document.getElementById('message'),
+        combo: document.getElementById('combo-count'),
+        potion: document.getElementById('potion-ui'),
+        btnAttack: document.getElementById('attack-btn'),
+        btnDel: document.getElementById('key-del')
+    };
+
+    // ================= 勇者動畫（GIF）播放 =================
+    // GIF 不會自己「從頭再播一次」，所以每次播放都先把 GIF 讀進記憶體，
+    // 再用全新的暫時網址指給 <img>，這樣每次都會從第一格開始播。
+    const gifBlobs = {};
+    let gifBlobUrl = null, gifSeq = 0, heroAnimToken = 0;
+
+    function preloadHeroGifs() {
+        ['attack', 'hurt', 'lose'].forEach(key => {
+            fetch(HERO_IMG[key]).then(r => r.blob()).then(b => { gifBlobs[key] = b; }).catch(() => {});
+        });
+        // 其他圖片也先讀進瀏覽器快取，第一次出場才不會閃一下
+        [HERO_IMG.idle, HERO_IMG.runLeft, HERO_IMG.runRight].forEach(src => { new Image().src = src; });
+        allStagesList.forEach(s => { new Image().src = s.img; new Image().src = s.bg; });
+    }
+
+    function freshGifUrl(key) {
+        if (gifBlobUrl) { URL.revokeObjectURL(gifBlobUrl); gifBlobUrl = null; }
+        if (gifBlobs[key]) {
+            gifBlobUrl = URL.createObjectURL(gifBlobs[key]);
+            return gifBlobUrl;
+        }
+        // 備案（例如直接用檔案開啟、無法預先讀取時）：加上流水號讓瀏覽器重新載入
+        return HERO_IMG[key] + '?r=' + (++gifSeq);
+    }
+
+    function playHeroAnim(key, backToIdle = true) {
+        const token = ++heroAnimToken;
+        ui.heroImg.src = freshGifUrl(key);
+        if (backToIdle) {
+            setTimeout(() => {
+                if (token === heroAnimToken) ui.heroImg.src = HERO_IMG.idle;
+            }, HERO_ANIM_MS[key] || 1500);
+        }
+    }
+
+    function resetHeroSprite() {
+        heroAnimToken++;
+        ui.heroImg.src = HERO_IMG.idle;
+    }
+
+    // ================= 畫面切換 =================
+    function switchScreen(screenName) {
+        Object.values(screens).forEach(s => s.classList.add('hidden'));
+        screens[screenName].classList.remove('hidden');
+    }
+
+    // ================= 世界大地圖（合併版） =================
+    const mapWrap = document.getElementById('map-wrap');
+    const mapHero = document.getElementById('map-hero');
+    const mapToast = document.getElementById('map-toast');
+    let heroStageId = null;   // 勇者目前站在哪一關
+    let mapBusy = false;      // 勇者走路途中先鎖住點擊
+
+    const pctX = x => (x / MAP_W * 100) + '%';
+    const pctY = y => (y / MAP_H * 100) + '%';
+
+    // 「目前位置」= 第一個「已解鎖但還沒過關」的關卡；如果全部關卡都過了，
+    // 就停在最後一關，讓玩家知道自己破完全部關卡了。
+    function findFrontierStageId() {
+        for (const s of allStagesList) {
+            const pData = playerProgress[s.id] || { unlocked: false, stars: 0 };
+            if (pData.unlocked && pData.stars === 0) return s.id;
+        }
+        return allStagesList[allStagesList.length - 1].id;
+    }
+
+    // 勇者「腳底」站的位置：標籤正上方一點點
+    function heroSpot(stage) { return { x: stage.mx, y: stage.my - 10 }; }
+
+    function buildMap() {
+        // 1) 迷霧：一層黑霧 + 每一關各自一個「洞」，解鎖哪一關就只打開那一關
+        const NS = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(NS, 'svg');
+        svg.setAttribute('class', 'map-fog');
+        svg.setAttribute('viewBox', '0 0 ' + MAP_W + ' ' + MAP_H);
+        svg.setAttribute('preserveAspectRatio', 'none');
+        let holes = '';
+        allStagesList.forEach(st => {
+            holes += '<circle id="fogc-' + st.id + '" cx="' + (st.fx !== undefined ? st.fx : st.mx) + '" cy="' + (st.fy !== undefined ? st.fy : st.my - 70) + '" r="0" fill="#000" data-r="' + (st.fr !== undefined ? st.fr : Math.max(150, Math.round(st.mw * 0.95))) + '"></circle>';
+        });
+        svg.innerHTML =
+            '<defs>' +
+              '<filter id="fogBlur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="26"/></filter>' +
+              '<mask id="fogMask" maskUnits="userSpaceOnUse" x="0" y="0" width="' + MAP_W + '" height="' + MAP_H + '">' +
+                '<rect width="' + MAP_W + '" height="' + MAP_H + '" fill="#fff"/>' +
+                '<g filter="url(#fogBlur)">' + holes + '</g>' +
+              '</mask>' +
+            '</defs>' +
+            '<rect width="' + MAP_W + '" height="' + MAP_H + '" fill="#04040f" fill-opacity="0.9" mask="url(#fogMask)"/>';
+        mapWrap.insertBefore(svg, mapHero);
+
+        // 2) 關卡熱區（方法 A：CSS 點擊熱區）
+        allStagesList.forEach(s => {
+            const node = document.createElement('div');
+            node.className = 'map-node locked';
+            node.id = 'node-' + s.id;
+            node.title = s.id + ' ' + s.boss + '（' + s.desc + '）';
+            node.style.left = pctX(s.mx);
+            node.style.top = pctY(s.my);
+            node.style.width = (s.mw / MAP_W * 100) + '%';
+            node.style.height = (NODE_H / MAP_H * 100) + '%';
+            node.onclick = () => onMapNodeClick(s.id);
+            mapWrap.insertBefore(node, mapHero);
+        });
+    }
+
+    // 依照目前進度更新：迷霧開關、關卡狀態、星星、發光的「目前關卡」
+    function refreshMap() {
+        const frontierId = findFrontierStageId();
+
+        const fogEl = document.querySelector('.map-fog');
+        if (fogEl) {
+            const allOpen = allStagesList.every(st => playerProgress[st.id] && playerProgress[st.id].unlocked);
+            fogEl.style.transition = 'opacity 1.2s';
+            fogEl.style.opacity = allOpen ? 0 : 1;
+        }
+
+        allStagesList.forEach(st => {
+            const hole = document.getElementById('fogc-' + st.id);
+            const open = playerProgress[st.id] && playerProgress[st.id].unlocked;
+            if (hole) hole.style.setProperty('r', open ? hole.dataset.r + 'px' : '0px');
+        });
+
+        allStagesList.forEach(s => {
+            const pData = playerProgress[s.id] || { unlocked: false, stars: 0 };
+            const node = document.getElementById('node-' + s.id);
+            if (!node) return;
+            node.className = 'map-node ' + (pData.unlocked ? (pData.stars > 0 ? 'cleared' : 'unlocked') : 'locked')
+                           + (s.id === frontierId ? ' frontier' : '');
+            let html = '';
+            if (SHOW_NODE_LABELS) html += '<div class="node-label" title="' + s.boss + '">' + s.id + '</div>';
+            if (!pData.unlocked) html += '<span class="lock-badge">🔒</span>';
+            if (pData.stars > 0) html += '<div class="stars-display">' + '★'.repeat(pData.stars) + '☆'.repeat(5 - pData.stars) + '</div>';
+            node.innerHTML = html;
+        });
+    }
+
+    function placeHeroInstant(stageId) {
+        const s = allStagesList.find(x => x.id === stageId);
+        if (!s) return;
+        const p = heroSpot(s);
+        mapHero.style.transition = 'none';
+        mapHero.style.left = pctX(p.x);
+        mapHero.style.top = pctY(p.y);
+        mapHero.src = HERO_IMG.idle;
+        heroStageId = stageId;
+    }
+
+    // 勇者走到指定關卡：往右走播「右跑步」、往左走播「左跑步」，走到定點換回站立圖
+    function walkHeroTo(stageId, done) {
+        const from = allStagesList.find(x => x.id === heroStageId);
+        const to = allStagesList.find(x => x.id === stageId);
+        if (!from || !to || from.id === to.id) { setTimeout(done, 250); return; }
+
+        const a = heroSpot(from), b = heroSpot(to);
+        const dx = b.x - a.x;
+        const dist = Math.hypot(dx, b.y - a.y);
+        const sec = Math.min(2.6, Math.max(0.8, dist / 480));
+
+        mapHero.src = dx >= 0 ? HERO_IMG.runRight : HERO_IMG.runLeft;
+        void mapHero.offsetWidth; // 先讓起點生效，後面的移動才會有動畫
+        mapHero.style.transition = 'left ' + sec + 's linear, top ' + sec + 's linear';
+        mapHero.style.left = pctX(b.x);
+        mapHero.style.top = pctY(b.y);
+
+        setTimeout(() => {
+            mapHero.src = HERO_IMG.idle;
+            heroStageId = stageId;
+            setTimeout(done, 200);
+        }, sec * 1000 + 60);
+    }
+
+    function showMapToast(text) {
+        mapToast.innerText = text;
+        mapToast.classList.add('show');
+        clearTimeout(showMapToast._t);
+        showMapToast._t = setTimeout(() => mapToast.classList.remove('show'), 1800);
+    }
+
+    function onMapNodeClick(stageId) {
+        if (mapBusy) return;
+        const pData = playerProgress[stageId];
+        if (!pData || !pData.unlocked) {
+            showMapToast('🔒 先打敗前面的怪物，這一關才會開啟喔！');
+            return;
+        }
+        goToStage(stageId);
+    }
+
+    function goToStage(stageId) {
+        mapBusy = true;
+        walkHeroTo(stageId, () => {
+            mapBusy = false;
+            startBattle(stageId);
+        });
+    }
+
+    function showMap() {
+        hideExplain();
+        stopMusic(); // 回到地圖就先停掉戰鬥音樂，進下一場戰鬥時會依地形重新播放
+        if (heroStageId === null) placeHeroInstant(findFrontierStageId());
+        switchScreen('map');
+        void mapWrap.offsetWidth; // 畫面顯示後再更新狀態，新解鎖的區域才會有「迷霧散開」的動畫
+        refreshMap();
+    }
+
+    // ================= 戰鬥邏輯 =================
+    function startBattle(stageId) {
+        currentStageObj = allStagesList.find(s => s.id === stageId);
+        if (!currentStageObj) return;
+
+        // 初始化狀態
+        const HB = HERO.begin(allStagesList.findIndex(x => x.id === currentStageObj.id), currentStageObj.id);
+        maxPlayerHP = HB.pmax; maxBossHP = HB.mmax; playerHP = maxPlayerHP; bossHP = maxBossHP;
+        combo = 0;
+        hasRevive = false;
+        stageStats = { total: 0, mistakes: 0, correct: 0, times: [] };
+
+        // 設置 UI
+        ui.bossName.innerText = currentStageObj.boss;
+        ui.bossLabel.innerText = currentStageObj.boss;
+        ui.bossImg.src = currentStageObj.img;
+        ui.bossImg.alt = currentStageObj.boss;
+        ui.bossImg.classList.toggle('wide', !!currentStageObj.wide);
+        ui.bossSprite.classList.remove('boss-defeated', 'lunge-reverse');
+        ui.bossImg.classList.remove('hit-flash');
+        resetHeroSprite();
+        battleSeq++; hideExplain();
+        screens.battle.classList.toggle('teach', playMode === 'teach');
+        screens.battle.style.backgroundImage = `url('${currentStageObj.bg}')`;
+        ui.levelDisp.innerHTML = `<div class="lv-main">關卡 ${currentStageObj.id}</div><div class="lv-sub">${currentStageObj.terrainName}${playMode === 'teach' ? '・教學版' : ''}</div>`;
+
+        showMessage(`${currentStageObj.boss} 出現了！戰鬥開始！`, "#2ECC71");
+        updateUI();
+        switchScreen('battle');
+        playTerrainMusic(currentStageObj.terrainId);
+        nextQuestion();
+    }
+
+    function quitToMap() {
+        clearInterval(timerInterval);
+        acceptingInput = false;
+        battleSeq++; hideExplain();
+        showMap();
+    }
+
+    function randInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    // 取得這一題的兩個乘數；'mixed'（第五關）= 兩個乘數各自先隨機抽「幾位數」（1～4 位），再抽數字
+    const DIGIT_RANGES = [[1, 9], [10, 99], [100, 999], [1000, 9999]];
+    function pickFactors(stage) {
+        let r1 = stage.r1, r2 = stage.r2;
+        if (r1 === 'mixed') {
+            r1 = DIGIT_RANGES[randInt(0, 3)];
+            r2 = DIGIT_RANGES[randInt(0, 3)];
+        }
+        return [randInt(r1[0], r1[1]), randInt(r2[0], r2[1])];
+    }
+
+    // ---------- 螢幕數字鍵盤 ----------
+    function renderAnswer() {
+        ui.answerValue.innerText = answerStr === "" ? "?" : answerStr;
+        ui.answerValue.classList.toggle('empty', answerStr === "");
+        ui.answerValue.classList.toggle('len6', answerStr.length >= 6 && answerStr.length < 8);
+        ui.answerValue.classList.toggle('len8', answerStr.length >= 8);
+    }
+
+    function quickPressDigit(d) {
+        if (!acceptingInput) return;
+        if (answerStr === "0") answerStr = d;          // 避免 05 這種開頭 0
+        else if (answerStr.length < 8) answerStr += d; // 最大積為 9999×9999 = 99980001，最多 8 位數
+        renderAnswer();
+    }
+
+    function quickPressDelete() {
+        if (!acceptingInput) return;
+        answerStr = answerStr.slice(0, -1);
+        renderAnswer();
+    }
+
+    function quickSubmit() {
+        if (!acceptingInput || answerStr === "") return;
+        processAnswer(true, false);
+    }
+
+    function quickNextQuestion() {
+        clearInterval(timerInterval);
+        answerStr = "";
+        renderAnswer();
+        acceptingInput = true;
+
+        const [num1, num2] = pickFactors(currentStageObj);
+        curN1 = num1; curN2 = num2;
+        currentAnswer = num1 * num2;
+
+        const qText = `${num1} × ${num2} = ?`;
+        ui.question.innerText = qText;
+        // 四位數 × 四位數的題目很長，字體自動縮小才放得下
+        ui.question.style.fontSize = qText.length >= 14 ? '40px' : (qText.length >= 12 ? '46px' : '');
+
+        timeLeft = stageVal('limit');
+        questionStartTime = Date.now();
+        ui.timeLeft.innerText = timeLeft;
+
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            ui.timeLeft.innerText = timeLeft;
+            if (timeLeft <= 0) processAnswer(false, true); // 超時
+        }, 1000);
+    }
+
+    // ================= 教學版：直式乘法作答 =================
+    // 每一列部分積用不同顏色（個位綠、十位橘、百位紫、千位藍），顏色跟乘數的那一位數對應。
+    // 計分的格子：各列部分積 + 最後的答案。進位格只是讓學生寫進位用，不計分。
+    const PLACE_COLORS = ['#27AE60', '#E67E22', '#8E44AD', '#2980B9'];
+    const PLACE_TINTS  = ['#E9F7EF', '#FDF2E9', '#F4ECF7', '#EAF2F8'];
+    const PLACE_NAMES  = ['個', '十', '百', '千'];
+    const COLOR_NAMES  = ['綠', '橘', '紫', '藍'];
+    const teachPanel = document.getElementById('teach-panel');
+    const teachHint = document.getElementById('teach-hint');
+    let form = null;         // 這一題的直式表格
+    let activeCell = null;   // 目前選到的格子
+
+    function tfEl(cls, text) {
+        const el = document.createElement('div');
+        el.className = 'tf-cell ' + cls;
+        if (text !== undefined) el.textContent = text;
+        return el;
+    }
+
+    function buildForm(n1, n2) {
+        const s1 = String(n1), s2 = String(n2), ans = String(n1 * n2);
+        const multi = s2.length > 1;
+
+        // 部分積（乘數只有一位數時沒有這一段，直接寫答案）
+        const partials = [];
+        if (multi) {
+            for (let i = 0; i < s2.length; i++) {
+                const d = Number(s2[s2.length - 1 - i]);
+                partials.push({ type: 'partial', i, d, value: String(n1 * d) });
+            }
+        }
+        let W = Math.max(s1.length, s2.length, ans.length);
+        partials.forEach(p => { W = Math.max(W, p.i + p.value.length); });
+
+        // 大小：位數越多，格子越小，才放得進畫面
+        const rowUnits = 3 + partials.length + (s1.length > 1 ? 0.6 : 0) + (multi && ans.length > 1 ? 0.6 : 0);
+        const cw = Math.min(54, Math.floor(290 / (W + 1)));
+        const ch = Math.min(40, Math.floor(222 / rowUnits));
+        teachPanel.style.setProperty('--cw', cw + 'px');
+        teachPanel.style.setProperty('--ch', ch + 'px');
+        teachPanel.innerHTML = '';
+
+        const f = { n1, n2, multi, order: [], mulCarry: [], sumCarry: [], partials };
+
+        // 一列：由右到左 col 0..W-1，最左邊多一格放符號
+        function addRow(map, signText, signStyle) {
+            const row = document.createElement('div');
+            row.className = 'tf-row';
+            const sign = tfEl('sign', signText || '');
+            if (signStyle) sign.style.cssText = signStyle;
+            row.appendChild(sign);
+            for (let col = W - 1; col >= 0; col--) row.appendChild(map[col] || tfEl('blank'));
+            teachPanel.appendChild(row);
+            return row;
+        }
+        function makeCell(kind, row, col, expect) {
+            const el = tfEl(kind);
+            const c = { el, kind, row, col, expect: expect === undefined ? null : expect, val: '' };
+            el.addEventListener('click', () => { if (acceptingInput) setActive(c); });
+            return c;
+        }
+        function setRowColor(c, idx) {
+            if (idx === null) return;
+            c.el.style.setProperty('--rc', PLACE_COLORS[idx]);
+            c.el.style.setProperty('--rt', PLACE_TINTS[idx]);
+        }
+
+        // 1) 乘法進位格（被乘數是 2 位以上才有）
+        if (s1.length > 1) {
+            const map = {};
+            for (let col = 1; col < s1.length; col++) {
+                const c = makeCell('carry', { type: 'mulCarry' }, col);
+                map[col] = c.el; f.mulCarry.push(c);
+            }
+            addRow(map, '進位', 'font-size:' + Math.round(ch * 0.34) + 'px;');
+        }
+
+        // 2) 被乘數、乘數
+        const m1 = {};
+        for (let k = 0; k < s1.length; k++) m1[k] = tfEl('', s1[s1.length - 1 - k]);
+        addRow(m1, '');
+        const m2 = {};
+        for (let k = 0; k < s2.length; k++) {
+            const e = tfEl('', s2[s2.length - 1 - k]);
+            if (multi) e.style.color = PLACE_COLORS[k];
+            m2[k] = e;
+        }
+        addRow(m2, '×');
+        const rule = document.createElement('div'); rule.className = 'tf-rule'; teachPanel.appendChild(rule);
+
+        // 3) 各列部分積（標色）
+        partials.forEach(p => {
+            const map = {};
+            const L = p.value.length;
+            if (p.d === 0) {
+                // 乘以 0 一定是 0：直接放一個灰色 0，不用寫
+                map[p.i] = tfEl('prefill', '0');
+            } else {
+                for (let k = 0; k < L; k++) {
+                    const c = makeCell('input', p, p.i + k, p.value[L - 1 - k]);
+                    c.label = `「${n1} × ${p.d}」那一列的${PN[k]}位`;
+                    setRowColor(c, p.i);
+                    map[p.i + k] = c.el;
+                    f.order.push(c);
+                }
+            }
+            addRow(map, PLACE_NAMES[p.i] + '位', 'color:' + PLACE_COLORS[p.i] + '; font-weight:900; font-size:' + Math.round(ch * 0.36) + 'px;');
+        });
+
+        // 4) 加法進位格 + 答案
+        if (multi) {
+            const r2 = document.createElement('div'); r2.className = 'tf-rule'; teachPanel.appendChild(r2);
+            if (ans.length > 1) {
+                const map = {};
+                for (let col = 1; col < ans.length; col++) {
+                    const c = makeCell('carry', { type: 'sumCarry' }, col);
+                    map[col] = c.el; f.sumCarry.push(c);
+                }
+                addRow(map, '進位', 'font-size:' + Math.round(ch * 0.34) + 'px;');
+            }
+        }
+        const ansRow = { type: 'answer' };
+        const mapA = {};
+        for (let k = 0; k < ans.length; k++) {
+            const c = makeCell('input', ansRow, k, ans[ans.length - 1 - k]);
+            c.label = `答案的${PN[k]}位`;
+            mapA[k] = c.el;
+            f.order.push(c);
+        }
+        addRow(mapA, '答', 'color:#C0392B; font-weight:900;');
+
+        form = f;
+    }
+
+    // 進位格的顏色跟著「現在在算的那一列」
+    function tintCarry(c) {
+        if (!form) return;
+        let idx = null;
+        if (c && c.row.type === 'partial') idx = c.row.i;
+        else if (c && c.row.type === 'answer' && !form.multi) idx = 0;
+        form.mulCarry.forEach(cc => {
+            cc.el.style.setProperty('--cc', idx === null ? '#B0BEC5' : PLACE_COLORS[idx]);
+            cc.el.style.setProperty('--ct', idx === null ? '#F4F6F7' : PLACE_TINTS[idx]);
+        });
+    }
+
+    function updateHint(c) {
+        if (!c) { teachHint.innerText = ''; return; }
+        const n1 = form.n1, n2 = form.n2;
+        const s2 = String(n2);
+        let t = '';
+        if (c.row.type === 'partial') {
+            const p = c.row, shift = p.i;
+            t = `${COLOR_NAMES[p.i]}色：${n1} × ${p.d}（${PLACE_NAMES[p.i]}位數 ${p.d}）`
+              + (shift > 0 ? `，從右邊空 ${shift} 格開始寫` : '，從最右邊開始寫');
+        } else if (c.row.type === 'answer') {
+            t = form.multi ? `最後：把上面 ${form.partials.length} 列加起來` : `${n1} × ${n2}，從最右邊（個位）開始算`;
+        } else {
+            t = '這是進位格：可以寫下進位的數字（不會計分）';
+        }
+        teachHint.innerText = t;
+    }
+
+    function setActive(c) {
+        if (activeCell) activeCell.el.classList.remove('active');
+        activeCell = c;
+        if (c) c.el.classList.add('active');
+        updateHint(c);
+        tintCarry(c);
+    }
+
+    function cellText(c) { c.el.textContent = c.val; }
+
+    function teachPressDigit(d) {
+        if (!acceptingInput || !form) return;
+        if (!activeCell) setActive(form.order[0]);
+        const c = activeCell;
+        c.val = String(d);
+        cellText(c);
+        if (c.kind === 'input') {
+            const idx = form.order.indexOf(c);
+            if (idx < form.order.length - 1) setActive(form.order[idx + 1]);
+        }
+    }
+
+    function teachPressDelete() {
+        if (!acceptingInput || !form || !activeCell) return;
+        const c = activeCell;
+        if (c.val !== '') { c.val = ''; cellText(c); return; }
+        if (c.kind === 'input') {
+            const idx = form.order.indexOf(c);
+            if (idx > 0) {
+                const prev = form.order[idx - 1];
+                prev.val = ''; cellText(prev);
+                setActive(prev);
+            }
+        }
+    }
+
+    function teachSubmit() {
+        if (!acceptingInput || !form) return;
+        const empty = form.order.find(c => c.val === '');
+        if (empty) {
+            showMessage('還有空格沒填喔！每一格都要填好才能攻擊。', '#F1C40F');
+            setActive(empty);
+            return;
+        }
+        processAnswer(true, false);
+    }
+
+    // 批改：全部計分格都對才算答對；答錯的格子標紅色並顯示正確數字
+    function gradeForm() {
+        let ok = true;
+        if (activeCell) activeCell.el.classList.remove('active');
+        form.order.forEach(c => {
+            if (c.val === c.expect) c.el.classList.add('ok');
+            else { ok = false; c.el.classList.add('bad'); }
+        });
+        return ok;
+    }
+    function revealForm() {
+        form.order.forEach(c => {
+            if (c.val !== c.expect) { c.el.textContent = c.expect; c.el.classList.add('revealed'); }
+        });
+    }
+
+    function teachNextQuestion() {
+        clearInterval(timerInterval);
+        acceptingInput = true;
+
+        const [num1, num2] = pickFactors(currentStageObj);
+        curN1 = num1; curN2 = num2;
+        currentAnswer = num1 * num2;
+        ui.question.innerText = `${num1} × ${num2} = ?`;
+        ui.question.style.fontSize = '';
+        buildForm(num1, num2);
+        activeCell = null;
+        setActive(form.order[0]);
+
+        timeLeft = stageVal('limit');
+        questionStartTime = Date.now();
+        ui.timeLeft.innerText = timeLeft;
+
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            ui.timeLeft.innerText = timeLeft;
+            if (timeLeft <= 0) processAnswer(false, true); // 超時
+        }, 1000);
+    }
+
+    // 依目前模式分流（螢幕鍵盤、實體鍵盤、按鈕、出題都走這四個）
+    function pressDigit(d)  { return playMode === 'teach' ? teachPressDigit(d)  : quickPressDigit(d); }
+    function pressDelete()  { return playMode === 'teach' ? teachPressDelete()  : quickPressDelete(); }
+    function submitAnswer() { return playMode === 'teach' ? teachSubmit()       : quickSubmit(); }
+    function nextQuestion() { return playMode === 'teach' ? teachNextQuestion() : quickNextQuestion(); }
+
+    // ================= 答錯解說：看完解說、按「確定」才進下一題 =================
+    // 答對：直接進下一題（不用按任何東西）。答錯／時間到：先跳出這個解說視窗，按「確定」才會往下走。
+    const PN = ['個', '十', '百', '千', '萬', '十萬', '百萬', '千萬'];   // 位名（解說文字用）
+    const exEl = id => document.getElementById(id);
+    let explainOpen = false, explainShownAt = 0, afterExplain = null;
+
+    function openExplain(info) {
+        exEl('ex-title').innerText = info.title;
+        exEl('ex-note').innerText = info.note || '';
+        exEl('ex-ans').innerHTML = info.ansHtml || '';
+        exEl('ex-vert').innerHTML = info.vertHtml || '';
+        exEl('ex-steps').innerHTML = (info.steps || []).map(s => '<li>' + s + '</li>').join('');
+        exEl('ex-mist').innerHTML = (info.mistakes || []).map(s => '<li>' + s + '</li>').join('');
+        exEl('ex-mist-wrap').classList.toggle('hidden', !(info.mistakes && info.mistakes.length));
+        exEl('ex-check').innerHTML = info.check || '';
+        exEl('explain-overlay').classList.remove('hidden');
+        exEl('explain-overlay').querySelector('.ex-body').scrollTop = 0;
+        explainOpen = true; explainShownAt = Date.now();
+    }
+    function hideExplain() {
+        explainOpen = false; afterExplain = null;
+        exEl('explain-overlay').classList.add('hidden');
+    }
+    function confirmExplain() {
+        if (!explainOpen) return;
+        explainOpen = false;
+        exEl('explain-overlay').classList.add('hidden');
+        const fn = afterExplain; afterExplain = null;
+        if (fn) fn();
+    }
+    exEl('ex-ok').addEventListener('click', confirmExplain);
+
+    // 畫直式：rows = [{ sign, cells:[由左到右共 W 格], cls, note }]；cell 可以是字串或 { t, cls }
+    function exGrid(W, rows, sw) {
+        const cw = Math.max(20, Math.min(34, Math.floor(420 / (W + 1))));
+        let h = '<div class="ex-grid" style="--cw:' + cw + 'px; --sw:' + (sw || 54) + 'px">';
+        rows.forEach(r => {
+            h += '<div class="xr ' + (r.cls || '') + '"><span class="xs">' + (r.sign || '') + '</span>';
+            for (let i = 0; i < W; i++) {
+                const c = r.cells[i];
+                const t = (c && typeof c === 'object') ? c.t : (c || '');
+                const cl = (c && typeof c === 'object' && c.cls) ? c.cls : '';
+                h += '<span class="xc ' + cl + '">' + (t === '' ? '&nbsp;' : t) + '</span>';
+            }
+            h += (r.note ? '<span class="xn">' + r.note + '</span>' : '') + '</div>';
+        });
+        return h + '</div>';
+    }
+    // 把字串 str 靠右放在第 endCol 格（含），可指定顏色 class
+    function exPut(cells, str, endCol, cls) {
+        for (let k = 0; k < str.length; k++) cells[endCol - str.length + 1 + k] = cls ? { t: str[k], cls: cls } : str[k];
+    }
+
+    // ================= 答錯解說內容（直式乘法） =================
+    function exMul(n1, n2) {
+        const s1 = String(n1), s2 = String(n2), ans = n1 * n2, sA = String(ans), multi = s2.length > 1;
+        // 「n1 × d」這一列怎麼算：由右到左，每一位乘 d，再加上進位
+        function chain(d) {
+            const parts = []; let carry = 0;
+            for (let i = s1.length - 1; i >= 0; i--) {
+                const x = Number(s1[i]), v = x * d + carry;
+                parts.push({ pl: s1.length - 1 - i, text: `${x} × ${d}${carry ? ' + 進位 ' + carry : ''} = ${v}` + (i === 0 ? `，寫 <b>${v}</b>` : `，寫 <b>${v % 10}</b>，進 <b>${Math.floor(v / 10)}</b>`) });
+                carry = Math.floor(v / 10);
+            }
+            return parts;
+        }
+        const steps = [];
+        const partials = [];   // 每一列部分積：{ i, d, value }
+        if (!multi) {
+            chain(Number(s2)).forEach(c => steps.push(`<b>${PN[c.pl]}位：</b>${c.text}`));
+        } else {
+            for (let i = 0; i < s2.length; i++) {
+                const d = Number(s2[s2.length - 1 - i]), v = n1 * d;
+                partials.push({ i, d, value: String(v) });
+                if (d === 0) {
+                    steps.push(`<b>${PN[i]}位的 0：</b>${n1} × 0 = <b>0</b>（任何數乘 0 都是 0，這一列寫 0 就好）`);
+                } else {
+                    const plain = chain(d).map(c => c.text.replace(/<\/?b>/g, '')).join('；');
+                    steps.push(`<b>${PN[i]}位的 ${d}：</b>${n1} × ${d} = <b>${v}</b>` + (i > 0 ? `（${PN[i]}位，要從右邊空 ${i} 格再開始寫，也就是後面補 ${i} 個 0）` : '')
+                        + `<span class="sm">算法：${plain}</span>`);
+                }
+            }
+            const terms = partials.map(p => String(Number(p.value) * Math.pow(10, p.i)));
+            steps.push(`<b>最後：</b>把每一列加起來：${terms.join(' + ')} = <b>${ans}</b>`);
+        }
+
+        // 直式
+        let W = Math.max(sA.length, s1.length, s2.length + 1);
+        partials.forEach(p => { W = Math.max(W, p.value.length + p.i); });
+        const rows = [];
+        const r1 = new Array(W).fill(''); exPut(r1, s1, W - 1);
+        const r2 = new Array(W).fill(''); exPut(r2, s2, W - 1);
+        rows.push({ sign: '', cells: r1 });
+        rows.push({ sign: '×', cells: r2 });
+        partials.forEach((p, idx) => {
+            const c = new Array(W).fill('');
+            if (p.d === 0) exPut(c, '0', W - 1 - p.i, 'pre'); else exPut(c, p.value, W - 1 - p.i, 'p' + Math.min(p.i, 3));
+            rows.push({ sign: '', cells: c, cls: idx === 0 ? 'top' : '', note: `← ${n1} × ${p.d}` });
+        });
+        const ra = new Array(W).fill(''); exPut(ra, sA, W - 1);
+        rows.push({ sign: '', cells: ra, cls: 'top ans' });
+        return { vertHtml: exGrid(W, rows), steps: steps, check: `🔍 驗算：${ans} ÷ ${n2} = ${n1}，所以 ${n1} × ${n2} = ${ans}` };
+    }
+
+    function buildExplainInfo(isTimeout) {
+        const n1 = curN1, n2 = curN2, ans = n1 * n2;
+        const ex = exMul(n1, n2);
+        let mine = '';
+        const mistakes = [];
+        if (playMode === 'teach' && form) {
+            const cells = form.order.filter(c => c.row.type === 'answer');   // 由個位開始
+            const typed = cells.slice().reverse().map(c => c.val || '？').join('');
+            mine = /\d/.test(typed) ? typed : '';
+            form.order.forEach(c => {
+                if (c.val !== c.expect) mistakes.push(`${c.label}：你寫 <span class="bad">${c.val || '（空白）'}</span>，應該是 <span class="good">${c.expect}</span>`);
+            });
+        } else if (!isTimeout) {
+            mine = answerStr;
+        }
+        return {
+            title: isTimeout ? '⏰ 時間到了！' : '❌ 這題算錯了',
+            ansHtml: (mine ? `你的答案：<span class="bad">${mine}</span>　` : (isTimeout ? '沒有來得及送出答案　' : '')) + `正確答案：<span class="good">${ans}</span>`,
+            vertHtml: ex.vertHtml, steps: ex.steps, check: ex.check, mistakes: mistakes
+        };
+    }
+
+    function processAnswer(isAttempt, isTimeout = false) {
+        if (!acceptingInput) return;
+        acceptingInput = false;   // 動畫播放期間鎖住鍵盤
+        clearInterval(timerInterval);
+        const timeTaken = (Date.now() - questionStartTime) / 1000;
+        stageStats.total++;
+        const seq = battleSeq;
+
+        let isCorrect = false;
+        if (playMode === 'teach') {
+            // 教學版：所有計分格都對才算答對；錯的格子標紅
+            const formOk = gradeForm();
+            isCorrect = formOk && !isTimeout;
+            if (!isCorrect) revealForm();
+        } else if (!isTimeout) {
+            const playerAns = parseInt(answerStr, 10);
+            if (playerAns === currentAnswer) isCorrect = true;
+        }
+
+        const bossName = currentStageObj.boss;
+
+        if (isCorrect) {
+            // ✅ 答對：直接進下一題（不用按任何按鈕）
+            let waitMs = 1100;
+            stageStats.correct++;
+            stageStats.times.push(timeTaken);
+            combo++;
+
+            let damage = HERO.hit(combo, timeTaken); let bonusText = HERO.bonusText(combo);
+
+            bossHP -= damage;
+            let msg = `答對了！造成 ${damage} 傷害 ${bonusText}`;
+
+            if (combo >= 5 && !hasRevive) {
+                hasRevive = true;
+                msg += " 【獲得甦醒藥！】";
+            }
+            const bossDown = bossHP <= 0;
+            if (bossDown) msg += ` ${bossName} 被打敗了！`;
+            showMessage(msg, "#F1C40F");
+
+            playHeroAnim('attack');
+            // 勇者揮刀約 0.2 秒後命中：怪物閃白光、跳出傷害數字
+            setTimeout(() => {
+                playBossHit();
+                showFloatingDamage('boss', `-${damage}`, '#E74C3C');
+            }, 200);
+
+            if (bossDown) {
+                // 勇者揮完這一擊，怪物閃白光後倒下消失
+                setTimeout(() => ui.bossSprite.classList.add('boss-defeated'), 450);
+                waitMs = 1700;
+            }
+
+            updateUI();
+            setTimeout(() => {
+                if (seq !== battleSeq) return;
+                if (bossHP <= 0) endGame(true);
+                else nextQuestion();
+            }, waitMs);
+
+        } else {
+            // ❌ 答錯／時間到：先跳出解說視窗，按「確定」才會繼續
+            stageStats.mistakes++;
+            combo = 0;
+            bossHP = Math.min(maxBossHP, bossHP + HERO.heal()); // 扣錯魔王加血不超過上限
+            const hurtD = HERO.hurt(); playerHP -= hurtD;
+
+            let msg = isTimeout ? "時間到！" : "答錯了！";
+            msg += ` 受到 ${hurtD} 傷害，怪物回血。`;
+
+            if (playerHP <= 0 && hasRevive) {
+                playerHP = maxPlayerHP;
+                hasRevive = false;
+                msg += " 【甦醒藥發動！滿血復活！】";
+            }
+            showMessage(msg, "#E74C3C");
+
+            playBossLunge();
+            showFloatingDamage('hero', '-' + hurtD, '#E74C3C');
+            if (playerHP <= 0) playHeroAnim('lose', false);   // 倒地後停在地上
+            else playHeroAnim('hurt');
+            updateUI();
+
+            const info = buildExplainInfo(isTimeout);   // 趁玩家填的內容還在，先把解說準備好
+            info.note = msg;
+            afterExplain = () => {
+                if (playerHP <= 0) endGame(false);
+                else { resetHeroSprite(); nextQuestion(); }
+            };
+            setTimeout(() => { if (seq !== battleSeq) return; openExplain(info); }, 800);
+        }
+    }
+
+    function updateUI() {
+        let heartsStr = '❤️ ' + Math.max(0, playerHP) + ' / ' + maxPlayerHP;
+        ui.playerHp.innerText = heartsStr;
+
+        const hpPercent = Math.max(0, (bossHP / maxBossHP) * 100);
+        ui.bossHpFill.style.width = hpPercent + "%";
+        ui.bossHpNum.innerText = Math.round(Math.max(0, bossHP)); if (ui.bossHpNum.nextSibling) ui.bossHpNum.nextSibling.textContent = ' / ' + Math.round(maxBossHP);
+
+        ui.combo.innerText = combo;
+        if (hasRevive) ui.potion.classList.remove('hidden');
+        else ui.potion.classList.add('hidden');
+    }
+
+    function showMessage(text, color) {
+        ui.msg.innerText = text;
+        ui.msg.style.color = color;
+    }
+
+    // ================= 戰鬥攻擊動畫 =================
+    // 勇者答對：勇者播「發動攻擊」GIF，怪物被打中閃白光。
+    function playBossHit() {
+        ui.bossImg.classList.add('hit-flash');
+        setTimeout(() => ui.bossImg.classList.remove('hit-flash'), 400);
+    }
+    // 勇者答錯：怪物衝上前攻擊，勇者播「被攻擊」GIF。
+    function playBossLunge() {
+        ui.bossSprite.classList.add('lunge-reverse');
+        setTimeout(() => ui.bossSprite.classList.remove('lunge-reverse'), 400);
+    }
+
+    // 在角色頭上飄出一個傷害/回復數字，飄完自動消失
+    function showFloatingDamage(target, text, color) {
+        const boxEl = document.getElementById(target === 'boss' ? 'boss-box' : 'hero-box');
+        if (!boxEl) return;
+        const dmgEl = document.createElement('div');
+        dmgEl.className = 'floating-dmg';
+        dmgEl.style.color = color;
+        dmgEl.innerText = text;
+        boxEl.appendChild(dmgEl);
+        setTimeout(() => dmgEl.remove(), 900);
+    }
+
+    // ================= 結算與星級計算 =================
+    function calculateStars() {
+        let stars = 1;
+        const acc = stageStats.correct / stageStats.total;
+
+        if (stageStats.mistakes === 0) {
+            const allFast = stageStats.times.every(t => t <= stageVal('fast'));
+            const allQuick = stageStats.times.every(t => t <= stageVal('quick'));
+            if (allFast) stars = 5;
+            else if (allQuick) stars = 4;
+            else stars = 3;
+        } else {
+            if (acc >= 0.6) stars = 2;
+            else stars = 1;
+        }
+        return stars;
+    }
+
+    function endGame(isWin) {
+        screens.result.classList.remove('hidden');
+        const title = document.getElementById('result-title');
+        const starsEl = document.getElementById('result-stars');
+        const statsEl = document.getElementById('result-stats');
+        const nextBtn = document.getElementById('next-stage-btn');
+
+        if (isWin) {
+            const stars = calculateStars();
+            title.innerText = "⭐ 關卡克里爾！⭐";
+            title.style.color = "#2ECC71";
+            starsEl.style.fontSize = "";
+            starsEl.innerHTML = "★".repeat(stars) + `<span style="color:#7F8C8D;">${"☆".repeat(5-stars)}</span>`;
+
+            let acc = Math.round((stageStats.correct / stageStats.total) * 100) || 0;
+            let avgTime = (stageStats.times.reduce((a,b)=>a+b,0) / (stageStats.times.length||1)).toFixed(1);
+
+            // 只在星等進步時發代幣（每進步 1 顆星 = 2 GBit），避免同一關無限刷代幣。
+            const prevStars = playerProgress[currentStageObj.id] ? playerProgress[currentStageObj.id].stars : 0;
+            const tokensEarned = Math.max(0, stars - prevStars) * 2;
+            const tokensLine = tokensEarned > 0
+                ? `<div><strong>獲得代幣：</strong> <span style="color:#8E44AD;">+${tokensEarned} GBit</span></div>`
+                  + (useStudentSave ? '' : `<div style="color:#C0392B; font-weight:bold;">⚠️ 尚未登入學號，這次的代幣只暫存在這台電腦，不會進到你的帳號！</div>`)
+                : `<div style="color:#7F8C8D;">（星等沒有進步，這次沒有新增代幣）</div>`;
+
+            statsEl.innerHTML = `
+                <div><strong>打敗怪物：</strong> ${currentStageObj.boss}</div>
+                <div><strong>作答題數：</strong> ${stageStats.total} 題</div>
+                <div><strong>失誤次數：</strong> <span style="color:${stageStats.mistakes===0?'#27AE60':'#E74C3C'}">${stageStats.mistakes}</span> 次</div>
+                <div><strong>答對率：</strong> ${acc}%</div>
+                <div><strong>平均作答時間：</strong> ${avgTime} 秒</div>
+                ${tokensLine}
+            `;
+
+            // 更新進度與解鎖下一關
+            if (playerProgress[currentStageObj.id].stars < stars) {
+                playerProgress[currentStageObj.id].stars = stars;
+            }
+
+            const currIdx = allStagesList.findIndex(s => s.id === currentStageObj.id);
+            if (currIdx < allStagesList.length - 1) {
+                const nextId = allStagesList[currIdx + 1].id;
+                if (!playerProgress[nextId]) playerProgress[nextId] = { unlocked: true, stars: 0 };
+                playerProgress[nextId].unlocked = true;
+                nextBtn.style.display = "inline-block";
+            } else {
+                nextBtn.style.display = "none"; // 全破
+                title.innerText = "🏆 完美通關 🏆";
+                statsEl.innerHTML += `<div style="color:#8E44AD; font-weight:bold; margin-top:10px;">你已經打敗了大腳雪怪，成為最強的乘法勇者！</div>`;
+            }
+            saveProgress();
+            if (tokensEarned > 0) awardTokens(tokensEarned);
+
+            // 💡 回傳這次挑戰結果給老師的電腦（admin.html 看得到），不影響上面既有的代幣/存檔邏輯
+            if (typeof MathGameCommon !== 'undefined') {
+                MathGameCommon.reportResult({
+                    game: playMode === 'teach' ? '乘法勇者【教學版】' : '乘法勇者',
+                    mode: '過關',
+                    topic: currentStageObj ? currentStageObj.id : '',
+                    correct: stageStats.correct,
+                    total: stageStats.total,
+                    timeSec: Math.round(stageStats.times.reduce((a, b) => a + b, 0)),
+                    gbitAwarded: tokensEarned
+                });
+            }
+
+        } else {
+            title.innerText = "💀 挑戰失敗 💀";
+            title.style.color = "#E74C3C";
+            starsEl.innerHTML = "勇者倒下了...";
+            starsEl.style.fontSize = "36px";
+            statsEl.innerHTML = `你受到了致命的傷害，請回到大地圖重新編整再出發。`;
+            nextBtn.style.display = "none";
+
+            // 💡 挑戰失敗也一併回傳，讓老師看得到練習量，不是只有過關才記錄
+            if (typeof MathGameCommon !== 'undefined') {
+                MathGameCommon.reportResult({
+                    game: playMode === 'teach' ? '乘法勇者【教學版】' : '乘法勇者',
+                    mode: '挑戰失敗',
+                    topic: currentStageObj ? currentStageObj.id : '',
+                    correct: stageStats.correct,
+                    total: stageStats.total,
+                    timeSec: Math.round(stageStats.times.reduce((a, b) => a + b, 0)),
+                    gbitAwarded: 0
+                });
+            }
+        }
+    }
+
+    // 「下一關」：先回大地圖，勇者從目前的關卡走到下一關，走到了才開始戰鬥
+    function startNextStageIfAvailable() {
+        const currIdx = allStagesList.findIndex(s => s.id === currentStageObj.id);
+        if (currIdx < allStagesList.length - 1) {
+            const nextId = allStagesList[currIdx + 1].id;
+            showMap();
+            goToStage(nextId);
+        }
+    }
+
+    // ================= 綁定事件 =================
+    document.querySelectorAll('#numpad [data-digit]').forEach(btn => {
+        btn.addEventListener('click', () => pressDigit(btn.dataset.digit));
+    });
+    ui.btnDel.addEventListener('click', pressDelete);
+    ui.btnAttack.addEventListener('click', submitAnswer);
+
+    // 電腦實體鍵盤也能用（0-9、Backspace、Enter），不影響螢幕鍵盤
+    document.addEventListener('keydown', (e) => {
+        // 解說視窗開著時：Enter 等同按「確定」（長按不算，避免一下子就跳過解說）
+        if (explainOpen) {
+            if (e.key === 'Enter') { e.preventDefault(); if (!e.repeat && Date.now() - explainShownAt > 600) confirmExplain(); }
+            return;
+        }
+        if (screens.battle.classList.contains('hidden') || !acceptingInput) return;
+        if (/^[0-9]$/.test(e.key)) pressDigit(e.key);
+        else if (e.key === 'Backspace') { e.preventDefault(); pressDelete(); }
+        else if (e.key === 'Enter') submitAnswer();
+    });
+
+    // ================= 手機自動等比例縮放 =================
+    function resizeGame() {
+        const container = document.getElementById('game-container');
+        if (!container) return;
+
+        const designWidth = 1000;
+        const designHeight = 700;
+
+        let windowWidth = window.innerWidth;
+        let windowHeight = window.innerHeight;
+        if (window.visualViewport) {
+            windowWidth = window.visualViewport.width;
+            windowHeight = window.visualViewport.height;
+        }
+
+        const scale = Math.min(windowWidth / designWidth, windowHeight / designHeight);
+        container.style.setProperty('--scale', scale);
+        window.scrollTo(0, 0);
+    }
+
+    window.addEventListener('resize', resizeGame);
+    window.addEventListener('load', resizeGame);
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', resizeGame);
+        window.visualViewport.addEventListener('scroll', resizeGame);
+    }
+
+    // ================= 初始化 =================
+    resizeGame();
+    refreshModeUI();
+    buildMap();
+    refreshMap();
+    preloadHeroGifs();
+    updateGbitDisplay();
+    (function showLoginStatus() {
+        const st = loginStatusText();
+        const el = document.getElementById('login-status');
+        if (el) { el.innerText = st.text; el.style.color = st.ok ? '#27AE60' : '#C0392B'; }
+        const badge = document.getElementById('gbit-badge');
+        if (badge) badge.title = st.text;
+    })();
+
+// 1. 禁用滑鼠右鍵選單
+document.addEventListener('contextmenu', event => event.preventDefault());
+
+// 2. 禁用 Ctrl+S / Cmd+S 另存網頁快捷鍵
+document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        alert('本網站已啟用內容保護，暫不開放另存網頁。');
+    }
+    // 順便禁用 Ctrl+U (查看原始碼) 和 F12 (開發者工具)
+    if ((e.ctrlKey || e.metaKey) && e.key === 'u' || e.key === 'F12') {
+        e.preventDefault();
+    }
+});
+
+</script>
+
+<script>
+// 題目框放在中間 1/3，題目太長（例如 4 位數 × 3 位數）時自動把字縮小，不會超出
+(function () {
+    const q = document.getElementById('question');
+    if (!q) return;
+    let busy = false;
+    function fit() {
+        if (busy) return; busy = true;
+        q.style.fontSize = '';
+        const box = q.parentElement, max = box.clientWidth - 8;
+        let fs = parseFloat(getComputedStyle(q).fontSize);
+        while (max > 60 && q.offsetWidth > max && fs > 16) { fs -= 2; q.style.fontSize = fs + 'px'; }
+        busy = false;
+    }
+    new MutationObserver(fit).observe(q, { childList: true, characterData: true, subtree: true });
+    window.addEventListener('resize', fit);
+})();
+</script>
+
+<script>
+// ================= 自動全螢幕（電腦＋手機）=================
+// 為什麼手機以前進不了全螢幕：手機瀏覽器不承認「pointerdown（手指按下去）」是使用者操作，
+// 一定要 click（點擊）／touchend／pointerup（手指放開）才行；而且舊版只試一次，失敗就放棄。
+// 現在：用這幾種事件去要求全螢幕；第一次沒成功，下次點擊再試（最多 5 次）。
+// 成功進入後，如果玩家自己按 Esc／返回離開，這次不會再強制進入。
+// 另外手機右下角有一顆「⛶」按鈕，隨時可以手動進全螢幕；
+// iPhone（或 LINE、Facebook 內建瀏覽器）沒有全螢幕功能，按鈕會告訴玩家改用「加入主畫面」或換瀏覽器。
+(function () {
+    var de = document.documentElement;
+    function isFs() { return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement; }
+    function fsFn() { return de.requestFullscreen || de.webkitRequestFullscreen || de.msRequestFullscreen; }
+    function standalone() {
+        return window.navigator.standalone === true ||
+            (window.matchMedia && (matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches));
+    }
+    var touch = (window.matchMedia && matchMedia('(pointer: coarse)').matches) || ('ontouchstart' in window);
+    var isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    var tries = 0, done = false, last = 0, btn = null;
+
+    // 畫面高度：用「真正看得到的高度」，不要用 100vh（手機的 100vh 會把網址列底下的區域也算進去，畫面底部會被切掉）
+    function setH() {
+        var h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+        de.style.setProperty('--app-h', h + 'px');
+    }
+    function syncBtn() { if (btn) btn.style.display = (touch && !isFs() && !standalone()) ? 'flex' : 'none'; }
+    function lockLandscape(on) {
+        try {
+            if (!screen.orientation) return;
+            if (on) { var p = screen.orientation.lock('landscape'); if (p && p.catch) p.catch(function () {}); }
+            else if (screen.orientation.unlock) screen.orientation.unlock();
+        } catch (e) {}
+    }
+    function goFs() {
+        if (isFs()) return true;
+        var fn = fsFn(); if (!fn) return false;
+        try {
+            var r;
+            try { r = fn.call(de, { navigationUI: 'hide' }); } catch (e1) { r = fn.call(de); }
+            if (r && r.then) r.then(function () { done = true; lockLandscape(true); }, function () {});
+            else done = true;
+        } catch (e) {}
+        return true;
+    }
+    function auto(e) {
+        if (done || isFs() || tries >= 5) return;
+        if (e.type === 'keydown' && e.key === 'Escape') return;
+        var now = Date.now(); if (now - last < 400) return;   // 同一次點擊會連續觸發好幾種事件，只算一次
+        last = now; tries++; goFs();
+    }
+    ['click', 'touchend', 'pointerup', 'keydown'].forEach(function (t) { document.addEventListener(t, auto, true); });
+
+    function tip() {
+        var o = document.createElement('div');
+        o.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,.82);z-index:2147483001;display:flex;align-items:center;justify-content:center;padding:16px';
+        var msg = isIOS
+            ? '<b style="font-size:18px">📱 想要全螢幕（沒有網址列）？</b><br>iPhone 的瀏覽器不能直接切換全螢幕，請這樣做：<br>1. 點瀏覽器的「分享」鈕 ⬆️<br>2. 選「加入主畫面」<br>3. 之後從主畫面的圖示開啟遊戲，就是全螢幕了。'
+            : '<b style="font-size:18px">📱 這個瀏覽器不支援全螢幕</b><br>如果你是從 LINE、Facebook 之類的 App 裡開啟，請點右上角「⋯」選「用瀏覽器開啟」，或直接改用 Chrome 開啟，就可以全螢幕。';
+        o.innerHTML = '<div style="background:#fff;color:#222;border-radius:14px;padding:18px 20px;max-width:420px;font:16px/1.7 sans-serif;text-align:left">' + msg +
+            '<div style="text-align:center;margin-top:12px"><span style="display:inline-block;background:#2c3e50;color:#fff;border-radius:10px;padding:8px 28px">知道了</span></div></div>';
+        o.addEventListener('click', function () { if (o.parentNode) o.parentNode.removeChild(o); });
+        document.body.appendChild(o);
+    }
+    function makeBtn() {
+        btn = document.createElement('button');
+        btn.id = 'fs-fab'; btn.type = 'button'; btn.textContent = '⛶'; btn.title = '全螢幕'; btn.setAttribute('aria-label', '全螢幕');
+        btn.style.cssText = 'position:fixed;right:8px;bottom:8px;width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,255,255,.65);' +
+            'background:rgba(0,0,0,.55);color:#fff;font-size:22px;line-height:1;padding:0;margin:0;z-index:2147483000;display:none;' +
+            'align-items:center;justify-content:center;opacity:.78;box-shadow:none;transform:none;touch-action:manipulation;cursor:pointer';
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (fsFn()) { tries = 0; done = false; last = Date.now(); goFs(); } else tip();
+        });
+        document.body.appendChild(btn); syncBtn();
+    }
+    function onFsChange() {
+        setH(); syncBtn();
+        if (!isFs()) lockLandscape(false);
+        // 進入／離開全螢幕後，通知遊戲重新計算畫面大小（遊戲是依「可視大小」縮放的）
+        setTimeout(function () { setH(); try { window.dispatchEvent(new Event('resize')); } catch (e) {} }, 250);
+    }
+    ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (t) { document.addEventListener(t, onFsChange); });
+    ['resize', 'orientationchange'].forEach(function (t) { window.addEventListener(t, function () { setH(); setTimeout(setH, 300); }); });
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', setH);
+    setH();
+    if (document.body) makeBtn(); else document.addEventListener('DOMContentLoaded', makeBtn);
+})();
+</script>
+<script>window.HERO_CFG={"id":"mul","key":"multiplyHero","type":"battle"};</script>
+<script src="./hero-core.js"></script>
+</body>
+</html>

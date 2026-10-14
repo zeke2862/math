@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>【教師測試版】亡靈序曲：骷髏暴君的逆襲 2.1</title>
+<script src="./sync-client.js"></script>
+<script src="./assets/negative/forms.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root{--p:#7b4dff;--ice:#4fc3ff;--fire:#ff6b3d;--tx:#e8e4ff;--ac:#c9b3ff;--bd:#4a3a9a;--bg0:#0d0a1f;--bg1:#120c35;--bg1c:#120c35cc;--bg1e:#120c35ee;--bg2:#1a1440;--bg3:#2a2060;--btn:#3a2a8a;--btnh:#5a3ad0;--mu:#9a93c9;--m1:#06204a;--m2:#1a1a6b;--m3:#3a1a6b;--m4:#6b1a3a;--m5:#8a2a0a;--herof:grayscale(.7) contrast(1.1) drop-shadow(0 0 8px #7b4dff);--mhf:drop-shadow(0 0 8px #c9b3ff) drop-shadow(0 0 3px #fff)}
+body.holy{--p:#ffc94d;--ice:#7fd4ff;--fire:#ff8c1a;--tx:#fff6dd;--ac:#ffe29a;--bd:#c79a2e;--bg0:#1d1505;--bg1:#33250a;--bg1c:#33250acc;--bg1e:#33250aee;--bg2:#3f2e0c;--bg3:#5c4412;--btn:#8f6a14;--btnh:#c9951a;--mu:#d9c38a;--m1:#3a6ea5;--m2:#6a9bd1;--m3:#d9c27a;--m4:#f2a93b;--m5:#ff7a1a;--herof:drop-shadow(0 0 10px #ffd86b) brightness(1.06);--mhf:drop-shadow(0 0 10px #ffd86b) drop-shadow(0 0 3px #fff)}
+body.holy #stage:before{background:rgba(40,25,0,.4)}
+.arow img:not(.aw){filter:var(--herof)}
+.ft-chip{cursor:pointer;padding:0 8px;border-radius:10px;background:var(--bg3);border:2px dashed var(--bd)}
+.ft-chip.on{border:2px solid var(--fire);background:#5a2a12;color:#fff;animation:ftp .6s ease-in-out infinite alternate}
+.ft-chip.done{cursor:default;border:2px solid #4fd18b;background:#123d2a;color:#9dffc4}
+.ft-hb{text-align:right;margin-top:4px}.hintbtn{font-size:13px;padding:3px 10px;background:var(--bg3)}
+.ft-sg button.wc{width:auto;padding:6px 16px;font-size:22px}
+*{box-sizing:border-box;margin:0;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif}
+body{background:var(--bg0);color:var(--tx);min-height:100vh;display:flex;justify-content:center}
+#app{width:100%;max-width:1200px;padding:10px;display:flex;flex-direction:column;gap:8px}
+h1{text-align:center;font-size:24px;color:var(--ac);text-shadow:0 0 12px var(--p)}
+.card{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:10px;margin-bottom:8px}
+button{cursor:pointer;border:0;border-radius:10px;padding:9px 12px;background:var(--btn);color:var(--tx);font-size:18px}
+button:hover{background:var(--btnh)}button:disabled{opacity:.35;cursor:not-allowed}
+.modes{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+.modes .on{background:var(--p);box-shadow:0 0 10px var(--p)}
+.grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}.st{width:150px;text-align:center;font-size:16px}
+[hidden]{display:none!important}
+#top{display:flex;align-items:center;gap:10px}#title{flex:1;font-weight:bold}
+#tb{width:180px;height:12px;background:var(--bg3);border-radius:6px;overflow:hidden}#tbar{display:block;height:100%;width:100%;background:var(--fire)}
+#stage{background-size:cover;background-position:center;border-radius:12px;padding:10px;display:flex;align-items:flex-end;justify-content:space-between;gap:6px;height:min(82vh,820px);position:relative}
+#stage:before{content:"";position:absolute;inset:0;background:rgba(10,5,40,.55);border-radius:12px}
+#stage>*{position:relative}
+.side{flex:1;min-width:0;text-align:center}.side img{width:100%;height:min(66vh,680px);object-fit:contain;object-position:bottom}
+#hero{filter:var(--herof)}
+.bar{height:14px;background:var(--bg3);border-radius:7px;overflow:hidden;margin:3px 0}.hp{display:block;height:100%}
+.hp.p{background:linear-gradient(90deg,var(--p),var(--ac))}.hp.m{background:linear-gradient(90deg,#ff6b3d,#ffd86b)}
+.combo{color:#ffd86b;font-weight:bold;min-height:22px}
+#mid{width:380px;flex:none;max-height:100%;overflow-y:auto;text-align:center;background:rgba(10,5,30,.5);border-radius:12px;padding:8px}#hint{font-size:14px;color:#ffd86b;height:42px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+#q{font-size:30px;font-weight:bold;background:var(--bg1c);border-radius:10px;padding:10px;word-break:keep-all}
+#ans{font-size:34px;color:var(--ice);min-height:46px}#msg{min-height:26px;font-size:18px}
+.fa{animation:fa .5s}@keyframes fa{30%{transform:translateX(45px) scale(1.08)}}
+.fh{animation:fh .6s}@keyframes fh{20%,60%{transform:translateX(-12px);filter:drop-shadow(0 0 14px #f33) brightness(1.7)}40%,80%{transform:translateX(12px)}}
+.fo{opacity:.4;filter:grayscale(1)!important;transform:rotate(-10deg)}
+.rpics{display:flex;gap:8px;justify-content:center;margin:6px 0}.rpics figure{margin:0;flex:1;max-width:48%}.rpics img{width:100%;max-height:170px;object-fit:contain;border-radius:8px;background:#000}.rpics figcaption{font-size:13px;line-height:1.4}
+.fgal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:6px}.fgal figure{margin:0;text-align:center;font-size:13px}.fgal img{width:100%;height:96px;object-fit:contain;background:#000;border-radius:8px}.fgal .lk img{filter:brightness(0);opacity:.5}
+.eqc img.ip{float:right;width:48px;height:64px;object-fit:contain;background:#000;border-radius:6px;margin-left:6px}
+#bgmbtn{position:fixed;right:10px;bottom:10px;z-index:70;font-size:20px;padding:6px 12px;border-radius:20px;opacity:.85}
+.shake{animation:sh .4s}@keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+#pad{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;max-width:340px;margin:8px auto 0;width:100%}
+#pad button{font-size:22px;padding:5px}#pad .atk{grid-column:span 3;background:#b3261e}
+#nl{position:relative;height:74px;margin:6px 8px}
+#bar{position:absolute;top:22px;left:0;right:0;height:12px;border-radius:6px;background:linear-gradient(90deg,#2a6bff,#4fc3ff 49%,#ff6b3d 51%,#ffb03d)}
+.tk{position:absolute;top:36px;transform:translateX(-50%);font-size:12px}
+#skull{position:absolute;top:0;font-size:26px;transform:translateX(-50%);transition:left .5s}
+#nlt{position:absolute;top:56px;left:0;right:0;display:flex;justify-content:space-between;font-size:12px}
+#hdr{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}#xp{height:10px;background:var(--bg3);border-radius:5px;overflow:hidden;width:200px}#xp i{display:block;height:100%;background:var(--ice)}
+.eqg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}.eqc{background:var(--bg1);border:1px solid var(--bd);border-radius:10px;padding:8px;font-size:14px;line-height:1.6}.eqc.no{opacity:.4}
+.q-normal{color:#cfd8dc}.q-fine{color:#4fc3ff}.q-legend{color:#ffb03d}.q-myth{color:#ff5c8a}
+#mapw{position:relative;border-radius:12px;overflow:hidden;border:2px solid var(--bd);background:#05030f;margin-bottom:8px;user-select:none}#mapw svg{display:block;width:100%;height:auto}
+.nd{cursor:pointer}.nd.lk{cursor:not-allowed}.pulse .ring{animation:pu .9s infinite alternate}@keyframes pu{to{stroke-width:11;stroke:#fff}}
+.nl2{fill:#fff;font-size:21px;font-weight:bold;paint-order:stroke;stroke:#05030f;stroke-width:5px}.lk .nl2{fill:#999}
+.nn{fill:#fff;font-size:22px;font-weight:bold}.ns{fill:#ffd86b;font-size:18px;paint-order:stroke;stroke:#000;stroke-width:4px}
+.hf{font-size:13px;color:var(--ac);min-height:18px}
+.bt{fill:var(--tx);font-size:25px;font-weight:bold}.bs{fill:var(--ac);font-size:17px}
+#mh{position:absolute;width:5.5%;transform:translate(-50%,-100%);transition:left var(--wd,1.2s) ease-in-out,top var(--wd,1.2s) ease-in-out;pointer-events:none;filter:var(--mhf)}
+#mt{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);background:var(--bg1e);border:1px solid var(--p);border-radius:10px;padding:8px 14px;font-size:16px;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}#mt.on{opacity:1}
+.hide{display:none!important}
+.tp{background:var(--bg1c);border:2px solid var(--bd);border-radius:10px;padding:6px 8px;height:min(27vh,230px);overflow-y:auto}
+.ft-hist{font-size:15px;color:var(--mu);text-align:center;line-height:1.45;font-weight:900}.ft-hist div{opacity:.8}
+.ft-cur{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px 5px;margin-top:4px;font-weight:900;min-height:52px}
+.ft-n{padding:0 3px}.ft-op{cursor:pointer;padding:0 8px;border-radius:10px;background:var(--bg3);border:2px solid var(--p);color:var(--ac)}.ft-op:hover{transform:scale(1.12);background:var(--btn)}
+.ft-op.hint{animation:ftp .5s ease-in-out 3;border-color:#ff6b3d;background:#5a2a12}
+.ft-p{color:#ffd86b;text-shadow:0 0 8px var(--p);cursor:pointer;padding:0 1px}
+.ft-grp{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:12px;background:var(--bg3);border:3px solid #ffd86b;box-shadow:0 0 14px #ffd86b99}
+.ft-box{min-width:1.6em;height:1.15em;border:3px solid #ff6b6b;border-radius:8px;background:var(--bg0);text-align:center;color:#ff8a8a;line-height:1.1}
+.ft-sg{display:flex;gap:10px;justify-content:center;margin-top:6px}.ft-sg button{font-size:26px;width:70px}
+@keyframes ftp{50%{transform:scale(1.25)}}
+.th{font-size:14px;color:#ffd86b;height:62px;overflow-y:auto;margin-top:4px}.th.warn{color:#ff8a8a}
+#ex,#sty,#arena,#endp{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;z-index:10}
+.endg{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px}.endc{display:flex;gap:4px}.endc>button:first-child{flex:1;text-align:left}.endx{padding:0 10px}
+.mbox{background:var(--bg2);border:2px solid var(--p);border-radius:14px;max-width:560px;width:94%;max-height:90vh;overflow:auto;padding:14px;line-height:1.7}
+.mbox h2{color:var(--ac)}.exs li{margin:4px 0 4px 20px}.good{color:#7dff9b;font-weight:bold}.bad{color:#ff8a8a;font-weight:bold}.kw{color:#ffd86b}
+.sl{margin:8px 0}.sl.hero{color:#9fe6ff}
+#arena .mbox{max-width:760px}.fc{background:var(--bg1);border:1px solid var(--bd);border-radius:10px;padding:8px;flex:1}
+.fb{height:12px;background:var(--bg3);border-radius:6px;overflow:hidden;margin:2px 0}.fb i{display:block;height:100%}.fb.hp i{background:#ff6b3d}.fb.mp i{background:#4fc3ff}
+.arow{display:flex;gap:10px;align-items:center;margin:6px 0}.arow img{height:100px}.am{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.am button{font-size:15px}
+.alog{font-size:14px;color:var(--ac);background:var(--bg0);border-radius:8px;padding:6px;min-height:80px}.turn-tag{font-weight:bold;color:#ffd86b;margin:4px 0}
+.aw{filter:hue-rotate(150deg) drop-shadow(0 0 6px #ff6b3d);transform:scaleX(-1)}.who{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.who input{padding:8px;border-radius:8px;border:1px solid var(--bd);background:var(--bg0);color:var(--tx);font-size:16px;width:150px}
+#toast2{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:var(--bg1);border:1px solid var(--p);border-radius:10px;padding:8px 14px;z-index:30;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%}#toast2.on{opacity:1}
+#app{max-width:1500px}
+#home{display:flex;justify-content:center;margin-top:10px}.homebox{max-width:920px;width:100%;background:var(--bg2);border:2px solid var(--bd);border-radius:16px;padding:20px;text-align:center}
+.homep{font-size:15px;line-height:1.8;text-align:left;margin-bottom:16px}
+.hcards{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}.hc{flex:1;min-width:220px;padding:18px 14px;font-size:22px;line-height:1.5;display:flex;flex-direction:column;gap:6px}.hc span{font-size:14px;white-space:pre-line;opacity:.92}.hc small{font-size:13px;color:var(--ac)}.hc.last{outline:3px solid #ffd86b}
+#login-status{margin-top:14px;font-size:14px}
+#topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}#topbar .modes{margin:0;flex:1;justify-content:center}
+body.ingame #app>h1{display:none}
+#mapw{width:min(100%,calc((100vh - 170px)*1.7917));margin:0 auto 8px}
+#hdr{padding:6px 10px}.coinb{font-size:15px;color:#ffd86b;font-weight:bold;margin-right:8px}
+#eq:not([hidden]){position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(1000px,94vw);max-height:86vh;overflow:auto;z-index:12;box-shadow:0 0 0 100vmax rgba(0,0,0,.65)}
+#res{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:9}
+#res .card{max-width:420px;text-align:center;font-size:18px;line-height:1.7}
+.fl{position:absolute;font-weight:bold;font-size:28px;animation:up 1s forwards;pointer-events:none}@keyframes up{to{transform:translateY(-60px);opacity:0}}
+@media(max-width:640px){#stage{flex-wrap:wrap;height:auto;min-height:680px}.side img{height:150px}.side{flex:none;width:44%}#mid{width:100%;flex:none;order:3}#q{font-size:22px}}
+</style></head><body>
+<div id="app">
+<h1>💀 亡靈序曲：骷髏暴君的逆襲</h1>
+<div id="home"><div class="homebox"><p class="homep">擊敗地圖上每一處的頭目，通關可解鎖裝備、鬥技場、深淵鍛造爐與「聖光勇者」外觀。<br>🎒 裝備在通關關卡和鬥技場都有效；通關時頭目會自動套上同樣倍率的裝備，所以戰鬥節奏不變。<br>⚔️ 答對就能攻擊；答案是<b>負數</b>，勇者會變成骷髏型態，答案是<b>正數</b>就恢復勇者。<br>💰 答對 1 題 +2 金幣，連續答對每題再 ×1.5（可累加），整場全對再額外加倍。<br>📌 三種模式共用同一份進度與星等，不同模式只是限制最高星等（教學最多 2★、困難 4★、地獄 5★）；在任何模式通關都會解鎖下一關。<br>🎵 大地圖與大廳放 Town & Hub，進入關卡才換成該章節的音樂；右下角 🔊 可以開關。</p><div class="hcards" id="hcards"></div><div id="login-status"></div></div></div>
+<div id="menu" hidden><div id="topbar"><button onclick="goHome()">🏠 首頁</button><div class="modes" id="modes"></div><button onclick="goFs()">⛶ 全螢幕</button></div><div class="card" id="hdr"></div><div class="card" id="eq" hidden></div><div id="chs"></div></div>
+<div id="battle" hidden>
+ <div id="top"><button onclick="quit()">⬅ 返回</button><span id="title"></span><span id="coinb" class="coinb"></span><span id="tb"><i id="tbar"></i></span></div>
+ <div id="stage">
+  <div class="side"><div id="ptxt"></div><div class="bar"><i id="php" class="hp p"></i></div><img id="hero"><div id="pc" class="combo"></div><div id="hf" class="hf"></div></div>
+  <div id="mid"><div id="hint"></div><div id="q"></div><div id="tp" class="tp" hidden></div><div id="th" class="th" hidden></div><div id="ans"></div><div id="msg"></div><div id="pad"></div></div>
+  <div class="side"><div id="bname"></div><div class="bar"><i id="mhp" class="hp m"></i></div><img id="boss"><div id="mc" class="combo"></div></div>
+ </div>
+</div>
+<div id="ex" hidden><div class="mbox"><h2 id="ex-t"></h2><div id="ex-n"></div><div id="ex-a"></div><b>一步一步來看：</b><ul class="exs" id="ex-s"></ul><div id="ex-mw" hidden><b>你填錯的地方：</b><ul class="exs" id="ex-m"></ul></div><div id="ex-c"></div><div style="text-align:center;margin-top:8px"><button id="ex-ok">確定</button></div></div></div>
+<div id="sty" hidden><div class="mbox"><h2 id="st-t"></h2><small id="st-m"></small><div id="st-l"></div><div style="text-align:center"><button id="st-ok">出發！</button></div></div></div>
+<div id="endp" hidden><div class="mbox" id="endp-box"></div></div>
+<div id="arena" hidden><div class="mbox" id="ar-box"></div></div>
+<div id="res" hidden><div class="card" id="rc"></div></div>
+</div>
+<button id="bgmbtn" onclick="bgmToggle()" title="音樂開關">🔊</button>
+<script>
+const A='./assets/negative/', $=id=>document.getElementById(id);
+  const HERO_DIR='./assets/hero/',BG_DIR='./assets/stages/negative/',BOSS_DIR='./assets/bosses/negative/',AUDIO_DIR='./assets/audio/negative/';
+const R=(a,b)=>Math.floor(Math.random()*(b-a+1))+a, sg=()=>Math.random()<.5?-1:1;
+const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=R(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+const rg=d=>d==1?[1,9]:d==2?[10,99]:[100,999];
+const SYM={'+':'+','-':'−','*':'×','/':'÷'};
+const ALL=['關羽','李小龍','楊過','蝙蝠俠','蜘蛛人','金剛戰士','皮卡丘','海綿寶寶','路飛','林克','瑪利歐','福爾摩斯'];
+const CH=[
+ {n:'負數加法',s:'凝聚死靈之軀',op:'+',item:'完整的骷髏外殼',hint:'同號相加：符號不變、數字相加；異號相加：大的減小的，符號跟著大的',names:['關羽','李小龍','楊過','孫悟空','花木蘭','岳飛']},
+ {n:'負數減法',s:'逆轉天秤：負負得正',op:'-',item:'全身暗黑裝備特效',hint:'減去一個數＝加上它的相反數；減去負數 → 負負得正！',names:['蝙蝠俠','蜘蛛人','金剛戰士','鋼鐵人','美國隊長','雷神']},
+ {n:'負數乘法',s:'暗黑幾何爆發',op:'*',item:'精靈戰鬥手冊',hint:'同號相吸變正　／　異號相斥變負',names:['皮卡丘','海綿寶寶','小新','哆啦A夢','路飛','悟空']},
+ {n:'負數除法',s:'天界結界：精準侵蝕',op:'/',item:'裝備強化工法',hint:'同號相吸變正　／　異號相斥變負（一定整除，不會有餘數）',names:['林克','瑪利歐','哈利波特','阿拉貢','福爾摩斯','魯賓遜']},
+ {n:'負數四則運算',s:'至高神殿：生死湮滅戰',op:'?',item:'完美至尊雕像',hint:'先括號、再乘除、後加減；同號相吸變正　／　異號相斥變負',names:ALL}];
+// 依「game_map.jpg」修正：五大地形、各關場景名稱（地圖上的標籤）與關主
+const TERRAIN=['深淵骨塚','地下洞窟','東方領土','西方領土','神聖天界'];
+const PLACE=[['荒蕪骨塚','寒晶廢墟','熔岩骨獄','冥河渡口'],['蝙蝠洞窟','殭屍王朝','巨魔獸巢','轉生儀式'],['李小龍道場','水濂洞','馬林福特','神鵰俠侶'],['圓桌武士','希臘神殿','超人城堡','葛來芬多'],['神界大天使','天界如來佛','宇宙諸神黃昏']];
+const BOSS=[['骨塚亡靈','寒晶魔像','熔岩獄卒','冥河擺渡人'],['吸血蝠王','殭屍皇帝','巨魔','轉生祭司'],['李小龍','孫悟空','馬林福特城主','楊過與小龍女'],['亞瑟王','雅典娜','超人','葛來芬多勇者'],['神界大天使','如來佛','宇宙諸神']];
+const KN={same:'同號',diff:'異號',paren:'括號',rand:'隨機',f4:'四個數',f5:'五個數',fp:'括號混戰'};
+const ST=[];
+['same','diff','paren','rand'].forEach(k=>{});
+for(let c=0;c<4;c++)['same','diff','paren','rand'].forEach((k,j)=>ST.push({id:ST.length,ch:c,k,label:`6-${c+1}-${j+1}`,j}));
+['f4','f5','fp'].forEach((k,j)=>ST.push({id:ST.length,ch:4,k,label:`6-5-${j+1}`,j}));
+ST.forEach(s=>{s.place=PLACE[s.ch][s.j];s.boss=BOSS[s.ch][s.j]});
+const MODES={teach:{n:'教學（一位數）',d:1},hard:{n:'困難（兩位數・計時）',d:2},hell:{n:'地獄（三位數・計時）',d:3}};
+const CAP={teach:2,hard:4,hell:5};   // 三種模式共用進度與星等，模式只限制「最高能拿幾顆星」
+//GEN-START
+const f=v=>v<0?`(−${-v})`:`(+${v})`;
+const ev=(o,x,y)=>o==='+'?x+y:o==='-'?x-y:o==='*'?x*y:x/y;
+function mag(op,d){const [lo,hi]=rg(d);
+ if(op==='*')return[R(lo,hi),R(2,9)];
+ if(op==='/'){if(d==1){const a=R(4,9),ds=[];for(let x=2;x<=a;x++)if(a%x==0)ds.push(x);return[a,ds[R(0,ds.length-1)]]}
+  const b=R(2,9);return[b*R(Math.ceil(lo/b),Math.floor(hi/b)),b]}
+ return[R(lo,hi),R(lo,hi)]}
+let deck=[];const nextDiff=()=>{if(!deck.length)deck=shuf([1,1,1,0]);return deck.pop()};
+function genQ(stg,d){
+ if(stg.ch===4)return finalQ(d,stg.k==='f4'?4:stg.k==='f5'?5:R(4,5),stg.k==='fp');
+ const op=CH[stg.ch].op,S=SYM[op];
+ if(stg.k==='paren'){
+  const [a,b]=mag(op,d);let x=a*sg(),y=b*sg(),z=R(...rg(d))*sg();
+  if(x>0&&y>0&&z>0)x=-x;
+  const op2=(op==='+'||op==='-')?op:(R(0,1)?'+':'-'),inn=ev(op,x,y),box=`[${f(x)} ${S} ${f(y)}]`;
+  if((op==='+'||op==='-')&&R(0,1))return{txt:`${f(z)} ${S} ${box}`,ans:ev(op,z,inn)};
+  return{txt:`${box} ${SYM[op2]} ${f(z)}`,ans:ev(op2,inn,z)}}
+ const s=sg(),diff=stg.k==='diff'?1:stg.k==='same'?0:nextDiff();
+ const [a,b]=mag(op,d),x=a*s,y=b*(diff?-s:s);
+ return{txt:`${f(x)} ${S} ${f(y)}`,ans:ev(op,x,y)}}
+function finalQ(d,n,paren){const [lo,hi]=rg(d),MD=c=>c==='*'||c==='/';
+ for(let t=0;t<800;t++){
+  const o=[];let md=0;
+  for(let i=0;i<n-1;i++){let p=['+','-','*','/'][R(0,3)];
+   if(MD(p)&&(md>=2||(i>0&&MD(o[i-1]))))p=R(0,1)?'+':'-';
+   if(MD(p))md++;o.push(p)}
+  const m=[...Array(n)].map((_,i)=>((i>0&&MD(o[i-1]))||(i<n-1&&MD(o[i])))?R(2,9):R(lo,hi));
+  for(let i=0;i<n-1;i++)if(o[i]==='/')m[i]=m[i+1]*(d===1?R(1,Math.max(1,Math.floor(9/m[i+1]))):R(1,9));
+  const s=m.map(sg);while(s.filter(x=>x<0).length<2)s[R(0,n-1)]=-1;
+  const v=m.map((x,i)=>x*s[i]);let g=-1;
+  if(paren){const c=[];for(let i=0;i<n-1;i++)if((o[i]==='+'||o[i]==='-')&&o[i-1]!=='/'&&o[i+1]!=='/')c.push(i);if(!c.length)continue;g=c[R(0,c.length-1)]}
+  let js='',tx='';
+  for(let i=0;i<n;i++){
+   if(i===g){js+='(';tx+='['}
+   js+=`(${v[i]})`;tx+=v[i]<0?(i===0?`−${-v[i]}`:`(−${-v[i]})`):`${v[i]}`;
+   if(g>=0&&i===g+1){js+=')';tx+=']'}
+   if(i<n-1){js+=o[i];tx+=` ${SYM[o[i]]} `}}
+  const ans=Function('return '+js)();
+  if(Number.isInteger(ans)&&Math.abs(ans)<=6000&&ans!==0)return{txt:tx,ans}}
+ return{txt:'(−12) + (−3) × [5 − (−2)]',ans:-33}}
+//GEN-END
+// ===== 存檔 =====
+// 登入／存檔／代幣：沿用四則勇者的做法（有 sync-client.js 且已登入學號，就存進該學生的共用存檔；否則存在這台電腦）
+const hasSync=typeof keyagentGetActiveStudentNumber==='function'&&typeof keyagentSaveKeyFor==='function';
+let stuNo=null;try{stuNo=hasSync?keyagentGetActiveStudentNumber():null}catch(e){}
+const useStu=false,SAVEKEY='negativeHero_teacher_save_v1';
+const loadSave=()=>{try{return JSON.parse(localStorage.getItem(SAVEKEY))||{}}catch(e){return{}}};
+const writeSave=o=>{o.lastModified=Date.now();try{localStorage.setItem(SAVEKEY,JSON.stringify(o))}catch(e){}};
+const sv=(k,v)=>{const o=loadSave();(o.negativeHero=o.negativeHero||{})[k]=v;writeSave(o)};
+const ld=(k,d)=>{const n=loadSave().negativeHero;if(n&&n[k]!=null)return n[k];try{const x=JSON.parse(localStorage.getItem('negHero_'+k));if(x!=null)return x}catch(e){}return d};
+const gbit=()=>loadSave().gbit||0;
+// 金幣（GBit）規則：答對 1 題 +2；連續答對，每多連對一題就再 ×1.5（可累加）；整場全對，再額外加上「這場拿到的全部金幣」。
+const COIN_BASE=2,COIN_MULT=1.5;
+const coinOf=streak=>Math.round(COIN_BASE*Math.pow(COIN_MULT,streak-1));
+function addCoins(n){const o=loadSave();o.gbit=Math.max(0,(o.gbit||0)+n);if(n>0)o.gbitEarnedLifetime=(o.gbitEarnedLifetime||0)+n;writeSave(o)}
+function queueCoins(n){if(n<=0||!useStu)return;if(typeof keyagentQueuePendingAttempt==='function')keyagentQueuePendingAttempt('negativeHero',{mode:S.mode,stageId:S.stg.id,tokensEarned:n,attemptedAt:Date.now()});if(typeof keyagentCloudSyncNow==='function')keyagentCloudSyncNow()}
+function spendTokens(n){const o=loadSave();if((o.gbit||0)<n)return false;o.gbit-=n;writeSave(o);return true}
+// ===== 配樂：冒險大廳＝Town & Hub.mp3；大地圖與戰鬥＝所在章節的 1～5.mp3（檔案放在 assets/negative/）=====
+const BGM={hub:'Town & Hub.mp3',1:'1.mp3',2:'2.mp3',3:'3.mp3',4:'4.mp3',5:'5.mp3'};
+const bgmEl=new Audio();bgmEl.loop=true;bgmEl.volume=.45;let bgmKey=null,bgmMuted=!!ld('bgmMuted',false);
+function bgmTry(){if(bgmMuted||!bgmKey)return;const p=bgmEl.play();if(p&&p.catch)p.catch(()=>{})}
+function bgm(key){if(!BGM[key])return;if(bgmKey!==key){bgmKey=key;bgmEl.src=AUDIO_DIR+encodeURIComponent(BGM[key])}if(bgmEl.paused)bgmTry()}
+const bgmBtn=()=>{const b=$('bgmbtn');if(b)b.textContent=bgmMuted?'🔇':'🔊'};
+function bgmToggle(){bgmMuted=!bgmMuted;sv('bgmMuted',bgmMuted);if(bgmMuted)bgmEl.pause();else bgmTry();bgmBtn()}
+document.addEventListener('pointerdown',()=>{if(bgmEl.paused)bgmTry()});
+// 進度與星等：三種模式共用同一份（P[關卡編號]＝最高星等）。舊存檔（教學／困難／地獄各一份）會自動合併，取每關最高星等。
+let mode=ld('mode','teach'),P=(()=>{const o=ld('P',[]);if(Array.isArray(o))return o;const r=[];for(let i=0;i<19;i++){const v=Math.max((o.teach||[])[i]||0,(o.hard||[])[i]||0,(o.hell||[])[i]||0);if(v)r[i]=v}return r})(),Q=ld('Q',{exp:0,eq:{}}),S=null,E=ld('E',{});   // E[關卡編號]＝{round:目前第幾輪, best:最高輪數, snap:中途離開時保存的戰鬥進度}
+const passed=i=>(P[i]||0)>0, unlocked=i=>window.T_UNLOCK||i===0||passed(i-1), allDone=()=>passed(ST.length-1);
+function setMode(m){mode=m;sv('mode',m);heroId=null;menu()}
+// 起始畫面 → 選模式 → 全螢幕（瀏覽器規定一定要「點一下」才能進全螢幕，所以放在按鈕的點擊裡）
+function goFs(){const el=document.documentElement,fn=el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen;
+ if(!(document.fullscreenElement||document.webkitFullscreenElement)&&fn){try{const r=fn.call(el);if(r&&r.catch)r.catch(()=>{})}catch(e){}}}
+const HM={teach:{t:'🧮 教學模式',d:'一位數・不計時\n先去括號、再一步一步算\n適合剛學負數'},hard:{t:'⚔️ 困難模式',d:'兩位數・每題限時 25 秒\n直接輸入答案'},hell:{t:'🔥 地獄模式',d:'三位數・每題限時 25 秒（與困難相同）\n直接輸入答案'}};
+function renderHome(){
+ $('hcards').innerHTML=Object.keys(MODES).map(k=>{const n=ST.filter(s=>(P[s.id]||0)>0).length;return `<button class="hc ${k===mode?'last':''}" onclick="enterMode('${k}')"><b>${HM[k].t}</b><span>${HM[k].d}</span><small>共用進度：已通關 ${n}/${ST.length}　本模式最高 ${CAP[k]}★</small></button>`}).join('');
+ $('login-status').textContent=useStu?'✅ 已登入學號 '+stuNo+'：進度與金幣會存到雲端':'⚠️ 尚未登入：進度和金幣只存在這台電腦'}
+function goHome(){bgm('hub');$('menu').hidden=true;$('battle').hidden=true;$('res').hidden=true;$('eq').hidden=true;document.body.classList.remove('ingame');applySkin();renderHome();$('home').hidden=false}
+function enterMode(m){goFs();mode=m;sv('mode',m);heroId=null;menu()}
+// ===== 世界大地圖（使用 assets/negative/game_map.jpg，關卡名稱已印在圖上）=====
+const MW=1376,MH=768,MAPIMG='./assets/maps/negative.jpg';
+// 每關在圖上的標籤位置（依 6-1-1 ～ 6-5-3 的順序）；圈圈畫在標籤上方 34px。
+// ※ 圖上第四關有兩個「4-4 葛來芬多」，目前把第 4 關放在上方冰洞那個；若要改成右下那個，把 [760,521] 換成 [890,655]
+const LBL=[[165,172],[366,172],[160,279],[323,288],[150,523],[362,490],[222,621],[433,612],[582,282],[735,288],[858,252],[825,140],[635,599],[755,700],[890,536],[760,521],[1175,238],[1195,450],[1175,672]];
+const POS=LBL.map(([x,y])=>[x,y-34]);
+let heroId=null,walking=false,mtT=0;
+const frontier=()=>{const i=ST.findIndex(s=>!passed(s.id));return i<0?ST.length-1:i};
+function buildMap(){
+ const done=allDone();
+ const holes=done?'':ST.filter(s=>unlocked(s.id)).map(s=>`<circle cx="${POS[s.id][0]}" cy="${POS[s.id][1]}" r="150" fill="#000" filter="url(#bl)"/>`).join('');
+ const trail=ST.filter(s=>s.id>0&&unlocked(s.id)).map(s=>`<line x1="${POS[s.id-1][0]}" y1="${POS[s.id-1][1]}" x2="${POS[s.id][0]}" y2="${POS[s.id][1]}" stroke="#fff" stroke-opacity=".55" stroke-width="4" stroke-dasharray="2 12" stroke-linecap="round"/>`).join('');
+ const nodes=ST.map(s=>{const [x,y]=POS[s.id],un=unlocked(s.id),st=P[s.id]||0,fr=un&&!st&&s.id===frontier(),col=!un?'#888':st?'#ffd86b':'var(--ac)';
+  return `<g class="nd ${un?'':'lk'} ${fr?'pulse':''}" data-id="${s.id}"><circle cx="${x}" cy="${y}" r="36" fill="#000" fill-opacity="0"/><circle class="ring" cx="${x}" cy="${y}" r="21" style="fill:var(--bg1);stroke:${col}" stroke-width="5"/><text x="${x}" y="${y+(un?8:7)}" class="nn" text-anchor="middle"${un?'':' style="font-size:17px"'}>${un?s.j+1:'🔒'}</text>${ITEM_OF(s.id)>=0&&un?`<text x="${x+22}" y="${y-18}" font-size="20">🎁</text>`:''}${st?`<text x="${x}" y="${y-28}" class="ns" text-anchor="middle">${'★'.repeat(st)}</text>`:''}</g>`}).join('');
+ const hp=id=>`left:${POS[id][0]/MW*100}%;top:${(POS[id][1]-22)/MH*100}%`;
+ $('mapw').innerHTML=`<svg viewBox="0 0 ${MW} ${MH}"><defs><filter id="bl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="40"/></filter><mask id="fm"><rect width="${MW}" height="${MH}" fill="#fff"/>${holes}</mask></defs><image href="${MAPIMG}" width="${MW}" height="${MH}"/>${done?'':`<rect width="${MW}" height="${MH}" fill="#04020c" opacity=".8" mask="url(#fm)"/>`}${trail}${nodes}</svg><img id="mh" src="${HERO_DIR}hero-idle.png" style="${hp(heroId)}"><div id="mt"></div>`;
+ $('mapw').onclick=e=>{const g=e.target.closest('.nd');if(g)onNode(+g.dataset.id)}}
+function mapToast(t){const m=$('mt');if(!m)return;m.textContent=t;m.classList.add('on');clearTimeout(mtT);mtT=setTimeout(()=>m.classList.remove('on'),2600)}
+function onNode(id){if(walking)return;
+ if(!unlocked(id))return mapToast(`🔒 先通關 ${ST[id-1].label} ${ST[id-1].place}`);
+ if(id===heroId)return go(id);
+ walking=true;const a=POS[heroId],b=POS[id],h=$('mh'),sec=Math.min(2.4,Math.max(.7,Math.hypot(b[0]-a[0],b[1]-a[1])/380));
+ h.src=HERO_DIR+(b[0]>=a[0]?'hero-run-right.gif':'hero-run-left.gif');h.style.setProperty('--wd',sec+'s');
+ h.style.left=b[0]/MW*100+'%';h.style.top=(b[1]-22)/MH*100+'%';
+ setTimeout(()=>{walking=false;heroId=id;go(id)},sec*1000+150)}
+function menu(){
+ $('home').hidden=true;document.body.classList.add('ingame');$('battle').hidden=true;$('menu').hidden=false;hdr();
+ $('modes').innerHTML=Object.entries(MODES).map(([k,v])=>`<button class="${k===mode?'on':''}" onclick="setMode('${k}')">${v.n}</button>`).join('');
+ if(heroId==null||!unlocked(heroId))heroId=frontier();bgm('hub');
+ $('chs').innerHTML='<div id="mapw"></div>';
+ buildMap()}
+const go=i=>start(ST[i]);
+// ===== ♾ 無限關卡：自己選 6-1-1～6-5-3 任一關無限挑戰；每關各自記錄輪數，中途離開會保存當下進度 =====
+const eInfo=id=>E[id]||(E[id]={round:1,best:0});
+function goEndless(){const b=$('endp-box');
+ b.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">♾ 無限關卡：選一關</h2><button onclick="$(\'endp\').hidden=true">✖ 關閉</button></div><small>每一關各自記錄「目前第幾輪」。每贏一輪，敵人就更強一點；中途離開（按「返回」或關掉網頁）會保存血量與連擊，下次選同一關可以接著打。</small>'+
+ CH.map((c,ch)=>`<h3 style="margin:10px 0 4px;color:var(--ac)">第${ch+1}關　${c.n}</h3><div class="endg">`+ST.filter(s=>s.ch===ch).map(s=>{const e=E[s.id]||{round:1,best:0},sn=e.snap;
+  return `<div class="endc"><button onclick="startEndless(${s.id})"><b>${s.label} ${s.place}</b><br><small>${sn?'💾 繼續第 '+e.round+' 輪':'第 '+e.round+' 輪'}　最高 ${e.best||0} 輪</small></button>${(sn||e.round>1)?`<button class="endx" title="清除這一關的無限進度" onclick="resetEndless(${s.id})">↺</button>`:''}</div>`}).join('')+'</div>').join('');
+ $('endp').hidden=false}
+function resetEndless(id){if(!confirm('清除 '+ST[id].label+' 的無限進度（輪數與保存的戰鬥）？最高紀錄會保留。'))return;const e=eInfo(id);e.round=1;delete e.snap;sv('E',E);goEndless()}
+function startEndless(id,fresh){$('endp').hidden=true;const e=eInfo(id);
+ start(Object.assign({},ST[id],{endless:1,label:'∞ '+ST[id].label,round:e.round,snap:fresh?null:e.snap}))}
+// 中途離開：保存這一輪目前的血量比例、連擊與答題數
+function saveEndless(){if(!S||S.over||!S.stg.endless||$('battle').hidden)return;const e=eInfo(S.stg.id);
+ e.snap={fp:S.php/S.pmax,fm:S.mhp/S.mmax,pc:S.pc,mc:S.mc,correct:S.correct,total:S.total,xp:S.xp,coins:S.coins||0};sv('E',E)}
+window.addEventListener('pagehide',saveEndless);
+// ===== 升級・裝備系統（數值規則取自「升級、戰鬥、裝備系統」）=====
+const BASE={hp:1000,atk:50,def:20,spd:100},GROWTH={hp:100,atk:5,def:3,spd:1};
+const SL={hp:'❤️血量',atk:'⚔️攻擊',def:'🛡️防禦',spd:'🏃速度'};
+const QMUL={normal:1,fine:2,legend:10,myth:30},QL={normal:'普通',fine:'精良',legend:'傳說',myth:'神話'};
+const ITEMS=[
+ {n:'骨頭左手',ic:'🦴',sl:'左手',st:[['hp',80,120],['def',5,10]]},
+ {n:'骨頭右手',ic:'🦴',sl:'右手',st:[['atk',15,25],['def',5,10]]},
+ {n:'骷髏雙腿',ic:'🦵',sl:'雙腿',st:[['spd',8,15],['hp',30,50]]},
+ {n:'冥火魔杖',ic:'🔥',sl:'武器',st:[['atk',35,50],['spd',2,5]]},
+ {n:'凋零皇冠・重鎧',ic:'👑',sl:'頭部/身體',st:[['hp',150,200],['def',25,40]]},
+ {n:'暗影長靴・不祥手套',ic:'🧤',sl:'手腳',st:[['atk',15,25],['spd',10,18]]},
+ {n:'召喚小惡魔精靈',ic:'😈',sl:'寵物',st:[['hp',50,80],['atk',10,20],['spd',3,6]]},
+ {n:'精靈攻防培育法',ic:'📘',sl:'培育',st:[['atk',20,30],['def',15,25]]},
+ {n:'精靈敏捷培育法',ic:'📗',sl:'培育',st:[['spd',15,25],['hp',40,60]]},
+ {n:'武器/飾品極限突破法',ic:'⚔️',sl:'強化',st:[['atk',30,45],['hp',40,60]]},
+ {n:'防具三件套強化法',ic:'🛡️',sl:'強化',st:[['def',30,45],['hp',80,120]]},
+ {n:'手腳部件強化法',ic:'🥊',sl:'強化',st:[['atk',15,25],['spd',8,14]]},
+ {n:'完美至尊雕像',ic:'🗿',sl:'至尊',st:[['hp',200,300],['atk',40,60],['def',30,50],['spd',10,20]]}];
+const ITEM_OF=id=>id<16?(id%4<3?Math.floor(id/4)*3+id%4:-1):id===16?12:-1;
+const bestStar=id=>P[id]||0;
+// ===== 圖片：獲得物品 item-章-關.jpg、人物改變圖 form-章-關.jpg（放進 assets/negative/ 就會自動出現，不用改程式）=====
+const ITEMPIC={},FORMPIC={};
+ST.forEach(s=>{const k=(s.ch+1)+'-'+(s.j+1);[['item-',ITEMPIC],['form-',FORMPIC]].forEach(([p,o])=>{const im=new Image();im.onload=()=>{o[s.id]=im.src};im.src=A+p+k+'.jpg'})});
+const itemPic=id=>ITEMPIC[id]||'',formPic=id=>FORMPIC[id]||'';
+const itemName=id=>{const i=ITEM_OF(id);return i>=0?ITEMS[i].n:CH[ST[id].ch].item};
+// 答案是負數時的骷髏外觀：用「已通關的最後一個有 form 圖的小關」那張（教師版預覽用 T_SKEL）
+function curForm(){if(window.T_SKEL!=null){const m=[null,0,1,2,3,4,5,5][window.T_SKEL];return m==null?'':(FORMPIC[m]||'')}let r='';ST.forEach(s=>{if(bestStar(s.id)>0&&FORMPIC[s.id])r=FORMPIC[s.id]});return r}
+function formGallery(){const f=ST.filter(s=>FORMPIC[s.id]||(ITEMPIC[s.id]&&ITEM_OF(s.id)<0));if(!f.length)return '';
+ return '<div style="margin-top:10px"><b>💀 骷髏型態進化</b><small>（通關小關卡後，答案是負數時的外型會跟著改變）</small><div class="fgal">'+f.map(s=>{const lk=bestStar(s.id)>0?'':'lk',a=FORMPIC[s.id]?`<figure class="${lk}"><img src="${FORMPIC[s.id]}"><figcaption>${s.label} ${s.place}${lk?'（未通關）':''}</figcaption></figure>`:'',b=(ITEMPIC[s.id]&&ITEM_OF(s.id)<0)?`<figure class="${lk}"><img src="${ITEMPIC[s.id]}"><figcaption>🎁 ${itemName(s.id)}${lk?'（未取得）':''}</figcaption></figure>`:'';return a+b}).join('')+'</div></div>'}
+const qOf=st=>st>=5?'myth':st>=4?'legend':st>=3?'fine':st>=1?'normal':null;
+const qStage=id=>qOf(bestStar(id));
+const expNeed=l=>50+l*l*50;
+function levelInfo(){let l=1,r=Q.exp||0;while(r>=expNeed(l)){r-=expNeed(l);l++}return{level:l,cur:r,need:expNeed(l)}}
+function ensureRoll(i){if(Q.eq[i])return;const r={};ITEMS[i].st.forEach(([k,a,b])=>r[k]=a+Math.random()*(b-a));Q.eq[i]=r;sv('Q',Q)}
+function effStats(i){const sid=ST.findIndex((x,id)=>ITEM_OF(id)===i),q=qStage(sid);if(!q)return{};ensureRoll(i);
+ const bonus=(bestStar(7)>0?1.1:1)*(i===6&&bestStar(11)>0?2:1),o={};
+ ITEMS[i].st.forEach(([k])=>o[k]=Math.round(Q.eq[i][k]*QMUL[q]*bonus*(1+FORGE_BONUS*((Q.fg||{})[i]||0))));return o}
+// 基本能力（依等級成長）。通關戰鬥時，頭目會自動套上和玩家裝備相同的倍率，攻防節奏不變。
+function baseStats(){const l=levelInfo().level,o={};for(const k in BASE)o[k]=BASE[k]+GROWTH[k]*(l-1);return o}
+// 戰力＝基本能力＋裝備＋鍛造（通關關卡與鬥技場都使用）。
+function totalStats(){const o=baseStats();ITEMS.forEach((_,i)=>{const e=effStats(i);for(const k in e)o[k]+=e[k]});return o}
+const RK=[[0,'小骷髏'],[10,'骸骨兵'],[25,'亡靈校尉'],[45,'死靈將軍'],[65,'冥界元帥'],[85,'骷髏暴君']];
+const SK={dark:{n:'骷髏暴君',hp:'幽冥魂火',h1:'💀 亡靈序曲：骷髏暴君的逆襲',sk:'💀'},holy:{n:'聖光勇者',hp:'聖光之心',h1:'✨ 亡靈序曲：聖光勇者的凱旋',sk:'✨'}};
+let skin=ld('skin','dark');
+const skinOK=()=>bestStar(ST.length-1)>0,isHoly=()=>skin==='holy'&&skinOK();
+function applySkin(){const h=isHoly(),k=SK[h?'holy':'dark'];document.body.classList.toggle('holy',h);document.querySelector('h1').textContent=k.h1}
+function toggleSkin(){if(!skinOK())return toast('🔒 通關 6-5-3，解鎖「至高神格」才能切換外觀');skin=skin==='holy'?'dark':'holy';sv('skin',skin);applySkin();hdr();toast(skin==='holy'?'✨ 換上「聖光勇者」外觀！':'💀 換上「骷髏暴君」外觀！')}
+function hdr(){applySkin();const li=levelInfo(),t=ST.reduce((a,x)=>a+bestStar(x.id),0),rk=RK.filter(r=>r[0]<=t).pop()[1],tt=totalStats(),arOK=bestStar(3)>0;
+ $('hdr').innerHTML=`<div><b style="font-size:20px">${isHoly()?'✨':'💀'} ${rk}　Lv.${li.level}</b><div id="xp"><i style="width:${li.cur/li.need*100}%"></i></div><small>經驗值 ${li.cur}/${li.need}　累計 ${t} ⭐</small></div>
+ <div style="font-size:14px;line-height:1.55"><b>戰力</b> ${Object.keys(SL).map(k=>SL[k]+' '+tt[k]).join('　')}<br>💰 <b>${gbit()}</b> GBit</div>
+ <div><button onclick="toggleEq()">🎒 裝備</button> <button ${arOK?'':'disabled title="通關 6-1-4 解鎖"'} onclick="arOpen()">⚔️ 鬥技場${arOK?'':' 🔒'}</button> <button ${skinOK()?'':'disabled title="通關 6-5-3 解鎖「至高神格」"'} onclick="toggleSkin()">🎭 ${skinOK()?SK[skin].n:'外觀 🔒'}</button> <button ${allDone()?'':'disabled title="通關全部大關後開啟"'} onclick="goEndless()">♾ 無限${allDone()?'':' 🔒'}</button></div>`}
+const FORGE_MAX=20,FORGE_BONUS=.05;          // 最高 +20；每級 +5% 屬性
+const forgeCost=lv=>(lv+1)*(lv+1)*100;       // 強化到 +n，要 n 的 2 次方 ×100 GBit
+const avgAcc=()=>(Q.at||0)>0?(Q.ac||0)/Q.at:0;   // 目前平均答對率（所有作答累計）
+const forgeRate=()=>Math.min(1,avgAcc()+.1);      // 成功率＝平均答對率 +10%（最高 100%）
+function toggleEq(keep){const b=$('eq');if(keep!==true)b.hidden=!b.hidden;if(b.hidden)return;const fOK=bestStar(15)>0,rate=Math.round(forgeRate()*100);
+ b.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>🎒 裝備與深淵鍛造爐</b><button onclick="toggleEq()">✖ 關閉</button></div><div class="eqg">'+ITEMS.map((it,i)=>{const sid=ST.findIndex((x,id)=>ITEM_OF(id)===i),q=qStage(sid),e=q?effStats(i):{},lv=(Q.fg||{})[i]||0;
+  return `<div class="eqc ${q?'':'no'}">${q&&itemPic(sid)?`<img class="ip" src="${itemPic(sid)}">`:''}<b>${it.ic} ${it.n}${lv?' +'+lv:''}</b><br><small>${it.sl}・通關 ${ST[sid].label} ${ST[sid].place} 取得</small><br>${q?`<span class="q-${q}">【${QL[q]}】</span> ${Object.keys(e).map(k=>SL[k]+'+'+e[k]).join(' ')}`:'🔒 尚未取得'}${q&&fOK?`<br><button style="font-size:13px;padding:3px 8px" ${lv>=FORGE_MAX?'disabled':''} onclick="forge(${i})">🔨 ${lv>=FORGE_MAX?'已達上限 +'+FORGE_MAX:'強化到 +'+(lv+1)+'：'+forgeCost(lv)+' 金幣・成功率 '+rate+'%'}</button>`:''}</div>`}).join('')+`</div>${formGallery()}<small>⚠️ 裝備效果在「通關關卡」和「鬥技場」都有效；通關時頭目會自動套上同樣倍率的裝備，所以攻防節奏不變（仍約 10 下打倒頭目）。裝備品質（依該小關最高星等）：1–2⭐普通 ×1、3⭐精良 ×2、4⭐傳說 ×10、5⭐神話 ×30。通關 6-2-4 套裝加成 ×1.1；通關 6-3-4 精靈共鳴，小惡魔精靈屬性 ×2。<br>${fOK?`🔥 深淵鍛造爐：最高 +${FORGE_MAX}，每級 +${FORGE_BONUS*100}% 屬性。強化到 +n 要 n²×100 金幣（+1 要 100、+2 要 400、……、+20 要 40,000）；成功率＝目前平均答對率（${Math.round(avgAcc()*100)}%，共 ${Q.at||0} 題）+10% ＝ ${rate}%；失敗不退還金幣。`:'🔒 通關 6-4-4 解鎖「深淵鍛造爐」，可用金幣強化裝備。'}</small>`}
+function forge(i){const lv=(Q.fg=Q.fg||{})[i]||0;if(lv>=FORGE_MAX)return;const c=forgeCost(lv);
+ if(!spendTokens(c))return toast('💰 金幣不夠喔！強化到 +'+(lv+1)+' 需要 '+c+' 金幣');
+ const r=forgeRate();
+ if(window.T_FORGE||Math.random()<r){Q.fg[i]=lv+1;toast('🔥 強化成功！'+ITEMS[i].n+' +'+(lv+1))}
+ else toast('💥 強化失敗…'+ITEMS[i].n+' 維持 +'+lv+'（金幣不退還；這次成功率是 '+Math.round(r*100)+'%）');
+ sv('Q',Q);hdr();toggleEq(true)}
+// ===== 戰鬥 =====
+function start(stg){bgm(stg.ch+1);
+ if(!stg.endless&&stg.j===0&&!storySeen[stg.ch]){storySeen[stg.ch]=1;return showStory(stg.ch,()=>start(stg))}
+ const bs=baseStats(),ts=totalStats(),lv=levelInfo().level,pa=ts.atk,sf=1+.03*(stg.endless?ST.length+stg.round-1:stg.id),ma=Math.round(2*(BASE.atk+GROWTH.atk*(lv-1))*sf),md0=Math.round(.5*(BASE.def+GROWTH.def*(lv-1))*sf),kA=ts.atk/bs.atk,kH=ts.hp/bs.hp,md=Math.round(md0*kA),sj=stg.j;
+ let mmax=0;for(let i=0;i<10;i++)mmax+=Math.max(1,Math.round(pa*(1+.2*i)*1.1-md));
+ const names=CH[stg.ch].names,boss=stg.boss;
+ S={stg,mode,lv,pa,ma,md,pdef:bs.def,kH,pmax:ts.hp,mmax,mc:0,pc:0,correct:0,total:0,xp:0,coins:0,lock:true,over:false,in:''};
+ S.php=S.pmax;S.mhp=mmax;
+ if(stg.snap){const g=stg.snap;S.php=Math.max(1,Math.round(S.pmax*g.fp));S.mhp=Math.max(1,Math.round(mmax*g.fm));S.pc=g.pc||0;S.mc=g.mc||0;S.correct=g.correct||0;S.total=g.total||0;S.xp=g.xp||0;S.coins=g.coins||0;delete eInfo(stg.id).snap;sv('E',E)}
+ /* 作答時間固定（困難／地獄 25 秒、第 5 章 40 秒），不受裝備速度影響 */const T=(mode==='teach'?0:(stg.ch===4?40:25));S.T=T;
+ $('home').hidden=true;document.body.classList.add('ingame');$('menu').hidden=true;$('battle').hidden=false;$('res').hidden=true;
+ const NF=window.NEG_FORMS||{};$('stage').style.backgroundImage=`url(${(NF.bg||{})[stg.id]||BG_DIR+'bg-'+(stg.ch+1)+'-'+(sj+1)+'.jpg'})`;
+ $('boss').src=(NF.boss||{})[stg.id]||`${BOSS_DIR}boss-${stg.ch+1}-${sj+1}.png`;$('bname').textContent=`${boss}　Lv.${lv}${kA>1.05?'　🛡裝備同步':''}`;
+ $('title').textContent=`${stg.label} ${stg.place||'無限挑戰'}${stg.endless?'・第'+stg.round+'輪':''}｜${CH[stg.ch].n}・${KN[stg.k]}（${MODES[mode].n.split('（')[0]}）`;
+ setHintArea();$('tb').style.visibility=T?'visible':'hidden';
+ heroForm='hero';sprite('idle');upd();nextQ()}
+// ===== 勇者型態：答對後，答案是「負數」→ 骷髏型態（隨解鎖越來越完整）；「正數」→ 原本的勇者 =====
+let heroForm='hero';
+const ownItem=i=>!!qStage(ST.findIndex((x,id)=>ITEM_OF(id)===i));
+const skelLv=()=>window.T_SKEL!=null?window.T_SKEL:[0,1,2].filter(ownItem).length+([3,4,5].some(ownItem)?1:0)+(ownItem(6)?1:0)+([9,10,11].some(ownItem)?1:0)+(ownItem(12)?1:0);
+const SKN=['骷髏幼體','左臂覺醒','雙臂覺醒','完整骷髏','暗黑武裝','精靈共鳴','極限強化','至尊神格'];
+function formSrc(k){const reg=((window.NEG_FORMS||{})[heroForm]||{}),lv=skelLv();
+ for(let l=lv;l>=0;l--){const f=reg[l]&&reg[l][k];if(f)return{src:f,custom:true}}
+ return{src:`${HERO_DIR}hero-${k}.${k==='idle'?'png':'gif'}`,custom:false}}
+function sprite(k,ms){const h=$('hero'),f=formSrc(k),lv=skelLv(),cf=(heroForm==='skel'&&!f.custom)?curForm():'';h.classList.remove('fa','fh','fo');h.style.mixBlendMode=cf?'screen':'';
+ if(cf){h.src=cf;void h.offsetWidth;h.classList.add(k==='attack'?'fa':k==='hurt'?'fh':k==='lose'?'fo':'fi')}else h.src=f.src+(k==='idle'?'':'?'+Date.now());
+ h.style.filter=cf?'none':(heroForm==='skel'&&!f.custom)?`invert(1) grayscale(1) contrast(1.25) opacity(${Math.min(1,.55+.15*Math.min(lv,3))}) drop-shadow(0 0 ${6+lv*2}px ${lv>=5?'#ff9f43':'#b79bff'})`:'';
+ $('hf').textContent=heroForm==='skel'?`💀 骷髏型態（答案是負數）・${SKN[lv]}`:'⚔️ 勇者型態（答案是正數）';
+ if(ms)setTimeout(()=>{if(S&&!S.over)sprite('idle')},ms)}
+// ===== 貓頭鷹博士・阿基米 劇情（格式比照四則勇者）=====
+const STORY=[
+ {t:'任務日誌：零度以下的深淵',pl:'冥界冰凍區',df:'⭐',L:[
+  ['阿基米','（拍拍翅膀）主人，你醒了！我們正在零度以下的深淵，想像腳下有一條冰與火的數線，0 就是分界點，左邊是負數，右邊是正數。'],
+  ['主角','博士，我只是一隻小小的骷髏，要怎麼變強呢？'],
+  ['阿基米','吸收死靈怨念吧！記住：同號相加，符號不變、數字相加；異號相加，大的減小的，符號跟著大的那一邊。例如 (−5)＋(−3)＝−8，往數線左邊走，你的骨骼就會變黑變壯！']],
+  wrong:'哎呀，走錯方向了！同號相加，符號不變、數字相加；異號相加，要大的減小的，符號跟著比較大的那一邊。我們再看一次數線！',
+  win:'太棒了！你湊齊了完整的骷髏外殼，身體又黑又壯！接下來，我們要去逆轉天秤了！'},
+ {t:'任務日誌：逆轉天秤',pl:'凋零天秤廢墟',df:'⭐⭐',L:[
+  ['阿基米','（推了推眼鏡）注意！這裡的天秤會把「減法」變成陷阱。看清楚，減去正數，會陷得更深；但減去負數……'],
+  ['主角','減去負數？不是越減越少嗎？'],
+  ['阿基米','這就是黑暗的祕密：減去負數，負負得正！去括號時，括號前面是「−」，括號裡的符號就要變相反。(−5)−(−8) 先去括號變成 −5＋8＝＋3，魂火瞬間逆向爆發成狂暴能量！']],
+  wrong:'小心！天秤傾斜了。括號前面是「＋」，括號裡的符號照寫；括號前面是「−」，括號裡的符號要變相反，減去負數就變成加上正數，負負得正！',
+  win:'了不起！你掌握了負負得正的力量，身上的暗黑裝備閃耀著黑紫色的光芒！下一站，暗黑幾何的爆發之地！'},
+ {t:'任務日誌：暗黑幾何爆發',pl:'暗黑幾何神殿',df:'⭐⭐⭐',L:[
+  ['阿基米','前面的騎士團排成了巨大的方陣，每一個陣列都帶著正負號的力量！'],
+  ['主角','乘法也有正負嗎？'],
+  ['阿基米','當然！看符號就知道：同號相吸變正，異號相斥變負。(−3)×(＋5)＝−15，會張開範圍暗黑天幕；(−4)×(−6)＝＋24，雙重負面能量相撞，觸發狂暴化骨刃！先決定符號，再算數字，絕對不會錯！']],
+  wrong:'哎呀，符號搞反了！記住口訣：同號相吸變正，異號相斥變負。先決定答案的符號，再把數字（絕對值）乘起來就對了！',
+  win:'太帥了！雙重負面能量完全在你的掌控之中，小惡魔精靈也成為你的夥伴了！前往天界結界吧！'},
+ {t:'任務日誌：天界結界・精準侵蝕',pl:'天界結界城牆',df:'⭐⭐⭐⭐',L:[
+  ['阿基米','聯軍巨頭結成了絕對防禦，要把暗黑能量平均分配到每一個結界核心上，一點都不能多、也不能少。'],
+  ['主角','要是除不盡呢？'],
+  ['阿基米','（嚴肅）多餘的能量會反噬你的魂火。好在這裡的題目都能整除。除法的符號規則跟乘法一樣：同號變正、異號變負。(−48)÷(＋6)＝−8，精準又漂亮！']],
+  wrong:'能量反噬了！除法的符號跟乘法一樣：同號相吸變正，異號相斥變負。先決定符號，再算數字的商，結界核心就會乖乖就位。',
+  win:'結界瓦解了！深淵鍛造爐的火焰為你點燃，你可以用代幣強化裝備了！最後的神殿，就在前方！'},
+ {t:'任務日誌：至高神殿・生死湮滅戰',pl:'至高神殿',df:'⭐⭐⭐⭐⭐',L:[
+  ['阿基米','這是最終決戰！大天使出正數題，你出負數題，華麗的複合運算式會一次次出現。'],
+  ['主角','這麼多符號，我該從哪裡開始？'],
+  ['阿基米','冷靜！三個口訣放在心上：1. 先看有沒有括號 [ ]，最優先算；2. 再看乘除，同號變正、異號變負；3. 最後加減由左到右，並且記得先「去括號」再計算。你可以的，少年！']],
+  wrong:'冷靜，深呼吸！順序口訣：先括號、再乘除、最後加減由左到右；遇到括號前面的負號，要先去括號再計算！',
+  win:'（流下感動的眼淚）成功了！你贏得了「至高神格」，成為傳說中的【無限・負數王者】！謝謝你，一路走到最後！'}];
+const hl=t=>['同號相加','異號相加','去括號','負負得正','同號相吸變正','異號相斥變負','先括號','括號優先','同號變正','異號變負'].reduce((r,k)=>r.split(k).join('<b class="kw">'+k+'</b>'),t);
+const storySeen={};let stDone=null;
+function showText(title,meta,lines,btn,done){$('st-t').textContent=title;$('st-m').textContent=meta;$('st-l').innerHTML=lines;$('st-ok').textContent=btn;$('sty').hidden=false;stDone=done}
+function showStory(c,done){const x=STORY[c];showText('📜 '+x.t,'地點：'+TERRAIN[c]+'　難度：'+x.df,x.L.map(l=>`<div class="sl ${l[0]==='主角'?'hero':''}"><b>${l[0]==='阿基米'?'🦉 ':'💀 '}${l[0]}：</b>${hl(l[1])}</div>`).join(''),'出發！',done)}
+$('st-ok').onclick=()=>{$('sty').hidden=true;const f=stDone;stDone=null;f&&f()};
+function credits(){showText('🎬 亡靈序曲：骷髏暴君的逆襲　全劇終','',['<div class="sl">出演　小骷髏　／　骷髏暴君</div>','<div class="sl">博士　阿基米</div>','<div class="sl">強敵　'+ALL.join('、')+'……</div>','<div class="sl">企劃・程式　負數勇者製作團隊</div>','<div class="sl">特別感謝　每一位算到最後、把負號駕馭自如的你 💀</div>'].join(''),'回到冒險大廳',null)}
+
+// ===== 教學模式：先去括號、再一步一步算（比照四則勇者的「遞等式」）=====
+// 流程：①點「該先算的符號」→ ②這組裡帶括號的數，一個一個點、一個一個去括號 → ③（乘除）決定符號 → ④照提示算 → ⑤結果放回算式
+const TKP={'+':1,'−':1,'×':2,'÷':2},TKW={paren:'🦉 阿基米：等等！算式裡有閃閃發光的「括號 [ ]」，括號擁有特權，要先算括號裡面喔！',prec:'🦉 阿基米：小心！乘法和除法的位階比較高，要「先乘除、後加減」喔！',ltr:'🦉 阿基米：同一級的運算要乖乖「由左到右」排隊，先算最左邊那一個喔！'},TKS={paren:'括號優先',prec:'先乘除、後加減',ltr:'同級由左到右'};
+let tk=null;
+const tkCalc=(a,o,b)=>o==='+'?a+b:o==='−'?a-b:o==='×'?a*b:a/b;
+function tkParse(txt){const T=[],z=txt.replace(/\s+/g,'');let i=0,m;
+ while(i<z.length){const c=z[i],r=z.slice(i);
+  if(c==='('&&(m=/^\(([+−])(\d+)\)/.exec(r))){T.push({k:'n',v:(m[1]==='−'?-1:1)*+m[2],sg:1});i+=m[0].length}
+  else if(/\d/.test(c)){m=/^\d+/.exec(r)[0];T.push({k:'n',v:+m});i+=m.length}
+  else if(c==='−'&&/\d/.test(z[i+1]||'')&&(!T.length||T[T.length-1].k==='[')){m=/^\d+/.exec(z.slice(i+1))[0];T.push({k:'n',v:-m});i+=1+m.length}
+  else{T.push(c==='['||c===']'?{k:c}:{k:'o',v:c});i++}}
+ return T}
+const nTxt=(t,i,T)=>t.sg?(t.v<0?`(−${-t.v})`:`(+${t.v})`):t.v<0?((i===0||T[i-1].k==='[')?`−${-t.v}`:`(−${-t.v})`):String(t.v);
+const fv=v=>v<0?`(−${-v})`:String(v);
+const sm=v=>String(v).replace('-','−');
+const tkStr=T=>T.map((t,i)=>t.k==='n'?nTxt(t,i,T):t.k==='o'?t.v:t.k).join(' ').replace(/\[ /g,'[').replace(/ \]/g,']');
+function tkGroups(T){const g=[];for(let i=0;i<T.length;i++){if(T[i].k!=='[')continue;let j=i+1;while(j<T.length&&T[j].k!==']')j++;if(j<T.length)g.push({l:i,r:j})}return g}
+function tkLocal(T,lo,hi){const ops=[];for(let i=lo;i<=hi;i++)if(T[i].k==='o')ops.push(i);const ok=[],why={};
+ ops.forEach((k,x)=>{const p=TKP[T[k].v],lp=x>0?TKP[T[ops[x-1]].v]:0,rp=x<ops.length-1?TKP[T[ops[x+1]].v]:0;
+  if((x===0||lp<p)&&(x===ops.length-1||rp<=p))ok.push(k);else if(rp>p||lp>p)why[k]='prec';else why[k]='ltr'});return{ok,why}}
+function tkEligible(T){const gs=tkGroups(T),ok=[],why={};
+ if(gs.length){const ins=new Set();gs.forEach(g=>{const r=tkLocal(T,g.l+1,g.r-1);r.ok.forEach(k=>ok.push(k));Object.assign(why,r.why);for(let i=g.l+1;i<g.r;i++)ins.add(i)});T.forEach((t,i)=>{if(t.k==='o'&&!ins.has(i))why[i]='paren'})}
+ else{const r=tkLocal(T,0,T.length-1);r.ok.forEach(k=>ok.push(k));Object.assign(why,r.why)}
+ return{ok,why,groups:gs}}
+function tkApply(T,k,val){T.splice(k-1,3,{k:'n',v:val});for(let i=0;i+2<T.length;i++)if(T[i].k==='['&&T[i+1].k==='n'&&T[i+2].k===']'){T.splice(i,3,T[i+1]);i=-1}}
+const tkNeedSign=(a,op,b)=>(op==='+'||op==='−')?(b.v<0||!!b.sg):(a.v<0||b.v<0||!!a.sg||!!b.sg);
+const effOp=(op,b)=>op==='+'?(b.v<0?'−':'+'):(b.v<0?'+':'−');
+const RULE=(op,b)=>op==='+'?(b.v<0?'加上負數＝減去它的絕對值':'加上正數，符號照寫'):(b.v<0?'減去負數，負負得正，變成加':'減去正數，還是減');
+const leadBare=s=>!s.mag&&s.va<0&&tk&&(s.k-1===0||(tk.t[s.k-2]&&tk.t[s.k-2].k==='['));
+const lvTxt=s=>leadBare(s)?'−'+(-s.va):fv(s.va);
+const tkGrpTxt=s=>`${lvTxt(s)} ${s.eop} ${fv(s.vb)}`;
+// 「怎麼算」的提示：用數線與口訣說明（給學生看，也給答錯解說用）
+function tkMethod(s){
+ if(s.mag)return `先不管正負，只算數字（絕對值）：${s.va} ${s.eop} ${s.vb} = ?　算完，答案前面再貼上「${s.sign}」。`;
+ if(s.eop==='+')return s.va<0?`在數線上，從 ${fv(s.va)} 往右走 ${s.vb} 步。異號相加：大的減小的（${Math.max(-s.va,s.vb)} − ${Math.min(-s.va,s.vb)}），符號跟著絕對值大的那一邊。`:`在數線上，從 ${s.va} 往右走 ${s.vb} 步，兩個都是正數，直接相加。`;
+ if(s.eop==='−')return s.va<0?`在數線上，從 ${fv(s.va)} 往左走 ${s.vb} 步，會更負：數字相加（${-s.va} ＋ ${s.vb}），符號是負。`:`在數線上，從 ${s.va} 往左走 ${s.vb} 步，不夠減就會跑到 0 的左邊，變成負數。`;
+ return `${tkGrpTxt(s)} 直接計算。`}
+function tkSay(m,w){$('th').textContent=m;$('th').classList.toggle('warn',!!w);if(w){const p=$('tp');p.classList.remove('shake');void p.offsetWidth;p.classList.add('shake')}}
+// ---- 畫面 ----
+function tkWashHTML(){const s=tk.sel,T=tk.t,it=tk.items||[],ad=s.op==='+'||s.op==='−',inWash=tk.phase==='wash';
+ const chip=(w,txt)=>{const i=it.findIndex(x=>x.w===w);if(i<0)return `<span>${txt}</span>`;
+  if(tk.res[w]!==undefined)return `<span class="ft-chip done">${tk.res[w]}</span>`;
+  return `<span class="ft-chip${tk.wflash===i?' on':''}" data-w="${i}">${txt}</span>`};
+ const mid=(ad&&tk.res.b!==undefined)?`<span class="ft-chip done">${tk.res.b}</span>`:`<span>${s.op}</span>`+chip('b',nTxt(s.b,s.k+1,T));
+ return `<span class="ft-grp">${chip('a',nTxt(s.a,s.k-1,T))}${mid}${tk.phase==='sign'?'<span>=</span><span class="ft-box">？</span>':''}</span>`}
+function tkCalcHTML(){const s=tk.sel;
+ return `<span class="ft-grp">${s.mag?`<span>${s.sign}</span><span>(</span>`:''}<span>${lvTxt(s)}</span><span>${s.eop}</span><span>${fv(s.vb)}</span>${s.mag?'<span>)</span>':''}<span>=</span><span class="ft-box">${tk.input?tk.input.replace('-','−'):'&nbsp;'}</span></span>`}
+function tkRender(){const t=tk.t,fs=t.length<=5?34:t.length<=9?28:t.length<=13?24:20;
+ let h='<div class="ft-hist">'+tk.hist.map(x=>`<div>${x}</div>`).join('')+'</div><div class="ft-cur" style="font-size:'+fs+'px">';
+ for(let i=0;i<t.length;i++){const x=t[i];
+  if(tk.sel&&tk.phase!=='pick'&&i===tk.sel.k-1){h+=tk.phase==='calc'?tkCalcHTML():tkWashHTML();i+=2;continue}
+  if(x.k==='n')h+=`<span class="ft-n">${nTxt(x,i,t)}</span>`;
+  else if(x.k==='o')h+=`<span class="ft-op${tk.flash&&tk.flash.indexOf(i)>=0?' hint':''}" data-i="${i}">${x.v}</span>`;
+  else h+=`<span class="ft-p" data-i="${i}">${x.k}</span>`}
+ h+='</div>';
+ if(tk.phase==='wash'&&tk.ask){const it=tk.items[tk.wi];h+='<div class="ft-sg">'+it.opts.map((o,j)=>`<button class="wc" data-wc="${j}">${o.t}</button>`).join('')+'</div>'}
+ if(tk.phase==='sign')h+='<div class="ft-sg"><button data-sg="+">＋</button><button data-sg="−">－</button></div>';
+ if(tk.phase!=='pick')h+='<div class="ft-hb"><button class="hintbtn" data-hint>💡 提示</button></div>';
+ $('tp').innerHTML=h;$('tp').scrollTop=$('tp').scrollHeight}
+$('tp').addEventListener('click',e=>{
+ if(e.target.closest('[data-hint]'))return tkHint();
+ const c=e.target.closest('[data-wc]');if(c)return tkWashPick(+c.dataset.wc);
+ const w=e.target.closest('[data-w]');if(w)return tkWashOpen(+w.dataset.w);
+ const g=e.target.closest('[data-sg]');if(g)return tkSign(g.dataset.sg);
+ const x=e.target.closest('[data-i]');if(x)tkClick(+x.dataset.i)});
+// ---- ①選運算符號 ----
+function tkItems(k){const T=tk.t,a=T[k-1],b=T[k+1],op=T[k].v,ad=op==='+'||op==='−',it=[],pd=(t,i)=>nTxt(t,i,T)[0]==='(';
+ const mk=(w,tok,i)=>{const txt=nTxt(tok,i,T),v=tok.v,m=Math.abs(v);let ok,bad,expl,done,why;
+  if(!ad){ok=`${v<0?'負':'正'}・絕對值 ${m}`;bad=`${v<0?'正':'負'}・絕對值 ${m}`;why='括號裡面的符號，就是這個數的正負';expl=`${txt}：先看它是正數還是負數，再看數字（絕對值）是多少。`;done=`${txt} → ${ok}。`}
+  else if(w==='a'){ok=v<0?`−${m}`:`${m}`;bad=v<0?`${m}`:`−${m}`;why='第一個數前面沒有運算符號，去掉括號，符號照寫';expl=`${txt}：它是這組的第一個數，前面沒有運算符號，直接去掉括號，括號裡的正負號照寫。`;done=`${txt} → ${ok}。`}
+  else{const e=effOp(op,tok);ok=`${e} ${m}`;bad=`${e==='+'?'−':'+'} ${m}`;why=RULE(op,tok);expl=`${op} ${txt}：括號前面是「${op}」，括號裡是${v<0?'負':'正'}數。`;done=`${op} ${txt} → ${ok}（${why}）。`}
+  const opts=[{t:ok,ok:true},{t:bad,ok:false}];if(Math.random()<.5)opts.reverse();
+  return{w,i,ok,expl,why,done,opts,q:`${ad&&w==='b'?op+' ':''}${txt} 去括號後，會變成？`}};
+ if(pd(a,k-1))it.push(mk('a',a,k-1));if(pd(b,k+1))it.push(mk('b',b,k+1));return it}
+function tkChoose(k,auto,x){const T=tk.t,a=T[k-1],b=T[k+1],op=T[k].v;tk.flash=null;tk.sel={k,a,b,op};tk.input='';tk.res={};tk.ask=false;tk.wflash=null;
+ tk.items=tkItems(k);tk.wi=0;const pre=(x?x+' ':'')+(auto?'👍 只剩最後一組了，不用選符號！':'✅ 選對了！');
+ if(tk.items.length){tk.phase='wash';tkRender();tkSay(pre+'這一組有帶括號的數，請你自己判斷：要先處理哪一個？點一下它，決定它去括號後會變成什麼。')}
+ else tkAfterWash(pre)}
+function tkAuto(x){const ops=[];tk.t.forEach((x,i)=>{if(x.k==='o')ops.push(i)});if(ops.length!==1)return false;tkChoose(ops[0],true,x);return true}
+function tkClick(i){if(!tk||S.lock)return;
+ if(tk.phase!=='pick')return tkSay(tk.phase==='wash'?'先把這組帶括號的數，一個一個去括號喔！（點帶括號的那個數）':tk.phase==='sign'?'先選擇答案的符號喔！':`先把發亮的「${tkGrpTxt(tk.sel)}」算出來，再按「確認」喔！`);
+ const T=tk.t,el=tkEligible(T),tok=T[i];let k=i;
+ if(tok.k==='['||tok.k===']'){const g=el.groups.find(x=>x.l===i||x.r===i),inner=el.ok.filter(x=>x>g.l&&x<g.r);if(inner.length!==1)return tkSay('括號裡有好幾個符號，請直接點「你想先算的符號」。');k=inner[0]}
+ if(tok.k==='n')return;
+ if(el.ok.indexOf(k)>=0)tkChoose(k);
+ else{const why=el.why[k]||'ltr',first=el.ok[0],d=x=>nTxt(T[x-1],x-1,T)+' '+T[x].v+' '+nTxt(T[x+1],x+1,T);
+  tkSay(TKW[why],1);tk.miss.push(`第 ${tk.step} 步：你先點了 ${d(k)}，但應該先算 ${d(first)}（${TKS[why]}）`);
+  tk.flash=el.ok.slice();tkRender();setTimeout(()=>{if(tk){tk.flash=null;if(tk.phase==='pick')tkRender()}},1700)}}
+// 💡 提示鈕：學生自己想看才看（不算失誤）
+function tkHint(){if(!tk||S.lock)return;const s=tk.sel;
+ if(tk.phase==='wash'){const it=tk.items[tk.wi];return tkSay('💡 提示：去括號要由左到右，一個一個來。'+(tk.ask?it.why+'。':'先點最左邊那個帶括號的數。'))}
+ if(tk.phase==='sign')return tkSay('💡 提示：同號相吸變正，異號相斥變負。');
+ if(tk.phase==='calc')return tkSay('💡 提示：'+tkMethod(s))}
+// ---- ②一個一個去括號 ----
+function tkWashOpen(i){if(!tk||S.lock||tk.phase!=='wash')return;
+ const it=tk.items[i];if(!it||tk.res[it.w]!==undefined)return;
+ if(i!==tk.wi){const T=tk.t,x=tk.sel,mine=nTxt(it.w==='a'?x.a:x.b,it.i,T),f=tk.items[tk.wi],want=nTxt(f.w==='a'?x.a:x.b,f.i,T);
+  tk.miss.push(`第 ${tk.step} 步：去括號的順序：你先點了「${mine}」，但要由左到右，應該先處理「${want}」`);
+  tk.wflash=tk.wi;tk.ask=false;tkRender();tkSay('🦉 阿基米：先別急！去括號要「由左到右」一個一個來，先處理最左邊那個帶括號的數。',1);
+  setTimeout(()=>{if(tk){tk.wflash=null;if(tk.phase==='wash')tkRender()}},1700);return}
+ tk.ask=true;tkRender();tkSay('🦉 '+it.q)}
+function tkWashPick(j){if(!tk||S.lock||tk.phase!=='wash'||!tk.ask)return;const it=tk.items[tk.wi],o=it.opts[j];
+ if(!o.ok){tk.miss.push(`第 ${tk.step} 步：去括號「${it.expl.split('：')[0]}」你選了「${o.t}」，應該是「${it.ok}」（${it.why}）`);return tkSay(`🦉 阿基米：再想想！${it.why}。`,1)}
+ tk.res[it.w]=it.ok;tk.wi++;tk.ask=false;
+ if(tk.wi<tk.items.length){tkRender();tkSay(`✅ ${it.done}接著處理下一個帶括號的數！`)}else tkAfterWash(`✅ ${it.done}`)}
+// 括號都去完 → 換成去括號後的樣子，進入「決定符號」或「計算」
+function tkAfterWash(pre){const T=tk.t,s=tk.sel,{k,a,b,op}=s,ad=op==='+'||op==='−';
+ if(ad){const eop=tkNeedSign(a,op,b)?effOp(op,b):op;Object.assign(s,{va:a.v,eop,vb:Math.abs(b.v),mag:false});s.val=tkCalc(s.va,eop,s.vb);
+  if(tk.items.length){tk.hist.push(tkStr(T));T[k-1]={k:'n',v:a.v};T[k]={k:'o',v:eop};T[k+1]={k:'n',v:s.vb}}
+  tk.phase='calc';tk.input='';tkRender();tkSay(pre+`現在算式變成 ${tkGrpTxt(s)}。算算看結果是多少？（需要負號就按 ±，再按「確認」）`)}
+ else if(tkNeedSign(a,op,b)){tk.phase='sign';tkRender();tkSay(pre+`接著決定答案的符號：${nTxt(a,k-1,T)} ${op} ${nTxt(b,k+1,T)} 的答案是正還是負？`)}
+ else{Object.assign(s,{va:a.v,vb:b.v,eop:op,val:tkCalc(a.v,op,b.v),mag:false});tk.phase='calc';tk.input='';tkRender();tkSay(pre+`算算看：${tkGrpTxt(s)} = ?（用下面的數字鍵輸入，再按「確認」）`)}}
+// ---- ③乘除：決定符號 ----
+function tkSign(sg){if(!tk||S.lock||tk.phase!=='sign')return;const s=tk.sel,ok=(s.a.v<0)!==(s.b.v<0)?'−':'+',why=ok==='+'?'同號相吸變正':'異號相斥變負';
+ if(sg!==ok){tk.miss.push(`第 ${tk.step} 步：決定答案的符號，你選了「${sg}」，應該是「${ok}」（${why}）`);return tkSay(`🦉 阿基米：再想想！${why}。`,1)}
+ Object.assign(s,{sign:ok,eop:s.op,va:Math.abs(s.a.v),vb:Math.abs(s.b.v),mag:true});s.val=tkCalc(s.va,s.op,s.vb);
+ tk.phase='calc';tk.input='';tkRender();tkSay(`✅ 答案的符號是「${ok}」。接著算數字（絕對值）：${s.va} ${s.op} ${s.vb} = ?`)}
+// ---- ④輸入答案 ----
+function tkPress(c){if(!tk||tk.phase!=='calc')return;const s=tk.sel;
+ if(c==='±'){if(!s.mag)tk.input=tk.input[0]==='-'?tk.input.slice(1):'-'+tk.input}
+ else if(c==='⌫')tk.input=tk.input.slice(0,-1);
+ else if(tk.input.replace('-','').length<6)tk.input=(tk.input==='0'?'':tk.input)+c;
+ tkRender()}
+function tkSubmit(){if(!tk||S.lock)return;
+ if(tk.phase==='pick')return tkSay('先點選「應該最先計算的運算符號」喔！');
+ if(tk.phase==='wash')return tkSay('先點帶括號的數，一個一個去括號喔！',1);
+ if(tk.phase==='sign')return tkSay('先選擇符號（＋ 或 －）喔！',1);
+ const s=tk.sel;if(tk.input===''||tk.input==='-')return tkSay(`先用數字鍵輸入 ${tkGrpTxt(s)} 的結果喔！`,1);
+ if(parseInt(tk.input,10)!==s.val){tk.miss.push(`第 ${tk.step} 步：${tkGrpTxt(s)} 你算成 ${tk.input.replace('-','−')}，正確是 ${sm(s.val)}`);tk.input='';tkRender();return tkSay(`🦉 再算一次：${tkMethod(s)}`,1)}
+ const res=s.mag&&s.sign==='−'?-s.val:s.val,line=s.mag?`${s.sign}(${s.va} ${s.eop} ${s.vb}) = ${sm(res)}`:`${tkGrpTxt(s)} = ${sm(res)}`;
+ tk.hist.push(tkStr(tk.t));tkApply(tk.t,s.k,res);tk.sel=null;tk.input='';tk.phase='pick';tk.step++;
+ if(tk.t.length===1){tkRender();return resolve(tk.miss.length===0,false)}
+ if(!tkAuto(`✅ ${line}，結果放回算式。`)){tkRender();tkSay(`✅ ${line}，結果放回算式。下一步，要先算哪一個符號？`)}}
+
+// ===== 答錯解說（用同一套引擎算出每一步，包含去括號與符號規則）=====
+function solveSteps(txt){const t=tkParse(txt),out=[],pd=(x,i)=>nTxt(x,i,t)[0]==='(';if(txt.includes('['))out.push('<b>先算括號 [ ] 裡面</b>（括號優先）');
+ for(let g=0;t.length>1&&g<40;g++){const el=tkEligible(t),k=el.ok[0],a=t[k-1],b=t[k+1],op=t[k].v,fa=nTxt(a,k-1,t),fb=nTxt(b,k+1,t),ad=op==='+'||op==='−';let val;
+  if(ad){const need=tkNeedSign(a,op,b),e=need?effOp(op,b):op,nb=Math.abs(b.v),s={va:a.v,eop:e,vb:nb,mag:false};val=tkCalc(a.v,e,nb);
+   if(pd(a,k-1))out.push(`<b>去括號（第一個數）：</b>${fa} → ${a.v<0?'−'+(-a.v):a.v}（前面沒有運算符號，符號照寫）`);
+   if(need)out.push(`<b>去括號：</b>${op} ${fb} → ${e} ${nb}（${RULE(op,b)}）`);
+   out.push(`<b>計算：</b>${fv(a.v)} ${e} ${nb} = <b>${sm(val)}</b>　<small>${tkMethod(s)}</small>`)}
+  else if(tkNeedSign(a,op,b)){const sg=(a.v<0)!==(b.v<0)?'−':'+',s={va:Math.abs(a.v),eop:op,vb:Math.abs(b.v),mag:true,sign:sg},mag=tkCalc(s.va,op,s.vb);val=sg==='−'?-mag:mag;
+   const pa=pd(a,k-1),pb=pd(b,k+1);if(pa||pb)out.push(`<b>拆開符號與絕對值：</b>${[pa?`${fa} → ${a.v<0?'負':'正'}・${s.va}`:'',pb?`${fb} → ${b.v<0?'負':'正'}・${s.vb}`:''].filter(Boolean).join('；')}`);
+   out.push(`<b>決定符號：</b>${fa} ${op} ${fb}，${sg==='+'?'同號相吸變正':'異號相斥變負'}`);out.push(`<b>算絕對值：</b>${s.va} ${op} ${s.vb} = ${mag}，所以答案是 <b>${sm(val)}</b>`)}
+  else{val=tkCalc(a.v,op,b.v);out.push(`<b>計算：</b>${fa} ${op} ${fb} = <b>${sm(val)}</b>`)}
+  tkApply(t,k,val)}
+ return{steps:out,final:t[0].v}}
+let exAfter=null,exAt=0;
+function openExplain(i,after){$('ex-t').textContent=i.title;$('ex-n').innerHTML=hl(i.note);$('ex-a').innerHTML=i.ans;$('ex-s').innerHTML=i.steps.map(x=>'<li>'+x+'</li>').join('');$('ex-m').innerHTML=i.miss.map(x=>'<li>'+x+'</li>').join('');$('ex-mw').hidden=!i.miss.length;$('ex-c').innerHTML=hl(i.check);$('ex').hidden=false;exAfter=after;exAt=Date.now();$('ex').querySelector('.mbox').scrollTop=0}
+function exOk(){if($('ex').hidden||Date.now()-exAt<350)return;$('ex').hidden=true;const f=exAfter;exAfter=null;f&&f()}
+$('ex-ok').onclick=exOk;
+function buildExplain(timeout){const ans=S.q.ans,teach=S.mode==='teach',mine=(teach||timeout)?'':S.in.replace('-','−'),miss=teach&&tk?tk.miss.slice():[],right=`正確算式：<span class="good">${S.q.txt} = ${String(ans).replace('-','−')}</span>`;
+ return{title:timeout?'⏰ 時間到了！':'❌ 這題算錯了',note:'🦉 阿基米：'+STORY[S.stg.ch].wrong,
+  ans:teach?`化簡的過程有 ${miss.length} 個失誤　${right}`:((mine?`你的答案：<span class="bad">${mine}</span>　`:(timeout?'沒有來得及送出答案　':''))+right),
+  steps:solveSteps(S.q.txt).steps.concat([`<b>最後答案：</b>${String(ans).replace('-','−')}`]),miss,check:'🔍 '+CH[S.stg.ch].hint}}
+
+// ===== 戰鬥流程 =====
+function nextQ(){if(!S||S.over)return;S.q=genQ(S.stg,MODES[S.mode].d);S.in='';S.lock=false;S.hintOn=false;$('msg').textContent='';setHintArea();
+ const teach=S.mode==='teach';$('tp').hidden=!teach;$('th').hidden=!teach;$('q').hidden=teach;$('ans').hidden=teach;$('pad').lastChild.textContent=teach?'✔ 確認':'⚔ 攻擊';
+ if(teach){tk={t:tkParse(S.q.txt),hist:[],phase:'pick',sel:null,input:'',miss:[],step:1,flash:null};tkRender();tkSay('請先點選「應該最先計算的運算符號」！');tkAuto()}
+ else{$('q').textContent=S.q.txt;rAns()}
+ timer()}
+function timer(){clearInterval(S.iv);if(!S.T)return;S.t=S.T;$('tbar').style.width='100%';S.iv=setInterval(()=>{S.t-=.1;$('tbar').style.width=Math.max(0,S.t/S.T*100)+'%';if(S.t<=0)submit(true)},100)}
+const rAns=()=>$('ans').textContent=S.in||'?';
+function press(c){if(!S||S.lock)return;
+ if(S.mode==='teach')return tkPress(c);
+ if(c==='±')S.in=S.in[0]==='-'?S.in.slice(1):'-'+S.in;
+ else if(c==='⌫')S.in=S.in.slice(0,-1);
+ else if(S.in.replace('-','').length<6)S.in+=c;rAns()}
+function fl(el,t,c){const d=document.createElement('div');d.className='fl';d.textContent=t;d.style.color=c;d.style.left='40%';d.style.top='20%';$(el).parentElement.appendChild(d);setTimeout(()=>d.remove(),1000)}
+function submit(timeout){if(!S||S.lock||S.over)return;
+ if(S.mode==='teach'&&!timeout)return tkSubmit();
+ if(!timeout&&(S.in===''||S.in==='-'))return;
+ resolve(!timeout&&parseInt(S.in,10)===S.q.ans,timeout)}
+function resolve(ok,timeout){if(!S||S.over)return;S.lock=true;clearInterval(S.iv);S.total++;Q.at=(Q.at||0)+1;if(ok)Q.ac=(Q.ac||0)+1;
+ if(ok){S.correct++;S.pc++;S.mc=0;const coin=coinOf(S.pc);S.coins=(S.coins||0)+coin;addCoins(coin);heroForm=S.q.ans<0?'skel':'hero';const d=Math.max(1,Math.round(S.pa*(1+.2*(S.pc-1))*(.8+Math.random()*.3)-S.md));S.mhp-=d;S.xp+=10;Q.exp+=10;
+  $('msg').innerHTML=`<span style="color:#7dff9b">✔ 命中！−${d}　💰+${coin}（連對 ${S.pc}）</span>`;fl('boss',`−${d}`,'#ffd86b');sprite('attack',800);
+  $('boss').classList.remove('shake');void $('boss').offsetWidth;$('boss').classList.add('shake')}
+ else{const heal=Math.max(1,Math.round((S.pa*.95-S.md)/2));S.pc=0;S.mc++;S.mhp=Math.min(S.mmax,S.mhp+heal);
+  const d=Math.max(1,Math.round((S.ma*(1+.2*(S.mc-1))*(.8+Math.random()*.3)-S.pdef)*S.kH));S.php-=(window.T_GOD?0:d);S.xp+=1;Q.exp+=1;
+  $('msg').innerHTML=`<span style="color:#ff8a8a">${timeout?'⏰ 時間到！':'✘ 答錯了！'}魂火−${d}，敵人回血+${heal}</span>`;fl('hero',`−${d}`,'#ff8a8a');sprite('hurt',1000)}
+ upd();
+ const after=()=>{if(S.mhp<=0)return setTimeout(()=>end(true),400);if(S.php<=0){sprite('lose');return setTimeout(()=>end(false),1200)}setTimeout(nextQ,ok?800:0)};
+ if(ok)after();else openExplain(buildExplain(timeout),after)}
+// 提示：教學模式頂端永遠顯示本章規則（免費）；困難、地獄要按「💡 提示」，每題第一次扣 5 金幣
+function setHintArea(){const h=$('hint');if(!S)return;
+ if(S.mode==='teach'){h.textContent=CH[S.stg.ch].hint;return}
+ h.innerHTML=S.hintOn?CH[S.stg.ch].hint:'<button class="hintbtn" onclick="quickHint()">💡 提示（−5 金幣）</button>'}
+function quickHint(){if(!S||S.lock||S.over||S.mode==='teach'||S.hintOn)return;
+ if(!spendTokens(5))return toast('💰 金幣不夠喔！提示要 5 金幣');
+ S.hintOn=true;S.hints=(S.hints||0)+1;setHintArea();upd();toast('💡 提示 −5 金幣')}
+function upd(){$('coinb').textContent='💰 本場 +'+(S.coins||0)+(S.hints?'　提示 −'+S.hints*5:'');$('php').style.width=Math.max(0,S.php/S.pmax*100)+'%';$('mhp').style.width=Math.max(0,S.mhp/S.mmax*100)+'%';
+ $('ptxt').textContent=`${SK[isHoly()?'holy':'dark'].hp} ${Math.max(0,S.php)}/${S.pmax}　Lv.${S.lv}`;
+ $('pc').textContent=S.pc>1?`🔥 COMBO ×${S.pc}`:'';$('mc').textContent=S.mc>1?`💢 COMBO ×${S.mc}`:''}
+function quit(){saveEndless();if(S){clearInterval(S.iv);S.over=true}sv('Q',Q);menu()}
+function stars(win){if(!win)return 0;return Math.min(rawStars(S.correct/S.total),CAP[S.mode])}
+// 正確率→星等（三種模式共用）：100%＝5★、90%＝4★、80%＝3★、70%＝2★、60%＝1★；再由模式限制最高星等（教學2、困難4、地獄5）
+const rawStars=a=>a>=1?5:a>=.9?4:a>=.8?3:a>=.7?2:a>=.6?1:0;
+function end(win){S.over=true;clearInterval(S.iv);const s=stars(win),st=S.stg,m=S.mode,q0=qStage(st.id),prevS=P[st.id]||0;let q1=q0,tok=0;sv('Q',Q);
+ if(st.endless&&s>0){const e=eInfo(st.id);e.best=Math.max(e.best||0,e.round);e.round++;delete e.snap;st.round=e.round;sv('E',E)}else if(st.endless){delete eInfo(st.id).snap;sv('E',E)}
+ if(s>0&&!st.endless){const i=st.id;P[i]=Math.max(P[i]||0,s);sv('P',P);q1=qStage(i)}
+ const bonus=(win&&S.total>0&&S.correct===S.total&&S.coins>0)?S.coins:0;if(bonus)addCoins(bonus);tok=(S.coins||0)+bonus;queueCoins(tok);
+ const last=ST.filter(x=>x.ch===st.ch).pop(),reward=s>0&&!st.endless&&last.id===st.id?`<br>🎁 通關道具：【${CH[st.ch].item}】`:'';
+ const ii=ITEM_OF(st.id),lv1=levelInfo().level;let drop='';if(ii>=0&&q1&&q1!==q0){ensureRoll(ii);drop=`<br>🎁 ${q0?'裝備升級':'獲得裝備'}：${ITEMS[ii].ic}【${ITEMS[ii].n}】<span class="q-${q1}">${QL[q1]}</span>`}
+ const owl=s>0&&!st.endless&&last.id===st.id?`<br><small>🦉 阿基米：${hl(STORY[st.ch].win)}</small>`:'';const owl2=owl+(st.id===ST.length-1&&s>0&&!st.endless?'<br>🌟 解鎖「至高神格」！回到冒險大廳，就能切換「聖光勇者」或「骷髏暴君」外觀。':'');try{if(bestStar(3)>0)syncMyUser()}catch(e){}
+ const first=s>0&&!st.endless&&prevS===0,ip=itemPic(st.id),fp=formPic(st.id),showItem=!!ip&&s>0&&!st.endless&&(first||drop!=='');
+  let pics='';if(showItem||(first&&fp))pics='<div class="rpics">'+(showItem?`<figure><img src="${ip}"><figcaption>🎁 ${itemName(st.id)}</figcaption></figure>`:'')+(first&&fp?`<figure><img src="${fp}"><figcaption>💀 人物改變！</figcaption></figure>`:'')+'</div>';
+  const hasNext=st.endless||(s>0&&st.id<ST.length-1);
+ $('rc').innerHTML=`<h2>${s>0?'🏆 勝利！':'💀 挑戰失敗'}</h2>${'★'.repeat(s)||'—'}<br>答對 ${S.correct} / ${S.total} 題（${S.total?Math.round(S.correct/S.total*100):0}%）${win&&!s?'<br>正確率未達過關標準，再挑戰一次吧！':''}${s>0&&rawStars(S.correct/S.total)>CAP[m]?`<br><small>（${MODES[m].n.split('（')[0]}模式最高 ${CAP[m]}★；想拿更高星等請到更高難度挑戰）</small>`:''}${reward}${drop}${pics}${tok?`<br>💰 金幣 +${S.coins||0}${bonus?`　🌟 全對！額外再加 +${bonus}`:''}（本場共 +${tok}）${S.hints?`　💡 提示 −${S.hints*5}`:''}`:''}${owl2}<br>✨ 經驗值 +${S.xp}${lv1>S.lv?'　🎉 升級！Lv.'+lv1:''}<br><br>
+ ${st.endless&&s>0?'':'<button onclick="start(S.stg)">🔁 再戰</button>'} ${st.endless&&s>0?'<button onclick="start(S.stg)">➡ 下一輪（第 '+st.round+' 輪）</button><button onclick="$(\'res\').hidden=true;goEndless()">♾ 換一關</button>':hasNext&&(s>0)?`<button onclick="go(${st.id+1})">➡ 下一關</button>`:''} ${st.id===ST.length-1&&s>0&&!st.endless?'<button onclick="credits()">🎬 片尾</button> ':''}<button onclick="$('res').hidden=true;menu()">🗺 選關</button>`;
+ $('res').hidden=false}
+// ===== ⚔️ 骷髏鬥技場（對戰規則、即時對戰、雲端幽靈 AI 皆取自 world-map.html，使用同一個 Supabase 專案）=====
+const $q=s=>document.querySelector(s);
+let sb=null;try{if(typeof supabase!=='undefined')sb=supabase.createClient('https://qkejjznejmxcfiyxviid.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZWpqem5lam14Y2ZpeXh2aWlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1MjYyODQsImV4cCI6MjEwNjEwMjI4NH0.TBzTQ98emolzRoPaBDDGRpTW8ZkDCGoOstUTfmcrWco')}catch(e){console.warn('Supabase 初始化失敗，只能對戰電腦 AI',e)}
+let who=ld('who',{sid:'',name:''});
+const sbReady=()=>!!sb,mySid=()=>useStu?String(stuNo):(who.sid?String(who.sid).trim():null);
+function toast(t){let d=$q('#toast2');if(!d){d=document.createElement('div');d.id='toast2';document.body.appendChild(d)}d.innerHTML=t;d.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>d.classList.remove('on'),3200)}
+const myRankIdx=()=>{const t=ST.reduce((a,x)=>a+bestStar(x.id),0);return RK.filter(r=>r[0]<=t).length-1};
+// 負數勇者只有 血量/攻擊/防禦/速度，魔力與魔攻、魔防沿用同一套公式換算，讓兩個遊戲的角色可以互相對戰
+const statsWithRank=()=>{const ts=totalStats();return{hp:ts.hp,mp:300,atk:ts.atk,matk:ts.atk,def:ts.def,mdef:ts.def,spd:ts.spd,rank:myRankIdx(),eq:'',clone:0}};
+let prevHp={o:1e9,m:1e9};
+// 與同學對戰的金幣：贏 +10、輸 -20、平手 0（對戰電腦 AI 不算）。同一場只算一次（重新整理也不會重複）
+function pvpCoins(room,mine){if(!duelState||duelState.coinDone)return;
+ if(duelState.mode==='async'&&!duelState.bId)return;
+ duelState.coinDone=true;const bid=duelState.battleId;Q.pcb=Q.pcb||[];
+ if(bid){if(Q.pcb.includes(bid))return;Q.pcb.push(bid);Q.pcb=Q.pcb.slice(-60)}
+ const me=room[mine],op=room[mine==='a'?'b':'a'];let d=0;
+ if(room.winner==='draw'||(me.hp<=0&&op.hp<=0))d=0;else if(me.hp<=0)d=-20;else if(op.hp<=0)d=10;else d=(room.winner===me.name)?10:-20;
+ const before=gbit();addCoins(d);const real=gbit()-before;sv('Q',Q);
+ duelState.coinMsg=d===0?'💰 平手，金幣不變。':(d>0?`💰 獲勝！金幣 +${d}`:`💰 落敗…金幣 ${real}（扣 20，最低到 0）`);
+ if(useStu&&typeof keyagentCloudSyncNow==='function')keyagentCloudSyncNow();try{hdr()}catch(e){}}
+function removeStage(){}
+const NMOVES=[['fist','拳',0.5],['kick','腳',0.7],['charge','衝撞',0.8],['slash','劍砍',1.0]];
+const MMOVES=[['s','小',30,1],['m','中',45,2],['l','大',90,3]];
+function dealDamageLocal(att,def,base,isMagic){
+  const raw=base*(0.8+Math.random()*0.3);
+  const dfv=(isMagic?def.mdef:def.def)*(def.defending?2:1);
+  let dmg=Math.round(raw-dfv); if(dmg<1)dmg=1;
+  def.hp-=dmg; if(def.defending)def.defending=false;
+  return dmg;
+}
+// 執行一次出招，直接修改 att/def 物件本身，回傳這回合的戰鬥紀錄文字；
+// MP 不夠等無效狀況回傳 null。att 正在蓄力時，不管傳進來什麼 kind 都強制視為 release。
+function applyAction(att,def,kind,move){
+  if(att.charging) kind='release';
+  if(kind=='defend'){ att.defending=true; return `${att.name} 擺出防禦姿勢，防禦力 ×2！`; }
+  if(kind=='normal'){
+    const mv=NMOVES.find(m=>m[0]==move); if(!mv) return null;
+    const dmg=dealDamageLocal(att,def,att.atk*mv[2],false);
+    let extra=''; if(move=='charge'){const sh=Math.round(dmg/2);att.hp-=sh;extra=`，自己也反噬 ${sh} 點血`;}
+    return `${att.name} 使用「${mv[1]}」，對 ${def.name} 造成 ${dmg} 點傷害${extra}！`;
+  }
+  if(kind=='magic'){
+    const mv=MMOVES.find(m=>m[0]==move); if(!mv) return null;
+    if(att.mp<mv[2]) return null;
+    att.mp-=mv[2];
+    if(move=='l'){ att.charging=true; return `${att.name} 開始詠唱「大魔法」，這回合先暫停攻擊！`; }
+    const dmg=dealDamageLocal(att,def,att.matk*mv[3],true);
+    return `${att.name} 使用「${mv[1]}魔法」，對 ${def.name} 造成 ${dmg} 點傷害！`;
+  }
+  if(kind=='release'){
+    att.charging=false;
+    const dmg=dealDamageLocal(att,def,att.matk*3,true);
+    return `${att.name} 的大魔法發動了！對 ${def.name} 造成 ${dmg} 點傷害！`;
+  }
+  return null;
+}
+function bumpDuelRecord(sid,field){
+  if(!sbReady()||!sid)return;
+  const fn = field=='wins'?'bump_duel_win':field=='losses'?'bump_duel_loss':'bump_duel_draw';
+  sb.rpc(fn,{p_sid:sid}).then(()=>{}).catch(()=>{});
+}
+function mkFighterObj(sid,name,level,stats){
+  return {studentId:sid,name:name||sid,level:level||1,rank:(stats&&stats.rank)|0,eq:(stats&&stats.eq)||null,clone:(stats&&stats.clone)|0,hp:stats.hp,hpMax:stats.hp,mp:stats.mp,mpMax:stats.mp,
+    atk:stats.atk,matk:stats.matk,def:stats.def,mdef:stats.mdef,spd:stats.spd,defending:false,charging:false};
+}
+function syncMyUser(){
+  if(!sbReady())return;
+  const sid=mySid(); if(!sid) return;
+  const li=levelInfo();
+  sb.from('duel_users').upsert({student_number:sid, name:(who.name||sid), level:li.level, stats:statsWithRank(), updated_at:new Date().toISOString()}).then(r=>{if(r&&r.error)console.warn('duel_users 上傳失敗',r.error)}).catch(e=>console.warn('duel_users 上傳失敗',e));
+}
+let duelState=null,duelSub=null,battleChannel=null,pendingChannel=null;
+
+// ---- 有人挑戰我時的通知（即時對戰模式用）----
+function startPendingListen(){
+  if(!sbReady())return;
+  const sid=mySid(); if(!sid) return;
+  if(pendingChannel){ sb.removeChannel(pendingChannel); pendingChannel=null; }
+  checkPendingNow(sid);
+  pendingChannel = sb.channel('pending-'+sid)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'duel_pending',filter:'target_id=eq.'+sid}, payload=>{
+      if(duelState) return;
+      arOpen();showPendingInvite(payload.new.battle_id);
+    })
+    .on('postgres_changes',{event:'DELETE',schema:'public',table:'duel_pending',filter:'target_id=eq.'+sid}, ()=>{
+      const box=$q('#arena-pending'); if(box){box.classList.add('hide');box.innerHTML='';}
+    })
+    .subscribe();
+}
+async function checkPendingNow(sid){
+  if(await checkResumeBattle(sid)) return;
+  const {data}=await sb.from('duel_pending').select('battle_id').eq('target_id',sid).maybeSingle();
+  if(data && !duelState){arOpen();showPendingInvite(data.battle_id);}
+}
+async function showPendingInvite(battleId){
+  const {data:battle}=await sb.from('duel_battles').select('a').eq('id',battleId).maybeSingle();
+  const box=$q('#arena-pending'); if(!box||!battle) return;
+  const name=(battle.a&&battle.a.name)||'同學';
+  box.classList.remove('hide');
+  box.innerHTML=`<div class="fighter"><b>⚔️ ${name} 想要挑戰你！</b><div class="amenu"><button id="ap-accept">接受挑戰</button></div></div>`;
+  $q('#ap-accept').onclick=()=>acceptSyncChallenge(battleId);
+}
+
+// ---- 模式一：即時對戰（雙方都要在線）----
+async function challengeSync(osid){
+  const sid=mySid(), li=levelInfo();
+  const {data:opUser,error:opErr}=await sb.from('duel_users').select('*').eq('student_number',osid).maybeSingle();
+  if(opErr){console.warn('查詢對手失敗',opErr);return toast('❗ 連線雲端失敗（'+(opErr.message||opErr.code||'未知錯誤')+'），請聯絡老師');}
+  if(!opUser)return toast('❗ 找不到這位同學的資料，請他先打開遊戲、存過學號');
+  const aFighter=mkFighterObj(sid,(who.name||sid),li.level,statsWithRank());
+  const {data:battle,error}=await sb.from('duel_battles').insert({
+    mode:'sync', a_id:sid, b_id:osid, a:aFighter, b:null, turn:null, over:false, winner:null,
+    log:[`⚔️ ${aFighter.name} 發起了挑戰，等待 ${opUser.name||osid} 加入！`]
+  }).select().single();
+  if(error||!battle)return toast('❗ 建立對戰失敗，請再試一次');
+  await sb.from('duel_pending').upsert({target_id:osid, battle_id:battle.id});
+  enterSyncBattle(battle.id);
+}
+async function acceptSyncChallenge(battleId){
+  const sid=mySid(), li=levelInfo();
+  const {data:room}=await sb.from('duel_battles').select('*').eq('id',battleId).maybeSingle();
+  if(!room||room.b)return toast('這場對戰已經結束或已經開始了');
+  const bFighter=mkFighterObj(sid,(who.name||sid),li.level,statsWithRank());
+  const turn=room.a.spd>=bFighter.spd?'a':'b';
+  const newLog=[...(room.log||[]),`${bFighter.name} 加入戰場！⚔️ 對戰開始！`];
+  await sb.from('duel_battles').update({b:bFighter,turn,log:newLog,updated_at:new Date().toISOString()}).eq('id',battleId);
+  await sb.from('duel_pending').delete().eq('target_id',sid);
+  enterSyncBattle(battleId);
+}
+function enterSyncBattle(battleId){
+  if(pendingChannel){ sb.removeChannel(pendingChannel); pendingChannel=null; }
+  duelState={mode:'sync', battleId, room:null}; duelSub=null;
+  $q('#arena-setup').classList.add('hide');$q('#arena-battle').classList.remove('hide');
+  $q('#arena-battle').innerHTML='<p>⏳ 連線中...</p>';
+  loadBattleNow(battleId);
+  if(battleChannel){ sb.removeChannel(battleChannel); battleChannel=null; }
+  oppAbsentSince=null; proxyBusy=false;
+  battleChannel = sb.channel('battle-'+battleId,{config:{presence:{key:mySid()}}})
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'duel_battles',filter:'id=eq.'+battleId}, payload=>{
+      if(!duelState||duelState.battleId!==battleId) return;
+      duelState.room=payload.new; renderSyncBattle();
+    })
+    .on('presence',{event:'sync'},()=>{ watchTick(); })
+    .subscribe(status=>{
+      if(status==='SUBSCRIBED'){
+        // 告訴對方「我在線上」；斷線重連時也會重新進來這裡，順便抓一次最新戰況
+        battleChannel.track({sid:mySid(),t:Date.now()});
+        loadBattleNow(battleId);
+      }
+    });
+  startWatchdog();
+}
+async function loadBattleNow(battleId){
+  const {data:room}=await sb.from('duel_battles').select('*').eq('id',battleId).maybeSingle();
+  if(!duelState||duelState.battleId!==battleId) return;
+  if(!room){ removeStage(); $q('#arena-battle').classList.remove('hide'); $q('#arena-battle').innerHTML='<p>⚠️ 對戰資料不見了。</p><button class="btn" id="b-close">返回</button>'; $q('#b-close').onclick=exitBattle; return; }
+  duelState.room=room; renderSyncBattle();
+}
+function mySideOf(room){ const sid=mySid(); return room.a_id===sid?'a':(room.b_id===sid?'b':null); }
+async function sendSyncAction(kind,move){
+  const room=duelState.room, mine=mySideOf(room), other=mine=='a'?'b':'a';
+  if(!room||room.turn!==mine) return;
+  const att={...room[mine]}, def={...room[other]};
+  const logLine=applyAction(att,def,kind,move);
+  duelSub=null;
+  if(logLine===null){ toast('魔力不夠喔'); renderSyncBattle(); return; }
+  const log=[...(room.log||[]).slice(-40),logLine];
+  const over=att.hp<=0||def.hp<=0;
+  const winner=over?((att.hp<=0&&def.hp<=0)?'draw':(att.hp<=0?def.name:att.name)):null;
+  const patch={turn:over?room.turn:other, log, over, winner, updated_at:new Date().toISOString()};
+  patch[mine]=att; patch[other]=def;
+  const {data:upd,error:upErr}=await sb.from('duel_battles').update(patch).eq('id',duelState.battleId).eq('turn',mine).eq('over',false).select('id');
+  if(upErr||!upd||!upd.length){
+    toast('⚠️ 戰況已經更新（可能剛剛被系統代打），正在同步最新畫面…');
+    if(duelState) loadBattleNow(duelState.battleId);
+    return;
+  }
+  if(over){
+    const myId=mine=='a'?room.a_id:room.b_id, opId=mine=='a'?room.b_id:room.a_id;
+    if(winner=='draw'){bumpDuelRecord(myId,'draws');bumpDuelRecord(opId,'draws');}
+    else if(winner==att.name){bumpDuelRecord(myId,'wins');bumpDuelRecord(opId,'losses');}
+    else{bumpDuelRecord(myId,'losses');bumpDuelRecord(opId,'wins');}
+  }
+  // Realtime 訊息偶爾會晚一點才到，先自己手動更新一次畫面，操作起來比較不卡頓
+  duelState.room={...room,...patch};
+  renderSyncBattle();
+}
+
+// ---- 模式二：單挑雲端幽靈（對方不用在線，抓他存在雲端的最新數值，由簡單 AI 操作）----
+async function challengeAsync(osid){
+  const sid=mySid(), li=levelInfo();
+  const {data:opUser,error:opErr}=await sb.from('duel_users').select('*').eq('student_number',osid).maybeSingle();
+  if(opErr){console.warn('查詢對手失敗',opErr);return toast('❗ 連線雲端失敗（'+(opErr.message||opErr.code||'未知錯誤')+'），請聯絡老師');}
+  if(!opUser)return toast('❗ 找不到這位同學的資料，請他先打開遊戲、存過學號');
+  const a=mkFighterObj(sid,(who.name||sid),li.level,statsWithRank());
+  const b=mkFighterObj(osid,opUser.name||osid,opUser.level||1,opUser.stats||{hp:1000,mp:300,atk:50,matk:50,def:20,mdef:20,spd:100});
+  const turn=a.spd>=b.spd?'a':'b';
+  duelState={mode:'async', aId:sid, bId:osid, room:{a,b,turn,over:false,winner:null,log:[`⚔️ ${a.name} 挑戰了 ${b.name} 的雲端幽靈！`]}};
+  duelSub=null;
+  $q('#arena-setup').classList.add('hide');$q('#arena-battle').classList.remove('hide');
+  renderAsyncBattle();
+  if(duelState.room.turn=='b') setTimeout(aiTakeTurn,700);
+}
+function checkAsyncOver(){
+  const room=duelState.room;
+  if(room.a.hp<=0||room.b.hp<=0){
+    room.over=true;
+    room.winner=(room.a.hp<=0&&room.b.hp<=0)?'draw':(room.a.hp<=0?room.b.name:room.a.name);
+    const myId=duelState.aId, opId=duelState.bId;
+    if(room.winner=='draw'){bumpDuelRecord(myId,'draws');bumpDuelRecord(opId,'draws');}
+    else if(room.winner==room.a.name){bumpDuelRecord(myId,'wins');bumpDuelRecord(opId,'losses');}
+    else{bumpDuelRecord(myId,'losses');bumpDuelRecord(opId,'wins');}
+  }
+}
+function sendAsyncAction(kind,move){
+  const room=duelState.room; if(room.turn!='a')return;
+  const logLine=applyAction(room.a,room.b,kind,move);
+  duelSub=null;
+  if(logLine===null){ toast('魔力不夠喔'); renderAsyncBattle(); return; }
+  room.log=[...(room.log||[]).slice(-40),logLine];
+  checkAsyncOver();
+  if(!room.over){ room.turn='b'; renderAsyncBattle(); setTimeout(aiTakeTurn,700); }
+  else renderAsyncBattle();
+}
+// 幽靈 AI：血量偏低時比較不會用會自傷的「衝撞」，魔力夠時有機會放魔法，其餘時候普通攻擊
+function aiPickAction(att){
+  let kind,move;
+  if(att.charging){ kind='release'; }
+  else{
+    const roll=Math.random();
+    if(att.mp>=30 && roll<0.35){ kind='magic'; move= att.mp>=90&&roll<0.1 ? 'l' : (att.mp>=45&&roll<0.22 ? 'm' : 's'); }
+    else if(roll<0.15){ kind='defend'; }
+    else{
+      kind='normal';
+      const safe=att.hp>att.hpMax*0.3;
+      const pool= safe? ['fist','kick','charge','slash','slash'] : ['fist','kick','slash','slash'];
+      move=pool[Math.floor(Math.random()*pool.length)];
+    }
+  }
+  return {kind,move};
+}
+function aiTakeTurn(){
+  const room=duelState.room; if(!room||room.over||room.turn!='b')return;
+  const att=room.b;
+  const {kind,move}=aiPickAction(att);
+  const logLine=applyAction(att,room.a,kind,move);
+  room.log=[...(room.log||[]).slice(-40),logLine];
+  checkAsyncOver();
+  if(!room.over) room.turn='a';
+  renderAsyncBattle();
+}
+// ---- 🔌 斷線處理：對手離線時「系統代打」，離線太久就判定認輸 ----
+// 想調整時間，只要改這兩個數字（單位：毫秒）
+const PROXY_GRACE_MS = 8000;    // 對方離線超過幾秒，就開始由系統代打
+const FORFEIT_MS     = 90000;   // 對方離線超過幾秒還沒回來，就判定他認輸
+const RESUME_WINDOW_MS = 300000; // 重新開啟遊戲時，只會回到 5 分鐘內還沒結束的對戰
+let oppAbsentSince=null, proxyBusy=false, watchdog=null, bannerWasProxy=false;
+
+function startWatchdog(){ stopWatchdog(); watchdog=setInterval(watchTick,1000); }
+function stopWatchdog(){ if(watchdog){clearInterval(watchdog);watchdog=null;} oppAbsentSince=null; bannerWasProxy=false; }
+
+function opponentInfo(room){
+  const mine=mySideOf(room); if(!mine) return null;
+  const other=mine=='a'?'b':'a';
+  return {mine, other, opId: other=='a'?room.a_id:room.b_id};
+}
+function watchTick(){
+  if(!duelState||duelState.mode!=='sync'||!battleChannel) return;
+  const room=duelState.room; if(!room||!room.b||room.over) return;
+  const info=opponentInfo(room); if(!info) return;
+  const st=battleChannel.presenceState()||{};
+  // 自己都還沒連上線時，不能判斷對方有沒有離線（避免自己斷網卻誤判對方）
+  if(!st[mySid()]){ oppAbsentSince=null; updateOppBanner(); return; }
+  if(st[info.opId]){
+    if(oppAbsentSince!==null && (Date.now()-oppAbsentSince)>=PROXY_GRACE_MS){ toast('✅ 對方回來了，改回手動操作！'); }
+    oppAbsentSince=null; updateOppBanner(); return;
+  }
+  if(oppAbsentSince===null) oppAbsentSince=Date.now();
+  const gone=Date.now()-oppAbsentSince;
+  updateOppBanner();
+  if(gone>=FORFEIT_MS){ claimForfeit(); return; }
+  if(gone>=PROXY_GRACE_MS && room.turn===info.other){ proxyAct(); }
+}
+function updateOppBanner(){
+  const el=$q('#opp-banner'); if(!el) return;
+  if(oppAbsentSince===null||!duelState||duelState.mode!=='sync'){ el.classList.add('hide'); return; }
+  const gone=Date.now()-oppAbsentSince;
+  if(gone<3000){ el.classList.add('hide'); return; }
+  const sec=Math.floor(gone/1000), left=Math.max(0,Math.ceil((FORFEIT_MS-gone)/1000));
+  el.classList.remove('hide');
+  el.innerHTML = gone>=PROXY_GRACE_MS
+    ? `🤖 對方已離線 ${sec} 秒，<b>系統代打中</b>。他回來就會改回手動；${left} 秒內沒回來將判定認輸。`
+    : `📡 對方連線中斷…（${sec} 秒）再等一下看看`;
+}
+// 系統代打：由「還在線上的這一方」替離線方出招，用跟幽靈 AI 同一套邏輯
+async function proxyAct(){
+  if(proxyBusy) return; proxyBusy=true;
+  try{
+    await new Promise(r=>setTimeout(r,900));   // 稍微停一下，看起來比較自然
+    if(!duelState||duelState.mode!=='sync') return;
+    const room=duelState.room; if(!room||!room.b||room.over) return;
+    const info=opponentInfo(room); if(!info||room.turn!==info.other) return;
+    if(oppAbsentSince===null) return;           // 這一秒對方剛好回來了，取消代打
+    const {mine,other}=info;
+    const att={...room[other]}, def={...room[mine]};
+    const pick=aiPickAction(att);
+    let line=applyAction(att,def,pick.kind,pick.move);
+    if(line===null) line=applyAction(att,def,'normal','slash');
+    line='🤖 系統代打｜'+line;
+    const over=att.hp<=0||def.hp<=0;
+    const draw=att.hp<=0&&def.hp<=0;
+    const winner=over?(draw?'draw':(att.hp<=0?def.name:att.name)):null;
+    const patch={turn:over?room.turn:mine, log:[...(room.log||[]).slice(-40),line], over, winner, updated_at:new Date().toISOString()};
+    patch[other]=att; patch[mine]=def;
+    // 只有「現在還是對方回合」才寫入，萬一對方剛好回來自己出招了，這次代打就會自動作廢
+    const {data:upd,error}=await sb.from('duel_battles').update(patch).eq('id',duelState.battleId).eq('turn',other).eq('over',false).select('id');
+    if(error||!upd||!upd.length){ loadBattleNow(duelState.battleId); return; }
+    if(over){
+      if(draw){bumpDuelRecord(room[mine].studentId||mySid(),'draws');bumpDuelRecord(info.opId,'draws');}
+      else if(att.hp<=0){bumpDuelRecord(mySid(),'wins');bumpDuelRecord(info.opId,'losses');}
+      else{bumpDuelRecord(mySid(),'losses');bumpDuelRecord(info.opId,'wins');}
+    }
+    duelState.room={...room,...patch}; renderSyncBattle();
+  }catch(e){ console.warn('系統代打失敗',e); }
+  finally{ proxyBusy=false; }
+}
+// 對方離線太久：判定他認輸，由還在線上的這一方寫入結果（只會寫一次）
+async function claimForfeit(){
+  if(proxyBusy) return; proxyBusy=true;
+  try{
+    const room=duelState&&duelState.room; if(!room||!room.b||room.over) return;
+    const info=opponentInfo(room); if(!info) return;
+    const {mine,other}=info;
+    const patch={over:true, winner:room[mine].name,
+      log:[...(room.log||[]).slice(-40),`🏳️ ${room[other].name} 離線超過 ${Math.round(FORFEIT_MS/1000)} 秒，判定認輸！`],
+      updated_at:new Date().toISOString()};
+    const {data:upd,error}=await sb.from('duel_battles').update(patch).eq('id',duelState.battleId).eq('over',false).select('id');
+    if(error||!upd||!upd.length){ loadBattleNow(duelState.battleId); return; }
+    bumpDuelRecord(mySid(),'wins'); bumpDuelRecord(info.opId,'losses');
+    duelState.room={...room,...patch}; renderSyncBattle();
+  }catch(e){ console.warn('認輸判定失敗',e); }
+  finally{ proxyBusy=false; }
+}
+// 重新整理／重開遊戲後，自動回到還沒打完的即時對戰（變回手動操作）
+async function checkResumeBattle(sid){
+  if(duelState) return false;
+  try{
+    const since=new Date(Date.now()-RESUME_WINDOW_MS).toISOString();
+    const {data,error}=await sb.from('duel_battles').select('id,b')
+      .eq('mode','sync').eq('over',false).or('a_id.eq.'+sid+',b_id.eq.'+sid).gte('updated_at',since)
+      .order('updated_at',{ascending:false}).limit(1);
+    if(error||!data||!data.length||!data[0].b) return false;
+    toast('⚔️ 偵測到還沒打完的對戰，已帶你回到戰場！');
+    arOpen();enterSyncBattle(data[0].id);
+    return true;
+  }catch(e){ console.warn('回到對戰失敗',e); return false; }
+}
+function renderMenu(meFighter,myTurn){
+  if(!myTurn) return '';
+  if(meFighter.charging) return `<p>⏳ 你正在蓄力中，這回合會自動發動大魔法！</p><div class="amenu"><button id="b-pass">確定</button></div>`;
+  if(!duelSub) return `<div class="amenu"><button data-m="n">⚔️ 普通攻擊</button><button data-m="m">✨ 魔法攻擊</button><button data-m="d">🛡️ 防禦</button></div>`;
+  if(duelSub=='n') return `<div class="amenu">`+NMOVES.map(m=>`<button data-n="${m[0]}">${m[1]}（×${m[2]}）</button>`).join('')+`<button data-back="1">返回</button></div>`;
+  if(duelSub=='m') return `<div class="amenu">`+MMOVES.map(m=>`<button data-mg="${m[0]}" ${meFighter.mp<m[2]?'disabled':''}>${m[1]}（耗魔${m[2]}／×${m[3]}）</button>`).join('')+`<button data-back="1">返回</button></div>`;
+}
+function bindMenuEvents(box,myTurn,sendFn){
+  if(!myTurn)return;
+  box.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const m=b.dataset.m;if(m=='d'){sendFn('defend');}else{duelSub=m;renderBattleAgain();}});
+  box.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>{duelSub=null;renderBattleAgain();});
+  box.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>sendFn('normal',b.dataset.n));
+  box.querySelectorAll('[data-mg]').forEach(b=>b.onclick=()=>sendFn('magic',b.dataset.mg));
+  const pass=box.querySelector('#b-pass'); if(pass) pass.onclick=()=>sendFn('release');
+}
+function renderBattleAgain(){ if(!duelState)return; duelState.mode=='sync'?renderSyncBattle():renderAsyncBattle(); }
+function resultPanelHTML(room){
+  return `<div class="turn-tag">🏆 ${room.winner=='draw'?'平手！':room.winner+' 獲勝！'}</div>${duelState&&duelState.coinMsg?'<p>'+duelState.coinMsg+'</p>':''}<p>想變更強嗎？回去多答題累積經驗值就能升級，通關大關累積星星還能升級裝備品質喔！</p><button class="btn" id="b-close">結束對戰</button>`;
+}
+function logHTML(room){ return `<div class="blog">${(room.log||[]).slice(-6).map(x=>'· '+x).join('<br>')}</div>`; }
+function renderSyncBattle(){
+  const room=duelState.room, box=$q('#arena-battle');
+  if(!room.b){ box.innerHTML='<p>⏳ 等待對方加入戰場...</p>'; return; }
+  const mine=mySideOf(room)||'a', myTurn=room.turn===mine, meFighter=room[mine];
+  const panel = room.over ? (pvpCoins(room,mine),resultPanelHTML(room)) :
+    `<div id="opp-banner" class="hide" style="margin:6px 0;padding:6px 10px;border-radius:8px;background:#5a3a12;font-size:.85rem"></div>`+
+    `<div class="turn-tag">${myTurn?'👉 輪到你了！':'⏳ 等待對方出招...'}</div>`+renderMenu(meFighter,myTurn)+logHTML(room);
+  renderScene(room,mine,panel,pn=>{ if(room.over){ $q('#b-close').onclick=exitBattle; } else bindMenuEvents(pn,myTurn,sendSyncAction); });
+  updateOppBanner();
+}
+function renderAsyncBattle(){
+  const room=duelState.room, myTurn=room.turn=='a';
+  const panel = room.over ? (pvpCoins(room,'a'),resultPanelHTML(room)) :
+    `<div class="turn-tag">${myTurn?'👉 輪到你了！':'⏳ 幽靈思考中...'}</div>`+renderMenu(room.a,myTurn)+logHTML(room);
+  renderScene(room,'a',panel,pn=>{ if(room.over){ $q('#b-close').onclick=exitBattle; } else bindMenuEvents(pn,myTurn,sendAsyncAction); });
+}
+// ----- 本機對戰電腦 AI（不用網路）-----
+function challengeLocal(){const li=levelInfo(),st=statsWithRank(),k=.9;
+ const a=mkFighterObj(null,who.name||'我',li.level,st);
+ const b=mkFighterObj(null,'骷髏暴君・AI',li.level,{hp:Math.round(st.hp*k),mp:300,atk:Math.round(st.atk*k),matk:Math.round(st.atk*k),def:Math.round(st.def*k),mdef:Math.round(st.def*k),spd:st.spd,rank:5,eq:'',clone:0});
+ const turn=a.spd>=b.spd?'a':'b';
+ duelState={mode:'async',aId:null,bId:null,room:{a,b,turn,over:false,winner:null,log:[`⚔️ ${a.name} 挑戰了 ${b.name}！`]}};duelSub=null;
+ $q('#arena-setup').classList.add('hide');$q('#arena-battle').classList.remove('hide');
+ renderAsyncBattle();if(duelState.room.turn=='b')setTimeout(aiTakeTurn,700)}
+// ----- 對戰舞台 -----
+function renderScene(room,mine,panel,cb){$q('#arena-setup').classList.add('hide');const ab=$q('#arena-battle');ab.classList.remove('hide');
+ const o=mine==='a'?'b':'a',me=room[mine],op=room[o];
+ const card=f=>`<div class="fc"><b>${f.name}　Lv.${f.level}</b><div class="fb hp"><i style="width:${Math.max(0,f.hp)/f.hpMax*100}%"></i></div><small>HP ${Math.max(0,f.hp)}/${f.hpMax}</small><div class="fb mp"><i style="width:${Math.max(0,f.mp)/f.mpMax*100}%"></i></div><small>MP ${Math.max(0,f.mp)}/${f.mpMax}</small>${f.defending?' 🛡️防禦中':''}${f.charging?' ✨蓄力中':''}</div>`;
+ ab.innerHTML=`<div class="arow">${card(op)}<img class="aw ${prevHp.o>op.hp?'shake':''}" src="${HERO_DIR}hero-idle.png"></div><div class="arow"><img class="${prevHp.m>me.hp?'shake':''}" src="${HERO_DIR}hero-idle.png">${card(me)}</div><div id="ar-p">${panel}</div>`;
+ prevHp={o:op.hp,m:me.hp};cb($q('#ar-p'))}
+function exitBattle(){stopWatchdog();if(battleChannel&&sb){sb.removeChannel(battleChannel);battleChannel=null}duelState=null;duelSub=null;prevHp={o:1e9,m:1e9};arOpen();startPendingListen()}
+// ----- 鬥技場入口畫面 -----
+function arOpen(){bgm('hub');$('arena').hidden=false;const bx=$('ar-box');
+ if(duelState&&$q('#arena-battle')){renderBattleAgain();return}
+ bx.innerHTML=`<h2>⚔️ 骷髏鬥技場</h2><div id="arena-setup"><small>回合制：普通攻擊（拳／腳／衝撞／劍砍）、魔法、防禦。戰力＝你的等級＋裝備＋強化。<br><span id="ar-net"></span></small>
+ <div class="who"><input id="w-sid" placeholder="我的學號" value="${useStu?stuNo:(who.sid||'')}" ${useStu?'disabled':''}><input id="w-name" placeholder="我的名字" value="${who.name||''}"><button id="w-save">儲存</button></div>
+ <div class="am"><label><input type="radio" name="duel-mode" value="ai" checked> 🤖 對戰電腦 AI（不用網路）</label><label><input type="radio" name="duel-mode" value="sync"> ⚡ 即時對戰同學（雙方都要在線）</label><label><input type="radio" name="duel-mode" value="async"> 👻 單挑同學的雲端幽靈（對方不用在線）</label></div>
+ <div class="who"><input id="op-sid" placeholder="對方學號（對戰同學才需要）"><button id="op-fight">⚔️ 對戰！</button></div>
+ <div id="arena-pending" class="hide"></div>
+ <div class="am"><button id="ar-rec">🏆 我的戰績</button><button id="ar-close">關閉</button></div></div><div id="arena-battle" class="hide"></div>`;
+ $q('#ar-net').textContent=sbReady()?'🌐 已連上雲端，可以跟同學對戰。':'⚠️ 沒有連上雲端（或沒載入 Supabase 函式庫），目前只能對戰電腦 AI。';
+ $q('#w-save').onclick=()=>{who={sid:useStu?String(stuNo):($q('#w-sid').value||'').trim(),name:($q('#w-name').value||'').trim()};sv('who',who);syncMyUser();startPendingListen();toast('✅ 已儲存')};
+ $q('#ar-close').onclick=()=>{$('arena').hidden=true;bgm('hub')};
+ $q('#ar-rec').onclick=async()=>{const sid=mySid();if(!sid||!sbReady())return toast('需要先存學號，並連上雲端才能查戰績');const {data}=await sb.from('duel_records').select('*').eq('student_number',sid).maybeSingle();const r=data||{wins:0,losses:0,draws:0};toast(`🏆 我的對戰總戰績<br>勝 ${r.wins||0} 場／敗 ${r.losses||0} 場／平手 ${r.draws||0} 場`)};
+ $q('#op-fight').onclick=async()=>{const mode=($q('input[name="duel-mode"]:checked')||{value:'ai'}).value;
+  if(mode==='ai')return challengeLocal();
+  if(!sbReady())return toast('❗ 沒有連上雲端，請聯絡老師');
+  const sid=mySid();if(!sid)return toast('請先填好「我的學號」並按儲存');
+  const osid=$q('#op-sid').value.trim();if(!osid)return toast('請輸入對方學號');if(osid===sid)return toast('不能跟自己對戰喔！');
+  syncMyUser();
+  try{if(mode==='async')await challengeAsync(osid);else await challengeSync(osid)}catch(e){toast('❗ 連線失敗，請確認網路連線後再試一次')}};
+ syncMyUser();startPendingListen()}
+
+// ===== 鍵盤與數字鍵 =====
+$('pad').innerHTML=['7','8','9','4','5','6','1','2','3','±','0','⌫'].map(k=>`<button onclick="press('${k}')">${k}</button>`).join('')+'<button class="atk" onclick="submit()">⚔ 攻擊</button>';
+document.addEventListener('keydown',e=>{if(!$('ex').hidden){if(e.key==='Enter')exOk();return}if(!$('sty').hidden||!$('arena').hidden||$('battle').hidden||(e.target&&/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)))return;
+ if(/^\d$/.test(e.key))press(e.key);else if(e.key==='-'||e.key==='±')press('±');else if(e.key==='Backspace')press('⌫');else if(e.key==='Enter')submit()});
+goHome();bgmBtn();
+try{if(bestStar(3)>0&&sbReady()&&mySid())startPendingListen()}catch(e){}
+</script><script>
+// ===== 🛠 教師測試版工具（只存在於 negative-hero-teacher.html，學生版沒有）=====
+(function(){
+ const css=`#tbanner{position:fixed;top:0;left:0;z-index:60;background:#ff9f1c;color:#000;font-size:12px;font-weight:bold;padding:2px 10px;border-radius:0 0 8px 0}
+ #tbtn{position:fixed;left:8px;bottom:8px;z-index:60;background:#ff9f1c;color:#000;font-size:14px;font-weight:bold;border-radius:20px;padding:8px 14px}
+ #tpan{position:fixed;left:8px;bottom:54px;z-index:60;width:330px;max-height:80vh;overflow:auto;background:#101030f5;border:2px solid #ff9f1c;border-radius:12px;padding:10px;color:#fff;font-size:14px;line-height:1.7}
+ #tpan h4{margin:10px 0 3px;color:#ffd86b;font-size:15px}#tpan small{color:#bbb}
+ #tpan button,#tpan select,#tpan input{font-size:13px;padding:5px 9px;margin:2px;border-radius:6px;border:0;font-family:inherit}
+ #tpan button{background:#3a2a8a;color:#fff;cursor:pointer}#tpan button:hover{background:#5a3ad0}#tpan button.on{background:#ff9f1c;color:#000}
+ #tpan select,#tpan input{background:#fff;color:#000}#tpan input{width:60px}`;
+ const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+ const ban=document.createElement('div');ban.id='tbanner';ban.textContent='🛠 教師測試版（獨立存檔，不會影響學生資料）';document.body.appendChild(ban);
+ const btn=document.createElement('button');btn.id='tbtn';btn.textContent='🛠 教師工具';document.body.appendChild(btn);
+ const pan=document.createElement('div');pan.id='tpan';pan.hidden=true;document.body.appendChild(pan);
+ const stageOpts=ST.map(s=>`<option value="${s.id}">${s.label} ${s.place}</option>`).join('');
+ const T={
+  ref(){try{menu()}catch(e){}},
+  unlock(){window.T_UNLOCK=!window.T_UNLOCK;T.ref();T.draw();toast(window.T_UNLOCK?'🔓 已解鎖全部關卡（可任意選關）':'🔒 已恢復依進度解鎖')},
+  all(){ST.forEach(s=>{P[s.id]=5});sv('P',P);T.ref();toast('🏆 全部通關（滿 5★）：裝備、鬥技場、鍛造爐、外觀都已解鎖')},
+  to(){const id=+$q('#t-to').value;P.length=0;for(let i=0;i<=id;i++)P[i]=5;sv('P',P);T.ref();toast('✅ 已通關到 '+ST[id].label+' '+ST[id].place)},
+  reset(){if(!confirm('清除教師版的全部進度、裝備與代幣？'))return;P.length=0;Q.exp=0;Q.eq={};Q.fg={};Q.at=0;Q.ac=0;Q.pcb=[];for(const k in storySeen)delete storySeen[k];const o=loadSave();o.gbit=0;o.gbitEarnedLifetime=0;writeSave(o);sv('P',P);sv('Q',Q);window.T_UNLOCK=false;T.ref();T.draw();toast('🧹 已清除')},
+  lv(){const L=Math.max(1,Math.min(60,+$q('#t-lv').value||1));let e=0;for(let l=1;l<L;l++)e+=expNeed(l);Q.exp=e;sv('Q',Q);T.ref();toast('等級設為 Lv.'+L)},
+  gb(n){const o=loadSave();o.gbit=(o.gbit||0)+n;writeSave(o);T.ref();toast('💰 GBit +'+n)},
+  skel(){const v=$q('#t-sk').value;window.T_SKEL=v===''?null:+v;if(S&&!S.over)sprite('idle');T.ref();toast(v===''?'骷髏等級：依實際解鎖':'骷髏等級預覽：'+v+'（'+SKN[+v]+'）')},
+  form(){heroForm=heroForm==='skel'?'hero':'skel';if(S&&!S.over)sprite('idle');toast('型態：'+(heroForm==='skel'?'骷髏（負數）':'勇者（正數）'))},
+  live(){return S&&!S.over&&!$('battle').hidden},
+  show(){if(!T.live())return toast('請先進入戰鬥');toast('👁 這題答案：<b>'+String(S.q.ans).replace('-','−')+'</b>')},
+  right(){if(!T.live()||S.lock)return toast('請在等待作答時使用');resolve(true,false)},
+  wrong(){if(!T.live()||S.lock)return toast('請在等待作答時使用');resolve(false,false)},
+  win(){if(!T.live())return toast('請先進入戰鬥');if($('ex').hidden===false)$('ex').hidden=true;S.lock=true;S.mhp=0;S.total=Math.max(S.total,10);S.correct=S.total;upd();end(true)},
+  lose(){if(!T.live())return toast('請先進入戰鬥');$('ex').hidden=true;S.lock=true;S.php=0;upd();end(false)},
+  fg(){window.T_FORGE=!window.T_FORGE;T.draw();toast(window.T_FORGE?'🔨 鍛造必成功（金幣仍會扣）':'🔨 鍛造恢復依成功率')},
+  acc(){const p=Math.max(0,Math.min(100,+$q('#t-ac').value||0));Q.at=100;Q.ac=p;sv('Q',Q);T.draw();toast('平均答對率設為 '+p+'%（鍛造成功率 '+Math.min(100,p+10)+'%）')},
+  god(){window.T_GOD=!window.T_GOD;T.draw();toast(window.T_GOD?'🛡 無敵：答錯不扣血':'🛡 無敵已關閉')},
+  go(){const id=+$q('#t-go').value,m=$q('#t-md').value;if(m!==mode)setMode(m);$('res').hidden=true;$('ex').hidden=true;start(ST[id])},
+  story(){showStory(+$q('#t-st').value,()=>{})},
+  draw(){const on=x=>x?'on':'';
+   pan.innerHTML=`<b>教師工具</b><br><small>獨立存檔：negativeHero_teacher_save_v1。全部功能都不需要真的打關。</small>
+   <h4>① 進度與解鎖</h4>
+   <button class="${on(window.T_UNLOCK)}" onclick="T.unlock()">🔓 解鎖全部關卡：${window.T_UNLOCK?'開':'關'}</button>
+   <button onclick="T.all()">🏆 全部通關（滿星）</button><br>
+   通關到 <select id="t-to">${stageOpts}</select><button onclick="T.to()">設定</button><br>
+   <button onclick="T.reset()">🧹 清除全部進度</button>
+   <h4>② 角色與外觀</h4>
+   等級 <input id="t-lv" type="number" min="1" max="60" value="${levelInfo().level}"><button onclick="T.lv()">設定</button>
+   <button onclick="T.gb(100)">💰 +100 GBit</button><button onclick="T.gb(10000)">💰 +10000</button><br>
+   骷髏等級預覽 <select id="t-sk"><option value="">依解鎖</option>${SKN.map((n,i)=>`<option value="${i}">${i}：${n}</option>`).join('')}</select><button onclick="T.skel()">套用</button>
+   <button onclick="T.form()">🔁 切換 骷髏/勇者 型態</button><br>
+   <button class="${on(window.T_FORGE)}" onclick="T.fg()">🔨 鍛造必成功：${window.T_FORGE?'開':'關'}</button>
+   平均答對率 <input id="t-ac" type="number" min="0" max="100" value="${Math.round(avgAcc()*100)}">% <button onclick="T.acc()">設定</button>
+   <h4>③ 戰鬥中</h4>
+   <button onclick="T.show()">👁 顯示答案</button><button onclick="T.right()">✅ 自動答對</button><button onclick="T.wrong()">❌ 自動答錯（看解說）</button><br>
+   <button onclick="T.win()">⚡ 直接過關（滿分）</button><button onclick="T.lose()">💀 直接失敗</button>
+   <button class="${on(window.T_GOD)}" onclick="T.god()">🛡 無敵：${window.T_GOD?'開':'關'}</button>
+   <h4>④ 直接進入關卡</h4>
+   <select id="t-go">${stageOpts}</select><select id="t-md"><option value="teach">教學</option><option value="hard">困難</option><option value="hell">地獄</option></select><button onclick="T.go()">開打</button>
+   <h4>⑤ 預覽內容</h4>
+   <select id="t-st">${CH.map((c,i)=>`<option value="${i}">第${i+1}章 ${TERRAIN[i]}</option>`).join('')}</select><button onclick="T.story()">📜 劇情</button>
+   <button onclick="credits()">🎬 片尾名單</button><button onclick="arOpen()">⚔️ 鬥技場</button><button onclick="toggleEq()">🎒 裝備／鍛造爐</button>`}
+ };
+ window.T=T;
+ btn.onclick=()=>{pan.hidden=!pan.hidden;if(!pan.hidden)T.draw()};
+})();
+</script>
+</body></html>

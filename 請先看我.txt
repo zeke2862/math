@@ -1,0 +1,27 @@
+【整數勇者｜已整合完成版（可以直接用）】
+
+這個資料夾就是「整合好的成品」，不需要任何工具，直接放到你的學習平台伺服器上就能玩。
+
+怎麼開：
+  1. 把整個資料夾放到伺服器（例如放在你的網站目錄底下的 hero 資料夾）。
+  2. 用瀏覽器開：http://你的伺服器/hero/hero-hub.html
+     （請用伺服器網址開，不要直接雙擊 html 檔）
+
+裡面的檔案：
+  hero-hub.html        勇者總部（從這裡進入）
+  addition.html        第一章 加法
+  subtraction.html     第二章 減法
+  multiplication.html  第三章 乘法
+  division.html        第四章 除法
+  four-ops.html        第五章 四則
+  negative.html        第六章 負數
+  negative-teacher.html 負數老師版
+  hero-core.js         共用功能（難度、等級、分數、無限模式、錯題…）
+  assets\              圖片與音樂（已整理成 hero / maps / stages / bosses / items / audio）
+
+注意：
+  - 這一整包是配套的，請整包一起放。舊的「…_整合.html」和舊版 hero-hub.html 屬於舊配套，
+    不要和這包混用，否則總部會找不到遊戲。
+  - 你的平台上原本有的 sync-client.js 和 audio 資料夾，請照原本方式放在同一個資料夾
+    （我這邊的測試包裡沒有這兩項，所以遊戲會顯示找不到它們，放進去就正常）。
+  - 這個版本是用「工具包」的 build.js 從你的原始遊戲產生的。
