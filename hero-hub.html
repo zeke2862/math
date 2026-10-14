@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>整數勇者傳說｜勇者總部</title>
+<style>
+:root{--bg:#0e1020;--card:#1a1d36;--ink:#f4efe0;--dim:#a9a6bf;--gold:#ffd24a}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{background:radial-gradient(ellipse at 50% 30%,#242858,var(--bg) 70%);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;overflow-x:hidden}
+header{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 14px;background:#0008;border-bottom:2px solid #ffd24a55;flex-wrap:wrap}
+header b{font-size:15px}.pill{background:#ffffff14;border-radius:99px;padding:5px 12px;font-size:14px}
+button{font:inherit;cursor:pointer;color:inherit}
+.hbtn{background:#ffffff14;border:1px solid #ffffff30;border-radius:10px;padding:5px 10px}
+main{max-width:1100px;margin:0 auto;padding:12px;display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:14px}
+@media(max-width:820px){main{grid-template-columns:1fr}}
+#daily{grid-column:1/-1;width:100%;border:0;border-radius:16px;padding:12px;font-size:18px;font-weight:800;color:#3a2600;background:linear-gradient(90deg,#ffd24a,#ff9f43);box-shadow:0 4px 0 #b36b00}
+#daily small{display:block;font-weight:500;font-size:13px}
+#daily.done{background:linear-gradient(90deg,#6bd68f,#3fae6a);color:#032;box-shadow:0 4px 0 #1d6b3b}
+#mapbox{position:relative}svg{width:100%;height:auto;max-height:78vh;display:block}
+.wedge{cursor:pointer;transition:filter .15s}.wedge:hover{filter:brightness(1.25)}
+.wedge text{pointer-events:none;text-anchor:middle;fill:#fff;paint-order:stroke;stroke:#0007;stroke-width:4px}
+.rec{animation:pulse 1.6s ease-in-out infinite}@keyframes pulse{50%{opacity:.55}}
+.side{background:var(--card);border-radius:16px;padding:12px;border:1px solid #ffffff1a;align-self:start}
+.side h3{margin:0 0 8px;font-size:16px}.row{display:flex;justify-content:space-between;gap:6px;padding:6px 0;border-bottom:1px dashed #ffffff22;font-size:14px}
+.row i{font-style:normal;font-size:20px;width:26px;text-align:center}.row span{flex:1}.row em{font-style:normal;color:var(--gold);font-weight:700}
+#gate{display:block;margin:6px auto 0;border:2px dashed #8a7bd1;background:#241a44;border-radius:12px;padding:8px 16px;font-weight:700}
+.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:50;padding:14px}.modal.on{display:flex}
+.box{background:#1b1e3b;border:3px solid var(--gold);border-radius:20px;padding:18px;max-width:560px;width:100%;max-height:92vh;overflow:auto}
+.box h2{margin:0 0 6px}.story{background:#0006;border-radius:12px;padding:10px;font-size:14px;line-height:1.7;color:#dcd8ee}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.hell{background:linear-gradient(#7a1fd1,#3b0d7a)}
+.big{border:0;border-radius:16px;padding:14px 8px;text-align:center;font-weight:800;font-size:17px;color:#fff}
+.big span{display:block;font-size:42px}.big small{display:block;font-weight:400;font-size:12px;margin-top:4px;line-height:1.5}
+.teach{background:linear-gradient(#35b46a,#1f7f49)}.chal{background:linear-gradient(#e8573d,#a82a1a)}
+.x{float:right;background:none;border:0;font-size:22px}
+#stage{position:fixed;inset:0;background:#000;z-index:80;display:none}#stage.on{display:block}
+#stage iframe{width:100%;height:100%;border:0;display:block}
+#home{position:absolute;left:6px;bottom:6px;z-index:5;opacity:.85;background:#000a;border:2px solid var(--gold);border-radius:99px;padding:6px 12px;font-size:14px}
+</style></head><body>
+<header><b>⚔️ 整數勇者傳說</b><span class="pill" id="who">👤 訪客</span><span class="pill" id="total">🏆 總積分 0</span>
+<span><button class="hbtn" id="how">📜 玩法</button> <button class="hbtn" id="reset">⚙️ 重置</button></span></header>
+<main>
+<button id="daily"></button>
+<div id="mapbox"><svg id="map" viewBox="0 0 600 640"></svg><button id="gate">🌀 深淵之門（第六章・負數）</button></div>
+<aside class="side"><h3>📊 光榮榜（各章累積最高分）</h3><div id="board"></div>
+<p style="font-size:12px;color:var(--dim);margin:10px 0 0">每答對一題：100 × 連擊數 ÷ 作答秒數。三種難度共用進度，難度只決定星等上限。</p></aside>
+</main>
+<div class="modal" id="mm"><div class="box" id="mbox"></div></div>
+<div id="stage"><button id="home">🏠 回勇者總部</button><iframe id="fr" allow="fullscreen; autoplay"></iframe></div>
+<script>
+/* ===== 設定區：版本更新時只要改這裡的檔名 ===== */
+const G=[
+{id:'add',file:'加法勇者8_3_整合.html',sym:'＋',name:'加法',ch:'第一章',t:'聖光覺醒',c:['#f6c343','#c98a10'],pk:'additionHero',mk:'additionHero_mode',lk:'additionHero_local_save_v1',total:18,
+ story:'魔物侵襲世界，初出茅廬的勇者為了世界和平踏上征途。每解開一題加法，就是把新的力量「加」到自己身上，盾牌與長劍越變越大，最後擊敗為禍一方的遠古法老王。',medal:'加法奧義勳章',eff:'最大心數 +1'},
+{id:'sub',file:'subtraction-hero_整合.html',sym:'－',name:'減法',ch:'第二章',t:'金字塔囚籠',c:['#2fb5a8','#13766e'],pk:'perfectDeduct',mk:'perfectDeduct_mode',total:10,layers:1,
+ story:'法老王倒下了，卻在臨死前啟動詛咒，金字塔大門死死關閉。越是使勁揮劍，反彈的力量越大。勇者必須收起鋒芒，學會「減」去多餘的浮躁，用智慧找出逃離的生路。',medal:'減法奧義勳章',eff:'每小關第一次答錯免扣心'},
+{id:'mul',file:'乘法勇者1_7_整合.html',sym:'×',name:'乘法',ch:'第三章',t:'千年之後',c:['#ef5b4c','#9d2316'],pk:'multiplyHero',mk:'multiplyHero_mode',lk:'multiplyHero_local_save_v1',total:11,
+ story:'勇者踏出金字塔，外面竟已過了 1000 年！魔物進化成排成方陣的軍團。一刀一刀加太慢了，他必須學會「乘法」，讓力量倍數成長，一瞬間消滅 X 行 Y 列的魔物。',medal:'乘法奧義勳章',eff:'開啟 COMBO 連擊加分'},
+{id:'div',file:'除法勇者1_6_整合.html',sym:'÷',name:'除法',ch:'第四章',t:'鋼鐵防線',c:['#4a8cff','#1f4bb0'],pk:'divisionHero',mk:'divisionHero_mode',lk:'divisionHero_local_save_v1',total:11,
+ story:'幕後的黑暗大頭目現身了，他們練成鋼鐵之軀，單點暴擊全被彈開。勇者要學「除法」，把最強的力量平均分給每一個弱點，才能擊碎防禦。',medal:'除法奧義勳章',eff:'頭目攻擊時，受到的傷害減半'},
+{id:'ops',file:'四則勇者1_整合.html',sym:'⚖',name:'四則',ch:'第五章',t:'平衡之島',c:['#a46bff','#5e2bb5'],pk:'fourOpsHero',mk:'fourOpsHero_mode',lk:'fourOpsHero_local_save_v1',total:8,
+ story:'加、減、乘、除四種力量在勇者體內互不相讓。他來到平衡之島向數學大師學習：先乘除、後加減，括號可以改變順序。掌握之後，就能成為至高守護者！',medal:'平衡之神盾（集滿五枚勳章煉成）',eff:'開啟第六章・負數'},
+{id:'neg',file:'negative-hero_整合.html',sym:'−',name:'負數',ch:'第六章',t:'亡靈序曲',c:['#6a4c93','#2a1650'],lk:'negativeHero_local_save_v1',total:19,neg:1,
+ story:'成為暴君的守護者被正義聯盟擊落，靈魂化為深淵底層的小骷髏。這一次你要操控這個黑化的靈魂，從零以下的世界慢慢壯大：負數加、減、乘、除，最後殺回至高神殿！',medal:'完美至尊雕像',eff:'更換角色圖像、分享圖鑑'}];
+const $=s=>document.querySelector(s);
+const J=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
+const q=new URLSearchParams(location.search);
+function stu(){const a=J('keyagent_active_student',null);return q.get('student')||(a&&a.studentNumber)||null}
+function who(){const a=J('keyagent_active_student',null);return (a&&a.name)||(stu()?'學號 '+stu():'訪客')}
+const HK=()=>'intHeroHub_v1:'+(stu()||'guest');
+const hub=()=>Object.assign({best:{},seen:{},daily:{}},J(HK(),{}));
+const saveHub=h=>{try{localStorage.setItem(HK(),JSON.stringify(h))}catch(e){}};
+function blob(g){const s=stu();return Object.assign({},J(g.lk||'_',{}),s?J('keyagent_save_v1:'+s,{}):{})}
+/* 讀進度：回傳 {teach:通關數, chal:通關數} */
+function prog(g){
+ const b=blob(g),cnt=o=>o?Object.values(o).filter(x=>x&&x.stars>0).length:0;
+ if(g.neg){const n=b.negativeHero||{};let P=n.P??J('negHero_P',[]);if(!Array.isArray(P))P=[];const c=P.filter(x=>x>0).length;return{teach:c,chal:c,all:c}}
+ let get=k=>{const v=b[k];return v?(v.stages||v.layers):null};
+ let t=get(g.pk+'Teach'),c=get(g.pk);
+ if(g.layers&&!stu()){for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/perfect-deduct-egypt-progress/.test(k)){const v=J(k,{});if(/teach/i.test(k))t=t||v;else c=c||v}}}
+ return{teach:cnt(t),chal:cnt(c),all:Math.max(cnt(t),cnt(c))}}
+const RK=()=>J('heroRPG_v1:'+(stu()||'guest'),{});
+const lvOf=()=>{let l=1,r=RK().exp||0;while(r>=50+l*l*50){r-=50+l*l*50;l++}return l};
+const chScore=id=>Object.values((RK().best||{})[id]||{}).reduce((a,b)=>a+b,0);
+const medal=g=>prog(g).all>=g.total;
+const shield=()=>G.slice(0,5).every(medal);
+const today=()=>new Date().toISOString().slice(0,10);
+const dailyGame=()=>{const d=today();let n=0;for(const ch of d)n=(n*31+ch.charCodeAt(0))%997;return G[n%G.length]};
+function recommend(){return G.find(g=>!medal(g))||null}
+/* ===== 畫面 ===== */
+function render(){
+ $('#who').textContent='👤 '+who();const h=hub();
+ $('#total').textContent='🧙 Lv.'+lvOf()+'　🏆 總積分 '+G.reduce((a,g)=>a+chScore(g.id),0);
+ const dg=dailyGame(),lp=RK().lastPlay||{},done=lp[dg.id+'|quick']===today()||lp[dg.id+'|hell']===today();
+ $('#daily').className=done?'done':'';
+ $('#daily').innerHTML=(done?'✅ 今日任務完成！':'🌟 今日特訓：'+dg.name+'大挑戰 🌟')+'<small>'+(done?'明天再來領新任務':'點我直接開始（挑戰模式）')+'</small>';
+ const six=shield(),n=six?6:5,list=G.slice(0,n),cx=300,cy=300,R=285,rec=recommend();
+ let s='<defs>'+G.map(g=>`<linearGradient id="gr-${g.id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${g.c[0]}"/><stop offset="1" stop-color="${g.c[1]}"/></linearGradient>`).join('')+'</defs>';
+ const step=360/n;
+ list.forEach((g,i)=>{
+  const a0=(-90-step/2+i*step)*Math.PI/180,a1=a0+step*Math.PI/180,am=(a0+a1)/2,p=(a,r)=>[cx+r*Math.cos(a),cy+r*Math.sin(a)];
+  const A=p(a0,R),B=p(a1,R),M=p(am,R*.60),pr=prog(g),isRec=rec&&rec.id===g.id;
+  const sealed=g.neg&&!six;
+  s+=`<g class="wedge" data-id="${g.id}"><polygon points="${cx},${cy} ${A} ${B}" fill="url(#gr-${g.id})" stroke="#ffe9a0" stroke-width="3" stroke-linejoin="round"/>
+  ${isRec?`<polygon class="rec" points="${cx},${cy} ${A} ${B}" fill="none" stroke="#fff" stroke-width="6"/>`:''}
+  <text x="${M[0]}" y="${M[1]-6}" font-size="${n==5?78:70}" font-weight="900">${g.sym}</text>
+  <text x="${M[0]}" y="${M[1]+22}" font-size="22" font-weight="800">${g.ch}・${g.name}</text>
+  <text x="${M[0]}" y="${M[1]+48}" font-size="18">${medal(g)?'🏅':'🎯'} ${pr.all}/${g.total}　🏆 ${chScore(g.id)||'—'}</text></g>`;
+ });
+ s+=`<circle cx="${cx}" cy="${cy}" r="46" fill="#14163a" stroke="#ffd24a" stroke-width="4"/><text x="${cx}" y="${cy+14}" text-anchor="middle" font-size="40">${six?'🛡️':'🔒'}</text>`;
+ $('#map').innerHTML=s;
+ document.querySelectorAll('.wedge').forEach(e=>e.onclick=()=>open(e.dataset.id));
+ $('#gate').style.display=six?'none':'block';
+ $('#board').innerHTML=G.map(g=>{const b=chScore(g.id);return`<div class="row"><i>${g.sym}</i><span>${g.name}</span><em>${b?b+'分':'—'}</em></div>`}).join('');
+}
+function open(id){
+ const g=G.find(x=>x.id===id),h=hub(),pr=prog(g);
+ if(g.neg&&!shield()&&!confirm('平衡之神盾還沒煉成（前五章的勳章還沒集滿）。\n要不要直接闖進深淵？'))return;
+ $('#mbox').innerHTML=`<button class="x" onclick="shut()">✕</button><h2>${g.sym} ${g.ch}｜${g.t}</h2>
+ <div class="story">${g.story}<br>🏅 <b>${g.medal}</b>：${g.eff}　（已通 ${pr.all}/${g.total} 關）</div>
+ <div class="three"><button class="big teach" onclick="go('${id}','teach')"><span>🎓</span>教學<small>有提示・不限時<br>最高 ⭐2</small></button>
+ <button class="big chal" onclick="go('${id}','quick')"><span>⚔️</span>挑戰<small>計時・連擊加分<br>最高 ⭐4</small></button>
+ <button class="big hell" onclick="go('${id}','hell')"><span>🔥</span>地獄<small>限時更短・怪更兇<br>最高 ⭐5</small></button></div>`;
+ $('#mm').classList.add('on');
+}
+const shut=()=>$('#mm').classList.remove('on');
+/* ===== 開遊戲：模式直接用網址帶進去，遊戲不會再問一次 ===== */
+function go(id,m){
+ const g=G.find(x=>x.id===id);shut();
+ const qs='?mode='+m+(stu()?'&student='+encodeURIComponent(stu()):'');
+ $('#fr').src=encodeURI(g.file)+qs;$('#stage').classList.add('on')}
+$('#home').onclick=()=>{$('#fr').src='about:blank';$('#stage').classList.remove('on');render()};
+$('#daily').onclick=()=>open0(dailyGame().id);
+function open0(id){go(id,'quick')}
+$('#gate').onclick=()=>open('neg');
+$('#how').onclick=()=>{$('#mbox').innerHTML=`<button class="x" onclick="shut()">✕</button><h2>📜 玩法說明</h2><div class="story">1. 點任何一個三角形島嶼，就能進入那一章，不用照順序。<br>2. 每章都有兩種玩法：🎓教學（最高 ⭐2）、⚔️挑戰（最高 ⭐4）、🔥地獄（最高 ⭐5），進度共用。<br>3. 把前五章通關，會煉成🛡️平衡之神盾，五角形變六角形，第六章「負數」正式開啟。<br>4. 閃動的白框是建議你接下來去的章節。<br>5. 想不知道去哪？按上方「今日特訓」。</div>`;$('#mm').classList.add('on')};
+$('#reset').onclick=()=>{if(confirm('只會清除「總部」的最高分紀錄，不會動到遊戲本身的進度。確定嗎？')){localStorage.removeItem(HK());render()}};
+$('#mm').onclick=e=>{if(e.target.id==='mm')shut()};
+render();
+</script></body></html>
