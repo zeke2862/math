@@ -26,7 +26,7 @@ main{max-width:1100px;margin:0 auto;padding:12px;display:grid;grid-template-colu
 .modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:50;padding:14px}.modal.on{display:flex}
 .box{background:#1b1e3b;border:3px solid var(--gold);border-radius:20px;padding:18px;max-width:560px;width:100%;max-height:92vh;overflow:auto}
 .box h2{margin:0 0 6px}.story{background:#0006;border-radius:12px;padding:10px;font-size:14px;line-height:1.7;color:#dcd8ee}
-.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.hell{background:linear-gradient(#7a1fd1,#3b0d7a)}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.hell{background:linear-gradient(#7a1fd1,#3b0d7a)}.endb{display:block;width:100%;margin-top:10px;background:linear-gradient(#0e9bb8,#0b5f78)}.wrongb{width:100%;margin-top:10px;background:#7c4a03;border:2px solid #ffd24a;border-radius:12px;padding:8px;font-weight:800;font-size:16px}#who{cursor:pointer}.inp{width:100%;font-size:22px;padding:8px;border-radius:10px;border:2px solid #ffd24a;background:#0b0d22;color:#fff;margin-top:8px}.qbox{font-size:34px;font-weight:900;text-align:center;margin:10px 0;color:#ffd24a;word-break:break-all}
 .big{border:0;border-radius:16px;padding:14px 8px;text-align:center;font-weight:800;font-size:17px;color:#fff}
 .big span{display:block;font-size:42px}.big small{display:block;font-weight:400;font-size:12px;margin-top:4px;line-height:1.5}
 .teach{background:linear-gradient(#35b46a,#1f7f49)}.chal{background:linear-gradient(#e8573d,#a82a1a)}
@@ -41,6 +41,7 @@ main{max-width:1100px;margin:0 auto;padding:12px;display:grid;grid-template-colu
 <button id="daily"></button>
 <div id="mapbox"><svg id="map" viewBox="0 0 600 640"></svg><button id="gate">🌀 深淵之門（第六章・負數）</button></div>
 <aside class="side"><h3>📊 光榮榜（各章累積最高分）</h3><div id="board"></div>
+<button class="wrongb" id="wrongbtn">📝 錯題練習</button>
 <p style="font-size:12px;color:var(--dim);margin:10px 0 0">每答對一題：100 × 連擊數 ÷ 作答秒數。三種難度共用進度，難度只決定星等上限。</p></aside>
 </main>
 <div class="modal" id="mm"><div class="box" id="mbox"></div></div>
@@ -48,17 +49,17 @@ main{max-width:1100px;margin:0 auto;padding:12px;display:grid;grid-template-colu
 <script>
 /* ===== 設定區：版本更新時只要改這裡的檔名 ===== */
 const G=[
-{id:'add',file:'加法勇者8_3_整合.html',sym:'＋',name:'加法',ch:'第一章',t:'聖光覺醒',c:['#f6c343','#c98a10'],pk:'additionHero',mk:'additionHero_mode',lk:'additionHero_local_save_v1',total:18,
+{id:'add',file:'addition.html',sym:'＋',name:'加法',ch:'第一章',t:'聖光覺醒',c:['#f6c343','#c98a10'],pk:'additionHero',mk:'additionHero_mode',lk:'additionHero_local_save_v1',total:18,
  story:'魔物侵襲世界，初出茅廬的勇者為了世界和平踏上征途。每解開一題加法，就是把新的力量「加」到自己身上，盾牌與長劍越變越大，最後擊敗為禍一方的遠古法老王。',medal:'加法奧義勳章',eff:'最大心數 +1'},
-{id:'sub',file:'subtraction-hero_整合.html',sym:'－',name:'減法',ch:'第二章',t:'金字塔囚籠',c:['#2fb5a8','#13766e'],pk:'perfectDeduct',mk:'perfectDeduct_mode',total:10,layers:1,
+{id:'sub',file:'subtraction.html',sym:'－',name:'減法',ch:'第二章',t:'金字塔囚籠',c:['#2fb5a8','#13766e'],pk:'perfectDeduct',mk:'perfectDeduct_mode',total:10,layers:1,
  story:'法老王倒下了，卻在臨死前啟動詛咒，金字塔大門死死關閉。越是使勁揮劍，反彈的力量越大。勇者必須收起鋒芒，學會「減」去多餘的浮躁，用智慧找出逃離的生路。',medal:'減法奧義勳章',eff:'每小關第一次答錯免扣心'},
-{id:'mul',file:'乘法勇者1_7_整合.html',sym:'×',name:'乘法',ch:'第三章',t:'千年之後',c:['#ef5b4c','#9d2316'],pk:'multiplyHero',mk:'multiplyHero_mode',lk:'multiplyHero_local_save_v1',total:11,
+{id:'mul',file:'multiplication.html',sym:'×',name:'乘法',ch:'第三章',t:'千年之後',c:['#ef5b4c','#9d2316'],pk:'multiplyHero',mk:'multiplyHero_mode',lk:'multiplyHero_local_save_v1',total:11,
  story:'勇者踏出金字塔，外面竟已過了 1000 年！魔物進化成排成方陣的軍團。一刀一刀加太慢了，他必須學會「乘法」，讓力量倍數成長，一瞬間消滅 X 行 Y 列的魔物。',medal:'乘法奧義勳章',eff:'開啟 COMBO 連擊加分'},
-{id:'div',file:'除法勇者1_6_整合.html',sym:'÷',name:'除法',ch:'第四章',t:'鋼鐵防線',c:['#4a8cff','#1f4bb0'],pk:'divisionHero',mk:'divisionHero_mode',lk:'divisionHero_local_save_v1',total:11,
+{id:'div',file:'division.html',sym:'÷',name:'除法',ch:'第四章',t:'鋼鐵防線',c:['#4a8cff','#1f4bb0'],pk:'divisionHero',mk:'divisionHero_mode',lk:'divisionHero_local_save_v1',total:11,
  story:'幕後的黑暗大頭目現身了，他們練成鋼鐵之軀，單點暴擊全被彈開。勇者要學「除法」，把最強的力量平均分給每一個弱點，才能擊碎防禦。',medal:'除法奧義勳章',eff:'頭目攻擊時，受到的傷害減半'},
-{id:'ops',file:'四則勇者1_整合.html',sym:'⚖',name:'四則',ch:'第五章',t:'平衡之島',c:['#a46bff','#5e2bb5'],pk:'fourOpsHero',mk:'fourOpsHero_mode',lk:'fourOpsHero_local_save_v1',total:8,
+{id:'ops',file:'four-ops.html',sym:'⚖',name:'四則',ch:'第五章',t:'平衡之島',c:['#a46bff','#5e2bb5'],pk:'fourOpsHero',mk:'fourOpsHero_mode',lk:'fourOpsHero_local_save_v1',total:8,
  story:'加、減、乘、除四種力量在勇者體內互不相讓。他來到平衡之島向數學大師學習：先乘除、後加減，括號可以改變順序。掌握之後，就能成為至高守護者！',medal:'平衡之神盾（集滿五枚勳章煉成）',eff:'開啟第六章・負數'},
-{id:'neg',file:'negative-hero_整合.html',sym:'−',name:'負數',ch:'第六章',t:'亡靈序曲',c:['#6a4c93','#2a1650'],lk:'negativeHero_local_save_v1',total:19,neg:1,
+{id:'neg',file:'negative.html',sym:'−',name:'負數',ch:'第六章',t:'亡靈序曲',c:['#6a4c93','#2a1650'],lk:'negativeHero_local_save_v1',total:19,neg:1,
  story:'成為暴君的守護者被正義聯盟擊落，靈魂化為深淵底層的小骷髏。這一次你要操控這個黑化的靈魂，從零以下的世界慢慢壯大：負數加、減、乘、除，最後殺回至高神殿！',medal:'完美至尊雕像',eff:'更換角色圖像、分享圖鑑'}];
 const $=s=>document.querySelector(s);
 const J=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
@@ -87,7 +88,7 @@ const dailyGame=()=>{const d=today();let n=0;for(const ch of d)n=(n*31+ch.charCo
 function recommend(){return G.find(g=>!medal(g))||null}
 /* ===== 畫面 ===== */
 function render(){
- $('#who').textContent='👤 '+who();const h=hub();
+ $('#who').textContent='🧙 '+(RK().name||who())+' ✏️';$('#wrongbtn').textContent='📝 錯題練習（'+((RK().wrong||[]).length)+'）';const h=hub();
  $('#total').textContent='🧙 Lv.'+lvOf()+'　🏆 總積分 '+G.reduce((a,g)=>a+chScore(g.id),0);
  const dg=dailyGame(),lp=RK().lastPlay||{},done=lp[dg.id+'|quick']===today()||lp[dg.id+'|hell']===today();
  $('#daily').className=done?'done':'';
@@ -118,21 +119,63 @@ function open(id){
  <div class="story">${g.story}<br>🏅 <b>${g.medal}</b>：${g.eff}　（已通 ${pr.all}/${g.total} 關）</div>
  <div class="three"><button class="big teach" onclick="go('${id}','teach')"><span>🎓</span>教學<small>有提示・不限時<br>最高 ⭐2</small></button>
  <button class="big chal" onclick="go('${id}','quick')"><span>⚔️</span>挑戰<small>計時・連擊加分<br>最高 ⭐4</small></button>
- <button class="big hell" onclick="go('${id}','hell')"><span>🔥</span>地獄<small>限時更短・怪更兇<br>最高 ⭐5</small></button></div>`;
+ <button class="big hell" onclick="go('${id}','hell')"><span>🔥</span>地獄<small>限時更短・怪更兇<br>最高 ⭐5</small></button></div>
+ ${(!g.neg&&medal(g))?`<button class="big endb" onclick="go('${id}','quick',1)">♾️ 章節無限模式<small>整章隨機怪物，打倒才結算經驗</small></button>`:(g.neg?'':'<div style="text-align:center;color:var(--dim);font-size:13px;margin-top:10px">🔒 通關整章後開啟「♾️ 章節無限模式」；各大關的無限練習在遊戲地圖左上角</div>')}`;
  $('#mm').classList.add('on');
 }
 const shut=()=>$('#mm').classList.remove('on');
 /* ===== 開遊戲：模式直接用網址帶進去，遊戲不會再問一次 ===== */
-function go(id,m){
+function go(id,m,endless){
  const g=G.find(x=>x.id===id);shut();
- const qs='?mode='+m+(stu()?'&student='+encodeURIComponent(stu()):'');
+ const qs='?mode='+m+(endless?'&endless=chapter':'')+(stu()?'&student='+encodeURIComponent(stu()):'');
  $('#fr').src=encodeURI(g.file)+qs;$('#stage').classList.add('on')}
 $('#home').onclick=()=>{$('#fr').src='about:blank';$('#stage').classList.remove('on');render()};
 $('#daily').onclick=()=>open0(dailyGame().id);
 function open0(id){go(id,'quick')}
 $('#gate').onclick=()=>open('neg');
-$('#how').onclick=()=>{$('#mbox').innerHTML=`<button class="x" onclick="shut()">✕</button><h2>📜 玩法說明</h2><div class="story">1. 點任何一個三角形島嶼，就能進入那一章，不用照順序。<br>2. 每章都有兩種玩法：🎓教學（最高 ⭐2）、⚔️挑戰（最高 ⭐4）、🔥地獄（最高 ⭐5），進度共用。<br>3. 把前五章通關，會煉成🛡️平衡之神盾，五角形變六角形，第六章「負數」正式開啟。<br>4. 閃動的白框是建議你接下來去的章節。<br>5. 想不知道去哪？按上方「今日特訓」。</div>`;$('#mm').classList.add('on')};
+/* ===== 角色名稱 ===== */
+const saveRK=o=>{try{localStorage.setItem('heroRPG_v1:'+(stu()||'guest'),JSON.stringify(o))}catch(e){}};
+const BAD=['幹你','幹他','幹妳','幹您','幹死','幹林','幹拎','肏','操你','操他','操妳','靠北','靠腰','他媽','他馬','你媽','妳媽','媽的','媽逼','機掰','雞掰','雞巴','雞雞','屌','屄','妓','婊','賤人','賤貨','淫','色情','做愛','強姦','白痴','白癡','智障','腦殘','死全家','去死','傻逼','傻屄','殺人','希特勒','fuck','shit','bitch','asshole','jackass','dick','pussy','cunt','nigg','fag','whore','slut','sex','porn','rape','penis','vagina','cnm','nmsl','wcnm','hitler','nazi'];
+function nameCheck(n){
+ n=n.trim();if(!n)return'請輸入名字';if([...n].length>12)return'名字最多 12 個字';
+ if(!/^[\u4e00-\u9fffA-Za-z0-9_\- ·]+$/.test(n))return'名字只能用中文、英文、數字';
+ const t=n.toLowerCase().replace(/[\s_\-·]/g,'').replace(/0/g,'o').replace(/1/g,'i').replace(/3/g,'e').replace(/4/g,'a').replace(/5/g,'s').replace(/7/g,'t');
+ const raw=n.toLowerCase().replace(/[\s_\-·]/g,'');
+ if(BAD.some(w=>t.includes(w)||raw.includes(w)))return'這個名字不太適合，請換一個溫柔一點的名字喔';
+ return''}
+function askName(first){
+ const cur=RK().name||'';
+ $('#mbox').innerHTML=`${first?'':'<button class="x" onclick="shut()">✕</button>'}<h2>${first?'🧙 歡迎，勇者！':'✏️ 修改名字'}</h2><div class="story">請為你的勇者取一個名字。<br>中文、英文都可以，最多 12 個字。</div><input class="inp" id="nm" maxlength="12" value="${cur.replace(/"/g,'')}" placeholder="例如：小明 / Leo"><div id="nerr" style="color:#ff8a8a;min-height:24px;margin-top:6px"></div><div class="two" style="grid-template-columns:1fr"><button class="big teach" id="nok">✅ 確定</button></div>`;
+ $('#mm').classList.add('on');$('#nm').focus();
+ const ok=()=>{const v=$('#nm').value,e=nameCheck(v);if(e){$('#nerr').textContent=e;return}const o=RK();o.name=v.trim();saveRK(o);shut();render()};
+ $('#nok').onclick=ok;$('#nm').onkeydown=e=>{if(e.key==='Enter')ok()}}
+$('#who').onclick=()=>askName(false);
+/* ===== 錯題練習：同一題答對 3 次就不再出現 ===== */
+const CHN={add:'加法',sub:'減法',mul:'乘法',div:'除法',ops:'四則'};
+function openWrong(){
+ const o=RK(),list=o.wrong||[];
+ if(!list.length){$('#mbox').innerHTML=`<button class="x" onclick="shut()">✕</button><h2>📝 錯題練習</h2><div class="story">目前沒有錯題，太棒了！🎉<br>在遊戲裡答錯的題目會自動收集到這裡。</div>`;$('#mm').classList.add('on');return}
+ const it=list[Math.floor(Math.random()*list.length)];
+ $('#mbox').innerHTML=`<button class="x" onclick="shut();render()">✕</button><h2>📝 錯題練習（剩 ${list.length} 題）</h2>
+ <div class="story">${CHN[it.c]||''}章的題目｜這題已答對 ${it.n}/3 次（答對 3 次就會畢業）</div><div class="qbox">${it.q.replace(/</g,'&lt;')}</div>
+ <input class="inp" id="wa" inputmode="numeric" placeholder="${it.r!=null?'商':'答案'}">${it.r!=null?'<input class="inp" id="wr" inputmode="numeric" placeholder="餘數（沒有就填 0）">':''}
+ <div id="wfb" style="min-height:30px;margin-top:8px;font-weight:800"></div>
+ <div class="two" style="grid-template-columns:1fr 1fr"><button class="big teach" id="wsub">✅ 送出</button><button class="big hell" id="wnext" style="display:none">▶ 下一題</button></div>`;
+ $('#mm').classList.add('on');$('#wa').focus();
+ const chk=()=>{
+  const a=Number($('#wa').value.trim()),okA=$('#wa').value.trim()!==''&&a===Number(it.a);
+  const okR=it.r==null?true:(Number(($('#wr').value||'0').trim())===Number(it.r));
+  const ok=okA&&okR,o2=RK();const t=(o2.wrong||[]).find(x=>x.k===it.k);
+  if(t){if(ok){t.n++;if(t.n>=3)o2.wrong=o2.wrong.filter(x=>x.k!==it.k)}saveRK(o2)}
+  $('#wfb').innerHTML=ok?(t&&t.n>=3?'🎓 答對！這題畢業了，不會再出現':'✅ 答對了！'):`❌ 正確答案是 <b>${it.a}${it.r!=null?' … 餘 '+it.r:''}</b>，再記一次`;
+  $('#wsub').style.display='none';$('#wnext').style.display='block';$('#wnext').focus()};
+ $('#wsub').onclick=chk;$('#wnext').onclick=openWrong;
+ $('#wa').onkeydown=e=>{if(e.key==='Enter'){if($('#wr'))$('#wr').focus();else chk()}};
+ if($('#wr'))$('#wr').onkeydown=e=>{if(e.key==='Enter')chk()}}
+$('#wrongbtn').onclick=openWrong;
+$('#how').onclick=()=>{$('#mbox').innerHTML=`<button class="x" onclick="shut()">✕</button><h2>📜 玩法說明</h2><div class="story">1. 點任何一個三角形島嶼，就能進入那一章，不用照順序。<br>2. 每章都有兩種玩法：🎓教學（最高 ⭐2）、⚔️挑戰（最高 ⭐4）、🔥地獄（最高 ⭐5），進度共用。<br>3. 把前五章通關，會煉成🛡️平衡之神盾，五角形變六角形，第六章「負數」正式開啟。<br>4. 閃動的白框是建議你接下來去的章節。<br>5. 想不知道去哪？按上方「今日特訓」。<br>6. 通關一個大關，遊戲地圖左上角會開啟「♾️無限練習」；整章通關後，這裡也會出現「♾️章節無限模式」。<br>7. 答錯的題目會收集到「📝錯題練習」，同一題答對 3 次就畢業。<br>8. 點上方名字可以改名。</div>`;$('#mm').classList.add('on')};
 $('#reset').onclick=()=>{if(confirm('只會清除「總部」的最高分紀錄，不會動到遊戲本身的進度。確定嗎？')){localStorage.removeItem(HK());render()}};
 $('#mm').onclick=e=>{if(e.target.id==='mm')shut()};
 render();
+if(!RK().name)askName(true);
 </script></body></html>
