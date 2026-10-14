@@ -1,0 +1,37 @@
+assets/four-ops/ 裡有 1 張圖片在遊戲程式和 forms.js 都找不到名字（共約 0.2 MB），很可能是 AI 原圖／素材備份：
+  Gemini_Collection_Image_download.jpg
+
+assets/negative/ 裡有 29 張圖片在遊戲程式和 forms.js 都找不到名字（共約 16.3 MB），很可能是 AI 原圖／素材備份：
+  1-1通關.jpg
+  1-2通關.jpg
+  1-3通關.jpg
+  1-4通關.jpg
+  2-1通關.jpg
+  2-2通關.jpg
+  Gemini_Generated_Image_1349ri1349ri1349.jpg
+  Gemini_Generated_Image_2lho4m2lho4m2lho.jpg
+  Gemini_Generated_Image_2rclr12rclr12rcl.jpg
+  Gemini_Generated_Image_4izjjm4izjjm4izj.jpg
+  Gemini_Generated_Image_5govxe5govxe5gov.jpg
+  Gemini_Generated_Image_6vz61i6vz61i6vz6.jpg
+  Gemini_Generated_Image_91chth91chth91ch.jpg
+  Gemini_Generated_Image_a3xzqva3xzqva3xz.jpg
+  Gemini_Generated_Image_b3tmpdb3tmpdb3tm.jpg
+  Gemini_Generated_Image_dxv9gudxv9gudxv9.jpg
+  Gemini_Generated_Image_gdlx3dgdlx3dgdlx.jpg
+  Gemini_Generated_Image_ioftcuioftcuioft.jpg
+  Gemini_Generated_Image_ljaphaljaphaljap.jpg
+  Gemini_Generated_Image_loq5rxloq5rxloq5.jpg
+  Gemini_Generated_Image_q1qoc4q1qoc4q1qo.jpg
+  Gemini_Generated_Image_r65f3ir65f3ir65f.jpg
+  Gemini_Generated_Image_uc8lquc8lquc8lqu.jpg
+  Gemini_Generated_Image_x5my4qx5my4qx5my.jpg
+  Gemini_Generated_Image_ycs8g0ycs8g0ycs8.jpg
+  右手.jpg
+  左手.jpg
+  雙腿.jpg
+  骷髏(小).jpg
+
+→ 確認不需要之後，可以搬到 assets/_未使用素材/ 或直接刪除。工具不會自動動它們。
+
+assets/_未使用素材/ 底下是已確認遊戲完全沒用到的檔案（乘法勇者的「戰鬥原始背景」），可以整個備份後刪除。
