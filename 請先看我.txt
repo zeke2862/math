@@ -16,6 +16,8 @@
   four-ops.html        第五章 四則
   negative.html        第六章 負數
   negative-teacher.html 負數老師版
+  *-teacher.html       其他五章的教師測試版（從總部右下角「教師測試版」進入，預設密碼 1234）
+  hero-teacher.js      教師版的工具
   hero-core.js         共用功能（難度、等級、分數、無限模式、錯題…）
   assets\              圖片與音樂（已整理成 hero / maps / stages / bosses / items / audio）
 

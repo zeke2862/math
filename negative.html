@@ -294,11 +294,15 @@ const ITEM_OF=id=>id<16?(id%4<3?Math.floor(id/4)*3+id%4:-1):id===16?12:-1;
 const bestStar=id=>P[id]||0;
 // ===== 圖片：獲得物品 item-章-關.jpg、人物改變圖 form-章-關.jpg（放進 assets/negative/ 就會自動出現，不用改程式）=====
 const ITEMPIC={},FORMPIC={};
-ST.forEach(s=>{const k=(s.ch+1)+'-'+(s.j+1);[['item-',ITEMPIC],['form-',FORMPIC]].forEach(([p,o])=>{const im=new Image();im.onload=()=>{o[s.id]=im.src};im.src=A+p+k+'.jpg'})});
+const PIC_DIR={'item-':'./assets/items/negative/','form-':'./assets/forms/negative/'};
+  const PIC_NAMES=(p,k)=>p==='item-'?['item-'+k+'.jpg',k+'通關.jpg']:['form-'+k+'.jpg'].concat(({'1-1':['左手.jpg'],'1-2':['右手.jpg'],'1-3':['雙腿.jpg']})[k]||[]);
+  function loadPic(p,k,done){const list=PIC_NAMES(p,k);let i=0;const im=new Image();im.onload=()=>done(im.src);im.onerror=()=>{if(++i<list.length)im.src=PIC_DIR[p]+encodeURIComponent(list[i])};im.src=PIC_DIR[p]+encodeURIComponent(list[0])}
+  let BASESKEL='';{const im=new Image();im.onload=()=>{BASESKEL=im.src};im.src='./assets/forms/negative/'+encodeURIComponent('骷髏(小).jpg')}
+  ST.forEach(s=>{const k=(s.ch+1)+'-'+(s.j+1);[['item-',ITEMPIC],['form-',FORMPIC]].forEach(([p,o])=>loadPic(p,k,src=>{o[s.id]=src}))});
 const itemPic=id=>ITEMPIC[id]||'',formPic=id=>FORMPIC[id]||'';
 const itemName=id=>{const i=ITEM_OF(id);return i>=0?ITEMS[i].n:CH[ST[id].ch].item};
 // 答案是負數時的骷髏外觀：用「已通關的最後一個有 form 圖的小關」那張（教師版預覽用 T_SKEL）
-function curForm(){if(window.T_SKEL!=null){const m=[null,0,1,2,3,4,5,5][window.T_SKEL];return m==null?'':(FORMPIC[m]||'')}let r='';ST.forEach(s=>{if(bestStar(s.id)>0&&FORMPIC[s.id])r=FORMPIC[s.id]});return r}
+function curForm(){if(window.T_SKEL!=null){const m=[null,0,1,2,3,4,5,5][window.T_SKEL];return m==null?'':(FORMPIC[m]||'')}let r='';ST.forEach(s=>{if(bestStar(s.id)>0&&FORMPIC[s.id])r=FORMPIC[s.id]});return r||BASESKEL}
 function formGallery(){const f=ST.filter(s=>FORMPIC[s.id]||(ITEMPIC[s.id]&&ITEM_OF(s.id)<0));if(!f.length)return '';
  return '<div style="margin-top:10px"><b>💀 骷髏型態進化</b><small>（通關小關卡後，答案是負數時的外型會跟著改變）</small><div class="fgal">'+f.map(s=>{const lk=bestStar(s.id)>0?'':'lk',a=FORMPIC[s.id]?`<figure class="${lk}"><img src="${FORMPIC[s.id]}"><figcaption>${s.label} ${s.place}${lk?'（未通關）':''}</figcaption></figure>`:'',b=(ITEMPIC[s.id]&&ITEM_OF(s.id)<0)?`<figure class="${lk}"><img src="${ITEMPIC[s.id]}"><figcaption>🎁 ${itemName(s.id)}${lk?'（未取得）':''}</figcaption></figure>`:'';return a+b}).join('')+'</div></div>'}
 const qOf=st=>st>=5?'myth':st>=4?'legend':st>=3?'fine':st>=1?'normal':null;
