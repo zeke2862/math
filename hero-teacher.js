@@ -53,9 +53,9 @@ const T=window.T={
   else{correctCount=QUESTIONS_PER_LAYER;finishLayer()}},
  lose(){if(!live())return msg('請先進入戰鬥／關卡');
   if(battle){hasRevive=false;playerHP=0;endGame(false)}else{correctCount=0;finishLayer()}},
- go(){const id=$q('#t-go').value,m=$q('#t-md').value;T.unlock();HERO.setTier(m);
+ go(){const id=$q('#t-go').value,m=$q('#t-md').value;T.unlock();HERO.applyTier(m);
   try{setMode(m==='teach'?'teach':'quick')}catch(e){}
-  const s=stages().find(x=>String(x.id)===id);if(battle)startBattle(s.id,true);else startLayer(s.id)},
+  const s=stages().find(x=>String(x.id)===id);HERO._skipPick=true;if(battle)startBattle(s.id,true);else startLayer(s.id)},
  endless(){T.all();setTimeout(()=>{try{HERO.startEndless('chapter')}catch(e){msg('請先回到大地圖再按')}},300)},
  draw(){const on=x=>x?'on':'',opts=stages().map(s=>`<option value="${s.id}">${sname(s)}</option>`).join('');
   $q('#tpan').innerHTML=`<b>教師工具｜${({add:'加法',sub:'減法',mul:'乘法',div:'除法',ops:'四則'})[cfg.id]||''}</b><div id="tmsg"></div>

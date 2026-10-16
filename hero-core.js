@@ -81,11 +81,49 @@ function modal(html,btns){
  btns.forEach(([t,f,c])=>{const x=E('button','font-weight:800;font-size:18px;font-family:inherit;padding:10px 16px;border-radius:12px;border:0;color:#fff;cursor:pointer;background:'+(c||'#4a5bd8'),t);x.onclick=()=>{m.remove();f&&f()};b.querySelector('#hm-b').appendChild(x)});
 }
 H.modal=modal;
+/* ===== 勇者幣：結算時賺錢，在小屋商店花（公式見 economy_proposal）===== */
+const COIN=Object.assign({perOk:2,stageStep:0.15,mode:{teach:0.5,quick:1,hell:1.5},win:10,star:3,first:30,daily:500,over:0.2,stageCap:300},C.coin||{});
+let okN=0,coinDone=false;
+H.on('start',()=>{okN=0;coinDone=false});
+H.on('hit',d=>{if(cfg.type!=='neg')okN+=d.bonus?2:1});
+function bigStage(){
+ try{if(cfg.type==='neg'){const S=window.eval('S');return Math.max(1,Math.min(5,Math.ceil((+S.stg.id||1)/3)))}
+  let idx=0,len=1;if(isBattle()){idx=allStagesList.findIndex(x=>x.id===currentStageObj.id);len=allStagesList.length}else{idx=layers.findIndex(x=>x.id===curLayer.id);len=layers.length}
+  return 1+Math.min(4,Math.floor(5*Math.max(0,idx)/Math.max(1,len)))}catch(e){return 1}}
+function okCount(){
+ try{if(cfg.type==='neg'){const S=window.eval('S');return (S&&S.correct)||0}}catch(e){}
+ return okN}
+function coinToast(n,why){
+ const t=E('div','position:fixed;left:50%;top:14%;transform:translateX(-50%);z-index:9999;background:linear-gradient(#ffe27a,#f5b301);color:#5a3400;border:4px solid #fff;border-radius:18px;padding:10px 22px;font:900 22px/1.4 "Noto Sans TC","Microsoft JhengHei",sans-serif;box-shadow:0 6px 0 #0006;text-align:center;pointer-events:none;transition:opacity .6s');
+ t.innerHTML=`🪙 +${n} 勇者幣<div style="font-size:14px;font-weight:700">${why}</div>`;document.body.appendChild(t);setTimeout(()=>{t.style.opacity='0'},2600);setTimeout(()=>t.remove(),3300)}
+function earnCoin(win,stars,endless){
+ if(coinDone&&!endless)return;coinDone=true;
+ const tier=TIER||'quick',ok=okCount(),coef=1+COIN.stageStep*(bigStage()-1);
+ let n=ok*COIN.perOk*coef*(COIN.mode[tier]||1);const why=[`答對 ${ok} 題`];
+ if(win&&!endless){n+=COIN.win+(stars||0)*COIN.star;why.push('通關');if(stars)why.push(stars+'★')}
+ const today=new Date().toISOString().slice(0,10),key=cfg.id+'|'+(H.stageKey||'');
+ let got=0,capped=false;
+ upd(o=>{
+  o.coinRep=o.coinRep||{};const r=o.coinRep[key]&&o.coinRep[key].d===today&&r0ok(o.coinRep[key])?o.coinRep[key]:{d:today,g:0};
+  const left=Math.max(0,COIN.stageCap-r.g);if(n>left){n=left;capped=true}
+  const day=o.coinDay&&o.coinDay.d===today?o.coinDay:{d:today,n:0},room=Math.max(0,COIN.daily-day.n);
+  n=n<=room?n:room+(n-room)*COIN.over;
+  o.clear=o.clear||{};let bonus=0;if(win&&!endless&&!o.clear[key]){o.clear[key]=1;bonus=COIN.first;why.push('首次通關 +'+COIN.first)}
+  r.g+=Math.round(n);o.coinRep[key]=r;
+  got=Math.round(n)+bonus;day.n+=got;o.coinDay=day;o.coin=(o.coin||0)+got});
+ if(capped)why.push(`這一關今天已賺滿 ${COIN.stageCap} 枚，換別關吧！`);
+ if(got>0||capped)coinToast(got,why.join('・'))}
+function r0ok(r){return typeof r.g==='number'}
+H.coin=()=>ld().coin||0;
+H.on('win',d=>earnCoin(true,d.stars||0,!!d.endless));
+H.on('lose',d=>earnCoin(false,0,!!d.endless));
 /* ===== 下方狀態列 ===== */
 let box;
 function hud(){
+ if(C.hud!==true)return; /* 下方狀態列已全面移除（地圖＋戰鬥）；設定 hud:true 可再開 */
  if(!document.body)return;
- if(!box){box=E('div','position:fixed;left:50%;bottom:4px;transform:translateX(-50%);z-index:60;pointer-events:none;background:#000b;color:#fff;border:1px solid #ffd24a;border-radius:99px;padding:3px 14px;font:600 14px/1.5 "Noto Sans TC","Microsoft JhengHei",sans-serif;white-space:nowrap;max-width:98vw;overflow:hidden');box.id='hero-hud';document.body.appendChild(box)}
+const negMenu=()=>{const m=document.getElementById('menu');return cfg.type==='neg'&&!!m&&!m.hidden};
+ if(!box){setInterval(()=>{if(box)box.style.display=(mapVisible()||negMenu())?'none':'block'},300);box=E('div','position:fixed;left:50%;bottom:4px;transform:translateX(-50%);z-index:60;pointer-events:none;background:#000b;color:#fff;border:1px solid #ffd24a;border-radius:99px;padding:3px 14px;font:600 14px/1.5 "Noto Sans TC","Microsoft JhengHei",sans-serif;white-space:nowrap;max-width:98vw;overflow:hidden');box.id='hero-hud';document.body.appendChild(box)}
  const short=window.innerHeight<520;box.style.bottom=short?'auto':'4px';box.style.top=short?'2px':'auto';box.style.fontSize=short?'11px':'14px';box.style.opacity=short?'.85':'1';
  let li=lvInfo(),s=stats();if(cfg.type==='neg'&&!H.merged){try{li=window.eval('levelInfo()');s=window.eval('baseStats()')}catch(e){}}
  const c=(typeof combo!=='undefined'?combo:H.neg||0),nm=ld().name;
@@ -93,17 +131,17 @@ function hud(){
  box.innerHTML=`${nm?'🧙'+nm.replace(/</g,'&lt;')+' ':''}${H.endless?'♾️無限 擊殺'+H.endless.kills+' ':''}${TIER?TIERNAME[TIER]+' ':''}Lv.${li.level} <span style="color:#7dff9b">XP ${li.cur}/${li.need}</span> ｜ ❤️${s.hp} ⚔️${s.atk} 🛡️${s.def} ｜ 🔥連擊 ${c} ｜ 🏆本關 ${H.score}${TIER?'（×'+MULT[TIER]+'）':''}`}
 /* ===== 地圖左上角：難度切換＋無限模式面板 ===== */
 let sw,ep;
-const mapVisible=()=>{const m=document.getElementById('map-screen');return !!m&&!m.classList.contains('hidden')&&getComputedStyle(m).display!=='none'};
+function mapVisible(){const m=document.getElementById('map-screen');return !!m&&!m.classList.contains('hidden')&&getComputedStyle(m).display!=='none'}
 function buildPanels(){
  if(sw||cfg.type==='neg')return;
  const st=E('style',null,'#hero-tier,#hero-endless{position:fixed;left:6px;z-index:70;display:none;gap:6px;flex-wrap:wrap;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;max-width:96vw}#hero-tier{top:6px}#hero-endless{top:60px}#hero-tier button,#hero-endless button{font-weight:900;font-size:clamp(16px,4.4vw,24px);line-height:1.2;font-family:inherit;white-space:nowrap;padding:7px clamp(8px,2.6vw,14px);border-radius:12px;border:3px solid #fff;color:#fff;cursor:pointer;box-shadow:0 4px 0 #0007;opacity:.72}#hero-tier button.on{opacity:1;transform:translateY(-2px);outline:4px solid #ffd24a}#hero-tier .t{background:#2e9e5b}#hero-tier .c{background:#d9472f}#hero-tier .h{background:#7a1fd1}#hero-endless button{font-size:clamp(15px,4vw,20px);background:#0e7490}#hero-endless button.lock{background:#4b5563;opacity:.6}#hero-endless button.open{opacity:1;box-shadow:0 0 14px #67e8f9}');
  document.head.appendChild(st);
- sw=E('div',null,'<button class="t" data-t="teach">🎓 教學</button><button class="c" data-t="quick">⚔️ 挑戰</button><button class="h" data-t="hell">🔥 地獄</button>');sw.id='hero-tier';
+ sw=E('div',null,'');sw.id='hero-tier';
  sw.onclick=e=>{const t=e.target.closest('button');if(t)switchTier(t.dataset.t)};
  ep=E('div');ep.id='hero-endless';ep.onclick=e=>{const b=e.target.closest('button');if(!b)return;
   if(b.classList.contains('lock')){toast(b.dataset.msg);return}H.startEndless(b.dataset.s)};
  document.body.appendChild(sw);document.body.appendChild(ep);
- setInterval(()=>{const v=mapVisible();sw.style.display=v?'flex':'none';ep.style.display=v&&!H.endless?'flex':'none';if(v){refreshEndless();ep.style.top=(sw.getBoundingClientRect().bottom+6)+'px'}},400);
+ setInterval(()=>{const v=mapVisible();sw.style.display='none';ep.style.display=v&&!H.endless?'flex':'none';if(v){refreshEndless();ep.style.top='58px'}},400);
 }
 function syncSwitch(){if(!sw)return;sw.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.t===TIER))}
 function toast(m){if(typeof showMapToast==='function')showMapToast(m);else modal(m,[['好',null]])}
@@ -169,6 +207,97 @@ function gentleHint(goTeach){
  modal('💡 卡關了嗎？<br><span style="font-size:17px;font-weight:600">要不要先去<b>教學模式</b>領取提示並練習，<br>還可以拿到基礎星等？</span>',
   [['🎓 去教學模式',goTeach,'#2e9e5b'],['繼續挑戰',null,'#6b7280']])}
 
+
+
+/* ===================== 進入關卡時才選「教學／挑戰／地獄」===================== */
+const MODEINFO=[['teach','🎓','教學','小老師教你、有提示',CAP.teach,'#2e9e5b'],['quick','⚔️','挑戰','計時、連擊加分',CAP.quick,'#d9472f'],['hell','🔥','地獄','時間更短、頭目更兇',CAP.hell,'#7a1fd1']];
+function pickMode(title,best,done){
+ const old=document.getElementById('hero-pick');if(old)old.remove();
+ const last=ld().lastTier||'quick';
+ const m=E('div','position:fixed;inset:0;z-index:320;background:#000a;display:flex;align-items:center;justify-content:center;padding:12px;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif');m.id='hero-pick';
+ m.innerHTML=`<div style="background:#fff8ea;color:#4a2b10;border:5px solid #c47a33;border-radius:22px;padding:14px 16px;max-width:620px;width:100%;box-shadow:0 8px 0 #8a4f1c;text-align:center">
+  <div style="font-size:22px;font-weight:900;color:#8a4f1c">⚔️ ${String(title).replace(/</g,'&lt;')}</div>
+  <div style="font-size:14px;color:#8a6a4a;margin:2px 0 10px">選一種難度出發！${best?'　目前最佳：'+'★'.repeat(best):''}</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">${MODEINFO.map(([k,ic,n,d,cap,c])=>`<button data-m="${k}" style="all:unset;box-sizing:border-box;cursor:pointer;border-radius:16px;padding:12px 6px;background:${c};color:#fff;font-weight:900;font-size:20px;text-align:center;box-shadow:0 5px 0 #0004;${k===last?'outline:4px solid #ffd24a;':''}"><div style="font-size:40px;line-height:1.1">${ic}</div>${n}<div style="font-size:12px;font-weight:600;margin-top:4px;line-height:1.4">${d}<br>最高 ${'★'.repeat(cap)}</div></button>`).join('')}</div>
+  <button id="hero-pick-x" style="all:unset;cursor:pointer;margin-top:10px;display:inline-block;color:#8a6a4a;font-weight:800">✕ 先不要，回地圖</button></div>`;
+ document.body.appendChild(m);
+ m.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{m.remove();upd(o=>{o.lastTier=b.dataset.m});done(b.dataset.m)});
+ m.querySelector('#hero-pick-x').onclick=()=>{m.remove();try{if(typeof walkHeroTo==='function'&&false)0}catch(e){}};
+}
+H.pickMode=pickMode;
+function applyTier(t){TIER=t;try{if(cfg.type==='neg'){const nm={teach:'teach',quick:'hard',hell:'hell'}[t];window.eval(`mode=${JSON.stringify(nm)};sv('mode',${JSON.stringify(nm)})`)}else setMode(t==='teach'?'teach':'quick')}catch(e){}hud();syncSwitch()}
+H.applyTier=applyTier;
+function inBattle(){const id=cfg.type==='neg'?'battle':isBattle()?'battle-screen':'puzzle-screen';const b=document.getElementById(id);return !!b&&!b.hidden&&!b.classList.contains('hidden')}
+/* ===================== 阿基米任務日誌（劇情）===================== */
+const STORIES=window.HERO_STORIES||{};
+const storySeenKey=k=>cfg.id+'|'+k;
+const isStorySeen=k=>((ld().storySeen||{})[storySeenKey(k)]);
+const markStory=k=>upd(o=>{o.storySeen=o.storySeen||{};o.storySeen[storySeenKey(k)]=1});
+const hlStory=t=>String(t).replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g,'<b style="color:#c47a00;background:#fff3c4;padding:0 3px;border-radius:4px">$1</b>');
+const bigOfStage=stg=>{try{if(cfg.type==='puzzle')return Math.ceil((+stg||1)/2);return Math.max(1,parseInt(String(stg).split('-')[0],10)||1)}catch(e){return 1}};
+function storyFor(stg){
+ const c=STORIES[cfg.id];if(!c)return null;
+ if(Array.isArray(c)){const e=c[bigOfStage(stg)-1];return e?{key:'b'+bigOfStage(stg),e}:null}
+ return null}
+const placeOf=e=>typeof e.pl==='object'&&e.pl?(window.HERO_CFG&&window.HERO_CFG.iron?e.pl.iron:e.pl.legacy):e.pl;
+function showStory(e,done){
+ if(!e){done&&done();return}
+ const nm=(ld().name||'勇者').replace(/</g,'&lt;');
+ const ov=E('div','position:fixed;inset:0;z-index:99990;background:#000b;display:flex;align-items:center;justify-content:center;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;padding:10px');
+ const lines=e.L.map(l=>{const me=l[0]==='主角';return `<div style="margin:8px 0;padding:8px 12px;border-radius:12px;background:${me?'#e8f4ff':'#fff7e0'};text-align:left;font-size:clamp(14px,2.6vw,19px);line-height:1.6"><b>${me?'🧑 '+nm:'🦉 '+l[0]}：</b>${hlStory(l[1])}</div>`}).join('');
+ ov.innerHTML=`<div style="width:min(640px,96vw);max-height:94vh;overflow:auto;background:#fffdf5;border:5px solid #a0632b;border-radius:18px;padding:14px 16px;box-shadow:0 8px 0 #0006"><div style="font-weight:900;font-size:clamp(17px,3.2vw,24px);color:#7a4518">📜 ${hlStory(e.t)}</div><div style="color:#8a6b3a;font-size:14px;margin:2px 0 6px">${placeOf(e)?'地點：'+placeOf(e)+'　':''}${e.df?'難度：'+e.df:''}</div>${lines}<button style="all:unset;display:block;margin:10px auto 2px;background:#e8590c;color:#fff;font-weight:900;font-size:20px;padding:8px 30px;border-radius:14px;box-shadow:0 4px 0 #8a2e00;cursor:pointer">出發！</button></div>`;
+ ov.querySelector('button').onclick=()=>{ov.remove();done&&done()};
+ document.body.appendChild(ov);try{H.emit('bonus',{})}catch(x){}}
+function storyToast(text,ms){
+ const t=E('div','position:fixed;left:50%;bottom:16%;transform:translateX(-50%);z-index:99980;max-width:min(560px,92vw);background:#fffdf5;border:4px solid #a0632b;border-radius:16px;padding:10px 14px;font:700 clamp(14px,2.4vw,18px)/1.6 "Noto Sans TC","Microsoft JhengHei",sans-serif;box-shadow:0 5px 0 #0006;transition:opacity .6s;pointer-events:none');
+ t.innerHTML='🦉 <b>阿基米：</b>'+hlStory(text);document.body.appendChild(t);setTimeout(()=>{t.style.opacity='0'},ms||5200);setTimeout(()=>t.remove(),(ms||5200)+700)}
+let curStory=null,wrongShown=false;
+H.on('start',()=>{wrongShown=false});
+H.on('hurt',d=>{if(!wrongShown&&curStory&&curStory.e.wrong&&(d.mc||0)>=2&&!H.endless){wrongShown=true;storyToast(curStory.e.wrong)}});
+H.on('win',d=>{if(d.endless)return;
+ if(curStory&&curStory.e.win){const w=curStory.e.win;setTimeout(()=>storyToast(w,7000),1500)}
+ try{const c=STORIES[cfg.id];if(c&&c.end&&!isStorySeen('end')){
+   let last=false;if(cfg.id==='ops')last=currentStageObj&&currentStageObj.id==='4-1';
+   else if(cfg.type==='neg'){const S=window.eval('S');last=S&&S.stg&&!S.stg.endless&&S.stg.id===window.eval('ST.length-1')}
+   if(last){markStory('end');setTimeout(()=>showStory(c.end),2000)}}}catch(e){}});
+/* 進關前：先看日誌（每個大關第一次進入；四則／負數是整章開場）*/
+function storyGate(stg,go){
+ try{const c=STORIES[cfg.id];if(!c){curStory=null;return go()}
+  if(Array.isArray(c)){const st=storyFor(stg);curStory=st;if(st&&!isStorySeen(st.key)){markStory(st.key);return showStory(st.e,go)}return go()}
+  curStory=null;
+  if(c.open&&!isStorySeen('open')){markStory('open');return showStory(c.open,go)}}catch(e){console.warn(e)}
+ go()}
+function hookPick(){
+ const fn=cfg.type==='neg'?'start':isBattle()?'startBattle':'startLayer';
+ wrap(fn,(o,a)=>{
+  const stg=a[0],key=cfg.type==='neg'?(stg&&stg.id):stg;
+  if(cfg.type==='neg'&&stg&&stg.endless)return o.apply(null,a);
+  if(H.endless||H._skipPick||H._pickedFor===key){H._skipPick=false;const r=o.apply(null,a);setTimeout(()=>{if(inBattle())H._pickedFor=null},0);return r}
+  let title='',best=0;
+  try{if(cfg.type==='neg'){title=stg.label+' '+(stg.place||'');best=window.eval('P['+stg.id+']')||0}
+   else if(isBattle()){const s=allStagesList.find(x=>x.id===stg);title='關卡 '+s.id+'　'+s.boss;best=(prog()[s.id]||{}).stars||0}
+   else{const l=layers.find(x=>x.id===stg);title='第 '+l.id+' 層　'+l.name;best=(prog()[l.id]||{}).stars||0}}catch(e){}
+  storyGate(stg,()=>pickMode(title,best,t=>{applyTier(t);H._pickedFor=key;o.apply(null,a);setTimeout(()=>{if(inBattle())H._pickedFor=null},0)}));
+ });
+ const se=H.startEndless;H.startEndless=function(scope){pickMode('♾️ 無限模式',0,t=>{applyTier(t);se(scope)})};
+}
+
+
+/* ===================== 勇者外觀：玩家名字、血量長條、地圖說明 ===================== */
+function heroLook(){
+ const st=E('style',null,'.map-sub{display:none!important}#hero-hpbar{position:relative;width:200px;height:25px;background:#ddd;border-radius:12px;overflow:hidden;border:3px solid #333}#hero-hpbar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#2ecc71,#27ae60);transition:width .3s ease-out}#hero-hpbar i.low{background:linear-gradient(90deg,#e67e22,#e74c3c)}#hero-hpbar b{position:absolute;inset:0;text-align:center;line-height:20px;font-size:14px;color:#fff;text-shadow:1px 1px 2px #000}@media (max-width:900px){#hero-hpbar{width:150px}}');
+ document.head.appendChild(st);
+ const nm=ld().name;
+ if(nm){document.querySelectorAll('.char-name,#hero-box .char-name,.side-box .cap').forEach((el,i)=>{if(el.closest('#hero-box')||(cfg.type==='puzzle'&&i===0))el.textContent=nm});
+  const img=document.getElementById('hero-avatar-el');if(img)img.alt=nm}
+ if(isBattle()){
+  const hp=document.getElementById('player-hp');if(!hp)return;const wrapEl=hp.parentElement;
+  wrapEl.innerHTML=`<span id="hero-hpname" style="white-space:nowrap">${(nm||'勇者').replace(/</g,'&lt;')}</span><div id="hero-hpbar"><i></i><b></b></div><span id="player-hp" style="display:none"></span>`;
+  ui.playerHp=document.getElementById('player-hp');
+  const sync=()=>{try{const f=document.querySelector('#hero-hpbar i'),t=document.querySelector('#hero-hpbar b'),cur=Math.max(0,Math.round(playerHP)),mx=Math.max(1,Math.round(maxPlayerHP));f.style.width=(cur/mx*100)+'%';f.classList.toggle('low',cur/mx<=.3);t.textContent=cur+' / '+mx}catch(e){}};
+  wrap('updateUI',(o,a)=>{const r=o.apply(null,a);sync();return r});sync();
+ }
+}
 
 /* ===================== 教學模式：小老師（基本觀念＋實際示範）===================== */
 const CONCEPT={
@@ -283,7 +412,7 @@ function adviceHTML(){
  <div style="margin-top:6px;font-weight:800">🧭 給你的練習建議：</div><ul style="margin:2px 0 4px 1.2em;padding:0">${tips}</ul>
  ${ex?`<div style="font-weight:800">📝 剛剛答錯的題目（已放進總部的錯題練習）：</div><ul style="margin:2px 0 6px 1.2em;padding:0">${ex}</ul>`:''}
  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">${TIER!=='teach'?'<button id="hero-goteach" style="font-weight:800;font-size:16px;padding:8px 14px;border-radius:10px;border:0;background:#2e9e5b;color:#fff;cursor:pointer">🎓 用教學模式練這一關</button>':''}</div></div>`}
-function wireAdvice(restart){const b=document.getElementById('hero-goteach');if(b)b.onclick=()=>{switchTierForce('teach');restart()}}
+function wireAdvice(restart){const b=document.getElementById('hero-goteach');if(b)b.onclick=()=>{switchTierForce('teach');H._skipPick=true;restart()}}
 function switchTierForce(t){TIER=t;try{setMode(t==='teach'?'teach':'quick')}catch(e){}hud();syncSwitch()}
 /* ===================== 減法：通關寶箱（隨機稀有度碎片）===================== */
 const RAR=['','普通','優良','精緻','傳說','神話'],RCOL=['','#9aa3ad','#4caf50','#2f80ed','#a24bd8','#ff9800'];
@@ -492,6 +621,23 @@ window.addEventListener('load',()=>{
  wrap('tpq',(o,a)=>{let v=o.apply(null,a);
   const ov=(C.time[cfg.id]||{})[typeof curLayer!=='undefined'&&curLayer?curLayer.id:''];if(ov>0)v=Math.round(ov*teachF());
   return TIER==='hell'?Math.max(3,Math.round(v*C.hellTime)):v});
+ /* ===== 戰鬥：傷害數字直接冒在怪物（勇者）頭上；不再顯示「答對了！造成 N 傷害」那串字 ===== */
+ if(isBattle()){
+  document.head.appendChild(E('style',null,'.hero-dmg{position:fixed;z-index:420;pointer-events:none;transform:translate(-50%,-50%);font:900 52px/1 "Noto Sans TC","Microsoft JhengHei",sans-serif;-webkit-text-stroke:3px #000;paint-order:stroke fill;text-shadow:0 4px 0 #000a;animation:heroDmg 1s ease-out forwards;white-space:nowrap}.hero-dmg.big{font-size:66px}.hero-dmg.small{font-size:30px;-webkit-text-stroke:2px #000}@keyframes heroDmg{0%{opacity:0;transform:translate(-50%,-20%) scale(.4)}15%{opacity:1;transform:translate(-50%,-60%) scale(1.25)}30%{transform:translate(-50%,-60%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-150%) scale(1)}}.floating-dmg{display:none!important}'));
+  const headOf=img=>{if(!img)return null;const r=img.getBoundingClientRect();if(!r.width)return null;let dw=r.width,dh=r.height;
+   if(img.naturalWidth&&img.naturalHeight&&getComputedStyle(img).objectFit==='contain'){const k=Math.min(r.width/img.naturalWidth,r.height/img.naturalHeight);dw=img.naturalWidth*k;dh=img.naturalHeight*k}
+   const top=r.bottom-dh+(r.height-dh)*0;return[r.left+r.width/2,Math.max(70,r.bottom-dh+dh*.18)]};
+  const dmgPop=(target,text,color)=>{const img=target==='boss'?(ui.bossImg||document.querySelector('#boss-box img')):(ui.heroImg||document.querySelector('#hero-box img'));
+   const p=headOf(img);if(!p)return;const d=E('div');d.className='hero-dmg'+(/✨|⚡/.test(text)?' big':'')+(target==='hero'?' small':'');d.textContent=text;d.style.color=color||'#ff4d4d';
+   d.style.left=p[0]+'px';d.style.top=p[1]+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),1050)};
+  window.showFloatingDamage=(t,text,color)=>{try{dmgPop(t,String(text),t==='boss'&&H._lastCrit?'#ffd24a':color)}catch(e){}};
+  H.on('hit',d=>{H._lastCrit=!!d.crit});
+  wrap('showMessage',(o,a)=>{const t=String(a[0]||'');const el=(window.ui&&ui.msg)||document.getElementById('message');
+   if(/^答對了/.test(t)){if(el){el.innerText='';el.style.visibility='hidden'}
+    if(t.includes('甦醒藥')){const p=headOf(ui.heroImg);if(p){const d=E('div');d.className='hero-dmg small';d.style.color='#7dff9b';d.textContent='💊 獲得甦醒藥！';d.style.left=p[0]+'px';d.style.top=(p[1]-40)+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),1050)}}
+    return}
+   if(el)el.style.visibility='';return o.apply(null,a)});
+ }
  /* ===== 星等：負數標準；超出本模式封頂的星用「半亮」顯示 ===== */
  if(isBattle()){
   window.calculateStars=()=>{const a=stageStats.total?stageStats.correct/stageStats.total:0,raw=rawStars(a);H.lastRaw=raw;
@@ -548,12 +694,15 @@ window.addEventListener('load',()=>{
  setupMap();
  if(cfg.type!=='neg')hookBonus();
  hookTutor();
+ hookPick();
+ heroLook();
  /* 從總部直接進入章節無限模式 */
  if(q.get('endless')&&cfg.type!=='neg'){setTimeout(()=>{try{H.startEndless('chapter')}catch(e){}},900)}
  /* ===== 負數勇者 ===== */
  if(cfg.type==='neg'){
   window.HERO_TIME=stg=>{const v=(C.time.neg||{})[stg&&stg.label];return v>0?v:0};
-  hookNegBonus();
+  hookNegBonus();hookPick();
+  try{const st=E('style',null,'#modes{display:none!important}');document.head.appendChild(st)}catch(e){}
   if(TIER){try{const mp={teach:'teach',quick:'hard',hell:'hell'};if(typeof enterMode==='function')enterMode(mp[TIER])}catch(e){}}
   /* 四則勇者全通關 → 負數與其他章合併等級／經驗值（只做一次，之後共用同一份）*/
   try{
@@ -570,7 +719,7 @@ window.addEventListener('load',()=>{
    try{if(S&&S.mode!=='teach'&&!S.stg.endless&&failStreak(win))setTimeout(()=>gentleHint(()=>{try{setMode('teach')}catch(e){}}),700)}catch(e){}return r});
   let lastS=null,lastTot=0,tq=0;const NM={teach:'teach',hard:'quick',hell:'hell'};
   setInterval(()=>{try{const S=window.eval('typeof S!=="undefined"&&S?S:null');
-   if(S!==lastS){lastS=S;lastTot=S?S.total:0;tq=Date.now();H.score=0;H.maxCombo=0;H.stageKey=S&&S.stg?String(S.stg.id):null;H.neg=0;if(S)TIER=NM[S.mode]||'quick';hud()}
+   if(S!==lastS){lastS=S;coinDone=false;lastTot=S?S.total:0;tq=Date.now();H.score=0;H.maxCombo=0;H.stageKey=S&&S.stg?String(S.stg.id):null;H.neg=0;if(S)TIER=NM[S.mode]||'quick';hud()}
    if(S){H.neg=S.pc||0;H.maxCombo=Math.max(H.maxCombo,S.pc||0);
     if(S.total>lastTot){const sec=(Date.now()-tq)/1000;tq=Date.now();lastTot=S.total;if(S.pc>0&&S.correct>0&&(S._lc||0)<S.correct){S._lc=S.correct;H.score+=H.pts(S.pc,sec,NM[S.mode]||'quick')}hud()}
     if(S.over&&!S._sv){S._sv=1;H.saveScore();hud()}}}catch(e){}},300);
