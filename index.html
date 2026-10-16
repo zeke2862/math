@@ -74,7 +74,7 @@ button{font:inherit;cursor:pointer;color:inherit}
  <svg class="bg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
   <defs>
    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9773b"/><stop offset="1" stop-color="#9c5f2a"/></linearGradient>
-   <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd3ff"/><stop offset="1" stop-color="#e2f6ff"/></linearGradient>
+   <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop id="sk0" offset="0" stop-color="#8fd3ff"/><stop id="sk1" offset="1" stop-color="#e2f6ff"/></linearGradient>
    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2c27e"/><stop offset="1" stop-color="#d9a35b"/></linearGradient>
    <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9bd47a"/><stop offset="1" stop-color="#5fae4a"/></linearGradient>
    <pattern id="planks" width="120" height="900" patternUnits="userSpaceOnUse"><rect width="120" height="900" fill="url(#wall)"/><rect x="0" width="6" height="900" fill="#8a5222" opacity=".55"/><circle cx="60" cy="140" r="4" fill="#7a4518" opacity=".5"/><circle cx="34" cy="420" r="3" fill="#7a4518" opacity=".45"/></pattern>
@@ -88,13 +88,15 @@ button{font:inherit;cursor:pointer;color:inherit}
   <g transform="translate(560,90)">
    <rect x="-14" y="-14" width="508" height="318" rx="16" fill="#7a4518"/>
    <rect width="480" height="290" rx="8" fill="url(#sky)"/>
-   <circle cx="380" cy="70" r="38" fill="#ffe66d"/>
-   <path d="M0 230 L90 140 L170 210 L260 110 L360 200 L420 150 L480 210 L480 290 L0 290Z" fill="#7cc36a"/>
-   <path d="M0 260 L120 200 L240 250 L360 210 L480 250 L480 290 L0 290Z" fill="#5fae4a"/>
-   <g fill="#fff" opacity=".9"><ellipse cx="110" cy="70" rx="46" ry="18"/><ellipse cx="150" cy="60" rx="34" ry="20"/><ellipse cx="250" cy="100" rx="40" ry="14"/></g>
+   <g id="stars" fill="#fff" style="display:none"><circle cx="40" cy="40" r="2.5"/><circle cx="120" cy="90" r="2"/><circle cx="200" cy="30" r="3"/><circle cx="290" cy="70" r="2"/><circle cx="330" cy="120" r="2.5"/><circle cx="440" cy="40" r="2"/><circle cx="70" cy="120" r="1.8"/><circle cx="170" cy="130" r="2.2"/><circle cx="400" cy="110" r="1.8"/></g>
+   <g id="sunG"><circle id="sun" cx="380" cy="70" r="38" fill="#ffe66d"/><circle id="moonCut" cx="396" cy="58" r="34" fill="#1b2a52" style="display:none"/></g>
+   <path id="hill1" d="M0 230 L90 140 L170 210 L260 110 L360 200 L420 150 L480 210 L480 290 L0 290Z" fill="#7cc36a"/>
+   <path id="hill2" d="M0 260 L120 200 L240 250 L360 210 L480 250 L480 290 L0 290Z" fill="#5fae4a"/>
+   <g id="clouds" fill="#fff" opacity=".9"><ellipse cx="110" cy="70" rx="46" ry="18"/><ellipse cx="150" cy="60" rx="34" ry="20"/><ellipse cx="250" cy="100" rx="40" ry="14"/></g>
    <rect x="234" width="12" height="290" fill="#7a4518"/><rect y="139" width="480" height="12" fill="#7a4518"/>
    <rect x="-26" y="290" width="532" height="22" rx="6" fill="#8a5222"/>
   </g>
+  <rect id="roomShade" width="1600" height="624" fill="#0b1236" opacity="0" pointer-events="none"/>
   <!-- 小屋招牌 -->
   <g transform="translate(800,40)"><rect x="-130" y="-6" width="260" height="56" rx="12" fill="#f6e2b8" stroke="#7a4518" stroke-width="6"/><text x="0" y="33" text-anchor="middle" font-size="30" font-weight="900" fill="#7a4518" font-family="Noto Sans TC,Microsoft JhengHei,sans-serif">⚔️ 勇者小屋</text></g>
   <!-- 勳章架 -->
@@ -128,14 +130,14 @@ button{font:inherit;cursor:pointer;color:inherit}
    <rect x="-86" y="-86" width="172" height="40" rx="20" fill="#fff8ea" stroke="#a0632b" stroke-width="4"/><text x="0" y="-58" text-anchor="middle" font-size="24" font-weight="900" fill="#4a2b10" font-family="Noto Sans TC,Microsoft JhengHei,sans-serif">🗺️ 冒險地圖</text></g>
   <!-- 勇者 -->
   <g id="heroWrap" class="tap" transform="translate(800,700)"><g id="heroG"><image href="./assets/hero/hero-idle.png" x="-170" y="-360" width="340" height="360" preserveAspectRatio="xMidYMax meet"/></g>
-   <rect id="tagBg" x="-90" y="10" width="180" height="40" rx="20" fill="#fff8ea" stroke="#a0632b" stroke-width="4"/><text id="heroTagT" x="0" y="38" text-anchor="middle" font-size="22" font-weight="900" fill="#4a2b10" font-family="Noto Sans TC,Microsoft JhengHei,sans-serif"></text></g>
+  </g>
   <foreignObject id="bubbleBox" x="920" y="300" width="420" height="160"><div xmlns="http://www.w3.org/1999/xhtml" id="bubble"></div></foreignObject>
   <rect y="800" width="1600" height="26" fill="#a0632b"/>
   <rect y="826" width="1600" height="74" fill="url(#grass)"/>
   <g fill="#7a4518"><rect x="150" y="826" width="34" height="74"/><rect x="560" y="826" width="34" height="74"/><rect x="1006" y="826" width="34" height="74"/><rect x="1416" y="826" width="34" height="74"/></g>
  </svg>
 </div>
-<div id="top"><span class="pill" id="lvPill">🧙 Lv.1</span><span class="pill" id="scorePill">🏆 0</span><span class="sp"></span><button class="pill" id="gear" title="設定">⚙️</button></div>
+<div id="top"><span class="pill" id="lvPill">🧙 Lv.1</span><span class="pill" id="scorePill">🏆 0</span><span class="pill" id="coinPill" title="勇者幣：可以在商店買東西">🪙 0</span><span class="sp"></span><button class="pill" id="gear" title="設定">⚙️</button></div>
 <div id="dock">
  <button class="ic" id="icDaily"><span class="c">📜</span><span class="l">今日任務</span><span class="n" id="nDaily">!</span></button>
  <button class="ic" id="icMap"><span class="c">🗺️</span><span class="l">冒險地圖</span></button>
@@ -192,16 +194,30 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 function openBox(html,wide){$('#mbox').className='box'+(wide?' wide':'');$('#mbox').innerHTML='<button class="x" onclick="shut()">✕</button>'+html;$('#mm').classList.add('on')}
 const shut=()=>{$('#mm').classList.remove('on');render()};
 /* ===== 小屋畫面 ===== */
-const TIPS=[()=>{const r=recommend();return r?`下一站：${r.ch}・${r.name}！點桌上的冒險地圖出發吧！`:'所有章節都通關了！要不要去地獄模式挑戰 5 顆星？'},
+const TIPS=[()=>{const c=SKY[dayPart(new Date().getHours())];return `${c.t}！${c.moon?'晚上也要記得早點休息喔～':'今天也一起變強吧！'}`},()=>{const r=recommend();return r?`下一站：${r.ch}・${r.name}！點桌上的冒險地圖出發吧！`:'所有章節都通關了！要不要去地獄模式挑戰 5 顆星？'},
  ()=>dailyDone()?'今天的特訓完成了，好厲害！':`今日特訓是「${dailyGame().name}」，完成會很有成就感喔！`,
  ()=>{const n=(RK().wrong||[]).length;return n?`錯題本裡有 ${n} 題在等你，答對 ${GRAD} 次就畢業！`:'錯題本是空的，太棒了！'},
  ()=>'點我可以看我的能力和冒險紀錄喔！',()=>'答得又快又準，會打出「⚡神速一擊」！'];
 let tipI=0;
+/* ===== 窗外跟著現實時間變化：早晨/中午/傍晚/夜晚 ===== */
+const SKY={
+ morning:{t:'早安',s0:'#ffc9a8',s1:'#fff1d6',sun:'#ffd27a',sx:90,sy:120,h1:'#8fcf73',h2:'#6cb956',cl:.85,shade:0.04,star:0,moon:0},
+ noon:{t:'午安',s0:'#8fd3ff',s1:'#e2f6ff',sun:'#ffe66d',sx:380,sy:70,h1:'#7cc36a',h2:'#5fae4a',cl:.9,shade:0,star:0,moon:0},
+ evening:{t:'傍晚好',s0:'#ff8a5b',s1:'#ffd29a',sun:'#ff9e3d',sx:410,sy:150,h1:'#6a9a52',h2:'#4f7f3c',cl:.6,shade:.1,star:0,moon:0},
+ night:{t:'晚安',s0:'#0e1a3d',s1:'#2a3c74',sun:'#fff3b0',sx:380,sy:70,h1:'#2f5a3a',h2:'#24452d',cl:.18,shade:.22,star:1,moon:1}};
+function dayPart(h){return h>=5&&h<10?'morning':h>=10&&h<16?'noon':h>=16&&h<19?'evening':'night'}
+function paintSky(){const k=dayPart(new Date().getHours()),c=SKY[k];
+ $('#sk0').setAttribute('stop-color',c.s0);$('#sk1').setAttribute('stop-color',c.s1);
+ const sun=$('#sun');sun.setAttribute('fill',c.sun);sun.setAttribute('cx',c.sx);sun.setAttribute('cy',c.sy);sun.setAttribute('r',c.moon?32:38);
+ const m=$('#moonCut');m.style.display=c.moon?'':'none';m.setAttribute('fill',c.s0);m.setAttribute('cx',c.sx+16);m.setAttribute('cy',c.sy-12);
+ $('#hill1').setAttribute('fill',c.h1);$('#hill2').setAttribute('fill',c.h2);$('#clouds').setAttribute('opacity',c.cl);
+ $('#stars').style.display=c.star?'':'none';$('#roomShade').setAttribute('opacity',c.shade);document.body.dataset.daypart=k;return c}
+paintSky();setInterval(paintSky,60000);
 function render(){
  const li=lvInfo(),nm=RK().name||who();
  $('#lvPill').textContent=`🧙 ${nm}　Lv.${li.level}`;
  $('#scorePill').textContent='🏆 '+G.reduce((a,g)=>a+chScore(g.id),0).toLocaleString();
- const tag=`${nm}　Lv.${li.level}`;$('#heroTagT').textContent=tag;const tw=Math.max(150,[...tag].reduce((a,c)=>a+(c.charCodeAt(0)>255?24:13),0)+36);$('#tagBg').setAttribute('x',-tw/2);$('#tagBg').setAttribute('width',tw);
+ $('#coinPill').textContent='🪙 '+(RK().coin||0).toLocaleString();
  $('#medals').innerHTML=G.map((g,i)=>{const on=medal(g),x=40+i*70;return`<g class="${on?'md-on':''}"><title>${g.medal}${on?'（已獲得）':'（還沒獲得）'}</title><circle cx="${x}" cy="28" r="27" fill="${on?'url(#gold)':'#d8c7a8'}" stroke="${on?'#a86a00':'#7a4a1d'}" stroke-width="5"/><text x="${x}" y="38" text-anchor="middle" font-size="28" font-weight="900" fill="${on?'#5a3200':'#9b8a70'}">${g.sym}</text></g>`}).join('');
  const dd=dailyDone();$('#nDaily').textContent=dd?'✔':'!';$('#nDaily').className='n'+(dd?' ok':'');
  const w=(RK().wrong||[]).length;$('#nWrong').style.display=w?'flex':'none';$('#nWrong').textContent=w;
@@ -214,7 +230,7 @@ function heroCard(){
  const total=G.reduce((a,g)=>a+chScore(g.id),0),medals=G.filter(medal).length,shards=Object.values(o.shards||{}).reduce((a,s)=>a+s.n,0);
  const titles=[];if(medals>=1)titles.push('🏅 見習勇者');if(medals>=3)titles.push('🛡 熟練勇者');if(shield())titles.push('✨ 平衡守護者');if(total>=10000)titles.push('🔥 萬分高手');if(!(o.wrong||[]).length&&Object.keys(o.best||{}).length)titles.push('📝 零錯題');
  openBox(`<h2>🧙 勇者資料</h2><div class="hero-card"><img src="./assets/hero/hero-idle.png" alt="">
- <div><div style="font-size:24px;font-weight:900">${esc(nm)} <button class="sbtn" style="font-size:13px;padding:4px 10px" onclick="askName(false)">✏️ 改名</button></div>
+ <div><div style="font-size:24px;font-weight:900">${esc(nm)}</div>
  <div style="margin:6px 0 2px;font-weight:900">Lv.${L}　<small style="color:var(--dim)">經驗 ${li.cur} / ${li.need}</small></div><div class="bar"><i style="width:${Math.round(li.cur/li.need*100)}%"></i></div>
  <div class="stats"><div>❤️ ${st('hp')}<small>血量</small></div><div>⚔️ ${st('atk')}<small>攻擊</small></div><div>🛡️ ${st('def')}<small>防禦</small></div></div>
  <div class="chips">${titles.length?titles.map(t=>`<span>${t}</span>`).join(''):'<span>還沒有稱號：通關一章就能得到第一個！</span>'}</div></div></div>
@@ -245,9 +261,7 @@ function open(id){
  if(g.neg&&!shield()&&!confirm('平衡之神盾還沒煉成（前五章的勳章還沒集滿）。\n要不要直接闖進深淵？'))return;
  openBox(`<h2>${g.sym} ${g.ch}｜${g.t}</h2>
  <div class="story">${g.story}<br>🏅 <b>${g.medal}</b>：${g.eff}　（已通 ${pr.all}/${g.total} 關）</div>
- <div class="three"><button class="big teach" onclick="go('${id}','teach')"><span>🎓</span>教學<small>小老師教你・有提示<br>最高 ⭐2</small></button>
- <button class="big chal" onclick="go('${id}','quick')"><span>⚔️</span>挑戰<small>計時・連擊加分<br>最高 ⭐4</small></button>
- <button class="big hell" onclick="go('${id}','hell')"><span>🔥</span>地獄<small>限時更短・怪更兇<br>最高 ⭐5</small></button></div>
+ <button class="big chal" style="width:100%;margin-top:14px;background:linear-gradient(#f0a03c,#c4651a)" onclick="go('${id}','quick')"><span>⚔️</span>進入${g.ch}<small>在地圖上點選關卡後，再選擇 🎓教學／⚔️挑戰／🔥地獄</small></button>
  ${(!g.neg&&medal(g))?`<button class="big endb" onclick="go('${id}','quick',1)">♾️ 章節無限模式<small>整章隨機怪物，打倒才結算經驗</small></button>`:(g.neg?'':'<div style="text-align:center;color:var(--dim);font-size:13px;margin-top:10px">🔒 通關整章後開啟「♾️ 章節無限模式」；各大關的無限練習在遊戲地圖左上角</div>')}`);
 }
 /* ===== 開遊戲：模式直接用網址帶進去 ===== */
@@ -260,10 +274,10 @@ $('#home').onclick=()=>{$('#fr').src='about:blank';$('#stage').classList.remove(
 /* ===== 今日任務 ===== */
 function openDaily(){
  const dg=dailyGame(),dd=dailyDone();
- openBox(`<h2>📜 今日任務</h2><div class="story">每天一個特訓章節，用<b>挑戰</b>或<b>地獄</b>模式打完一關就完成！</div>
+ openBox(`<h2>📜 今日任務</h2><div class="story">每天一個特訓章節，選一關用<b>挑戰</b>或<b>地獄</b>模式打完就完成！</div>
  <div style="text-align:center;margin:14px 0"><div style="font-size:60px">${dg.sym}</div><div style="font-size:22px;font-weight:900">${dg.ch}・${dg.name}大挑戰</div>
  <div style="margin-top:6px;font-weight:900;color:${dd?'#2e9e5b':'#b8650b'}">${dd?'✅ 今天已完成，明天再來領新任務！':'⏳ 還沒完成'}</div></div>
- ${dd?'':`<button class="big chal" style="width:100%" onclick="go('${dg.id}','quick')"><span>⚔️</span>現在就出發（挑戰模式）</button>`}`)}
+ ${dd?'':`<button class="big chal" style="width:100%" onclick="go('${dg.id}','quick')"><span>⚔️</span>現在就出發</button>`}`)}
 /* ===== 光榮榜 ===== */
 function openBoard(){
  const rows=G.map(g=>({g,s:chScore(g.id)})),total=rows.reduce((a,r)=>a+r.s,0),mx=Math.max(1,...rows.map(r=>r.s));
@@ -281,10 +295,10 @@ function nameCheck(n){
  return''}
 function askName(first){
  const cur=RK().name||'';
- openBox(`<h2>${first?'🧙 歡迎來到勇者小屋！':'✏️ 修改名字'}</h2><div class="story">請為你的勇者取一個名字。<br>中文、英文都可以，最多 ${NAMEMAX} 個字。</div><input class="inp" id="nm" maxlength="${NAMEMAX}" value="${esc(cur)}" placeholder="例如：小明 / Leo"><div id="nerr" style="color:#c0392b;min-height:24px;margin-top:6px;font-weight:800"></div><div class="two"><button class="big teach" id="nok">✅ 確定</button></div>`);
+ openBox(`<h2>${first?'🧙 歡迎來到勇者小屋！':'🪪 使用改名卡'}</h2><div class="story">請為你的勇者取一個名字。<br>中文、英文都可以，最多 ${NAMEMAX} 個字。</div><input class="inp" id="nm" maxlength="${NAMEMAX}" value="${esc(cur)}" placeholder="例如：小明 / Leo"><div id="nerr" style="color:#c0392b;min-height:24px;margin-top:6px;font-weight:800"></div><div class="two"><button class="big teach" id="nok">✅ 確定</button></div>`);
  if(first)$('#mbox .x').style.display='none';
  $('#nm').focus();
- const ok=()=>{const v=$('#nm').value,e=nameCheck(v);if(e){$('#nerr').textContent=e;return}const o=RK();o.name=v.trim();saveRK(o);shut()};
+ const ok=()=>{const v=$('#nm').value,e=nameCheck(v);if(e){$('#nerr').textContent=e;return}const o=RK();if(!first){o.items=o.items||{};if(!(o.items.rename>0)){$('#nerr').textContent='沒有改名卡了，請先到商店購買';return}o.items.rename--}o.name=v.trim();saveRK(o);shut();if(!first)setTimeout(()=>openBox(`<h2>🎉 改名成功！</h2><div class="story">從現在起，你的勇者叫做 <b>${esc(o.name)}</b>！</div>`),50)};
  $('#nok').onclick=ok;$('#nm').onkeydown=e=>{if(e.key==='Enter')ok()}}
 /* ===== 錯題練習：同一題答對數次就不再出現 ===== */
 const CHN={add:'加法',sub:'減法',mul:'乘法',div:'除法',ops:'四則'};
@@ -315,20 +329,32 @@ function openBag(){const sh=RK().shards||{};const keys=Object.keys(sh).filter(k=
  const total=keys.reduce((a,k)=>a+sh[k].n,0);
  openBox(`<h2>🎒 收藏</h2><div class="story">在減法章通關後打開寶箱，就會得到碎片。碎片的稀有度和你破關的星等有關，星等越高越容易開到好碎片！</div>
  ${keys.length?`<div style="margin-top:10px">${keys.map(k=>{const s=sh[k],i=+k.split('|')[1];return`<div class="row"><i>🧩</i><span>第 ${i} 層 ${SUBL[i-1]||''}</span><em style="color:${RC[s.best]}">最高【${RAR[s.best]}】×${s.n}</em></div>`}).join('')}</div><p style="font-size:13px;color:var(--dim)">一共收集了 ${total} 片碎片。</p>`:'<p>還沒有碎片，先去減法章破關開寶箱吧！</p>'}`)}
-function openShop(){openBox(`<h2>🏪 商店（籌備中）</h2><div class="story">小屋的商店正在準備中！之後可以用冒險賺到的錢買：<br>🧪 甦醒藥、⏳ 時間沙漏等冒險小道具<br>🎖 稱號、頭像框、勇者造型<br>敬請期待！先去打倒頭目、多存一點吧～</div>`)}
+/* ===== 商店：用勇者幣買東西（目前上架：改名卡）===== */
+const SHOP=Object.assign({rename:2000},HC.shop||{});
+const GOODS=[{id:'rename',icon:'🪪',name:'改名卡',desc:'名字是勇者的招牌，要想清楚再換喔！（用一次消耗一張）'}];
+function openShop(msg){
+ const o=RK(),coin=o.coin||0,it=o.items||{};
+ openBox(`<h2>🏪 小屋商店</h2><div class="story">🪙 你的勇者幣：<b style="font-size:22px;color:#b86e00">${coin.toLocaleString()}</b><br><small>打完每一場戰鬥都會得到勇者幣，答對越多、模式越難、星星越多賺越多！</small></div>
+ ${msg?`<div style="margin:8px 0;font-weight:900;color:${msg[0]==='✅'?'#2e7d32':'#c0392b'}">${msg}</div>`:''}
+ ${GOODS.map(g=>{const p=SHOP[g.id],have=it[g.id]||0;return`<div class="row" style="align-items:center"><i style="font-size:30px;margin-right:8px">${g.icon}</i><span><b>${g.name}</b>　<small>擁有 ${have} 張</small><br><small style="color:var(--dim)">${g.desc}</small></span><em style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="sbtn" ${coin<p?'disabled style="opacity:.5"':''} onclick="buy('${g.id}')">🪙 ${p} 購買</button>${have?`<button class="sbtn" style="background:#2e9e5b;box-shadow:0 4px 0 #1d6b3c" onclick="useItem('${g.id}')">使用</button>`:''}</em></div>`}).join('')}
+ <p style="font-size:13px;color:var(--dim);margin-top:10px">更多商品（冒險小道具、稱號、造型）陸續上架中～</p>`)}
+function buy(id){const o=RK(),p=SHOP[id];if((o.coin||0)<p){openShop(`❌ 勇者幣不夠，還差 ${p-(o.coin||0)} 枚，再去打幾場吧！`);return}
+ o.coin-=p;o.items=o.items||{};o.items[id]=(o.items[id]||0)+1;saveRK(o);render();
+ if(id==='rename')useItem('rename');else openShop('✅ 購買成功！')}
+function useItem(id){if(id==='rename'){if(!((RK().items||{}).rename>0)){openShop('❌ 沒有改名卡');return}askName(false)}}
 /* ===== 設定（玩法、教師版、重置）===== */
 const TFILES=[['第一章 加法','addition-teacher.html'],['第二章 減法','subtraction-teacher.html'],['第三章 乘法','multiplication-teacher.html'],['第四章 除法','division-teacher.html'],['第五章 四則','four-ops-teacher.html'],['第六章 負數','negative-teacher.html']];
 function openTeacherList(){
  openBox(`<h2>👩‍🏫 教師測試版</h2><div class="story">獨立存檔，不會影響學生資料。可以解鎖全部關卡、一鍵通關、設定等級、自動答題、直接過關、直接進入任意關卡。</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">${TFILES.map(([n,f])=>`<button class="big endb" style="margin:0;font-size:16px;padding:12px 4px" onclick="openTeacher('${f}')">${n}</button>`).join('')}</div>`)}
 function openTeacher(f){$('#mm').classList.remove('on');$('#fr').src=encodeURI(f);$('#stage').classList.add('on')}
 function askTeacher(){if(TEACHER_PASS){const v=prompt('請輸入教師密碼');if(v!==TEACHER_PASS){if(v!==null)alert('密碼不對喔');return}}openTeacherList()}
-function openHow(){openBox(`<h2>📜 玩法說明</h2><div class="story">1. 點桌上的<b>冒險地圖</b>（或下面的 🗺️），選一塊島嶼進入那一章，不用照順序。<br>2. 每章都有三種玩法：🎓教學（小老師教你，最高 ⭐2）、⚔️挑戰（最高 ⭐4）、🔥地獄（最高 ⭐5），進度共用。<br>3. 前五章都通關，牆上的勳章架會亮滿，煉成🛡️平衡之神盾，第六章「負數」正式開啟。<br>4. 不知道去哪？看勇者頭上的對話泡泡，或打開 📜今日任務。<br>5. 通關一個大關，遊戲地圖左上角會開啟「♾️無限練習」；整章通關後，冒險地圖也會出現「♾️章節無限模式」。<br>6. 答錯的題目會收集到 📝錯題練習，同一題答對 ${GRAD} 次就畢業。<br>7. 點勇者可以看自己的能力、稱號和冒險紀錄，也可以改名。</div>`)}
-function openGear(){openBox(`<h2>⚙️ 設定</h2><div style="display:grid;gap:10px"><button class="sbtn" onclick="openHow()">📜 玩法說明</button><button class="sbtn" onclick="askName(false)">✏️ 修改勇者名字</button><button class="sbtn" style="background:#4b5563;box-shadow:0 4px 0 #2b3038" onclick="askTeacher()">👩‍🏫 教師測試版</button></div>`)}
+function openHow(){openBox(`<h2>📜 玩法說明</h2><div class="story">1. 點桌上的<b>冒險地圖</b>（或下面的 🗺️），選一塊島嶼進入那一章，不用照順序。<br>2. 在章節地圖點一個關卡後，再選擇 🎓教學（小老師教你，最高 ⭐2）、⚔️挑戰（最高 ⭐4）或 🔥地獄（最高 ⭐5），三種進度共用。<br>3. 前五章都通關，牆上的勳章架會亮滿，煉成🛡️平衡之神盾，第六章「負數」正式開啟。<br>4. 不知道去哪？看勇者頭上的對話泡泡，或打開 📜今日任務。<br>5. 通關一個大關，遊戲地圖左上角會開啟「♾️無限練習」；整章通關後，冒險地圖也會出現「♾️章節無限模式」。<br>6. 答錯的題目會收集到 📝錯題練習，同一題答對 ${GRAD} 次就畢業。<br>7. 點勇者可以看自己的能力、稱號和冒險紀錄，想改名字要到 🏪商店 買「改名卡」。<br>8. 每場戰鬥結束會得到 🪙勇者幣：答對越多、關卡越後面、模式越難、星星越多，賺得越多；第一次通關還有大獎！</div>`)}
+function openGear(){openBox(`<h2>⚙️ 設定</h2><div style="display:grid;gap:10px"><button class="sbtn" onclick="openHow()">📜 玩法說明</button><button class="sbtn" style="background:#4b5563;box-shadow:0 4px 0 #2b3038" onclick="askTeacher()">👩‍🏫 教師測試版</button></div>`)}
 /* ===== 綁定 ===== */
-$('#heroWrap').onclick=heroCard;$('#lvPill').onclick=heroCard;$('#bubble').onclick=()=>{const r=recommend();if(tipI%TIPS.length===0&&r)openMap();else heroCard()};
+$('#heroWrap').onclick=heroCard;$('#lvPill').onclick=heroCard;$('#bubble').onclick=()=>{const r=recommend();if(tipI%TIPS.length===1&&r)openMap();else heroCard()};
 $('#mapTableG').onclick=openMap;$('#medals').onclick=heroCard;
-$('#icDaily').onclick=openDaily;$('#icMap').onclick=openMap;$('#icBoard').onclick=openBoard;$('#icWrong').onclick=openWrong;$('#icBag').onclick=openBag;$('#icShop').onclick=openShop;
-$('#gear').onclick=openGear;$('#scorePill').onclick=openBoard;
+$('#icDaily').onclick=openDaily;$('#icMap').onclick=openMap;$('#icBoard').onclick=openBoard;$('#icWrong').onclick=openWrong;$('#icBag').onclick=openBag;$('#icShop').onclick=()=>openShop();
+$('#gear').onclick=openGear;$('#coinPill').onclick=()=>openShop();$('#scorePill').onclick=openBoard;
 $('#mm').onclick=e=>{if(e.target.id==='mm')shut()};
 render();
 if(!RK().name)askName(true);
