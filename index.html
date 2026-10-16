@@ -1,53 +1,156 @@
 <!DOCTYPE html>
 <html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>整數勇者傳說｜勇者總部</title>
+<title>整數勇者傳說｜勇者小屋</title>
 <style>
-:root{--bg:#0e1020;--card:#1a1d36;--ink:#f4efe0;--dim:#a9a6bf;--gold:#ffd24a}
-*{box-sizing:border-box}html,body{margin:0;height:100%}
-body{background:radial-gradient(ellipse at 50% 30%,#242858,var(--bg) 70%);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;overflow-x:hidden}
-header{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 14px;background:#0008;border-bottom:2px solid #ffd24a55;flex-wrap:wrap}
-header b{font-size:15px}.pill{background:#ffffff14;border-radius:99px;padding:5px 12px;font-size:14px}
+:root{--ink:#4a2b10;--gold:#ffd24a;--wood:#c98a4b;--card:#fff8ea;--dim:#8a6a4a}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden}
+body{background:#7cc36a;color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;-webkit-tap-highlight-color:transparent}
 button{font:inherit;cursor:pointer;color:inherit}
-.hbtn{background:#ffffff14;border:1px solid #ffffff30;border-radius:10px;padding:5px 10px}
-main{max-width:1100px;margin:0 auto;padding:12px;display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:14px}
-@media(max-width:820px){main{grid-template-columns:1fr}}
-#daily{grid-column:1/-1;width:100%;border:0;border-radius:16px;padding:12px;font-size:18px;font-weight:800;color:#3a2600;background:linear-gradient(90deg,#ffd24a,#ff9f43);box-shadow:0 4px 0 #b36b00}
-#daily small{display:block;font-weight:500;font-size:13px}
-#daily.done{background:linear-gradient(90deg,#6bd68f,#3fae6a);color:#032;box-shadow:0 4px 0 #1d6b3b}
-#mapbox{position:relative}svg{width:100%;height:auto;max-height:78vh;display:block}
-.wedge{cursor:pointer;transition:filter .15s}.wedge:hover{filter:brightness(1.25)}
-.wedge text{pointer-events:none;text-anchor:middle;fill:#fff;paint-order:stroke;stroke:#0007;stroke-width:4px}
-.rec{animation:pulse 1.6s ease-in-out infinite}@keyframes pulse{50%{opacity:.55}}
-.side{background:var(--card);border-radius:16px;padding:12px;border:1px solid #ffffff1a;align-self:start}
-.side h3{margin:0 0 8px;font-size:16px}.row{display:flex;justify-content:space-between;gap:6px;padding:6px 0;border-bottom:1px dashed #ffffff22;font-size:14px}
-.row i{font-style:normal;font-size:20px;width:26px;text-align:center}.row span{flex:1}.row em{font-style:normal;color:var(--gold);font-weight:700}
-#gate{display:block;margin:6px auto 0;border:2px dashed #8a7bd1;background:#241a44;border-radius:12px;padding:8px 16px;font-weight:700}
-.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:50;padding:14px}.modal.on{display:flex}
-.box{background:#1b1e3b;border:3px solid var(--gold);border-radius:20px;padding:18px;max-width:560px;width:100%;max-height:92vh;overflow:auto}
-.box h2{margin:0 0 6px}.story{background:#0006;border-radius:12px;padding:10px;font-size:14px;line-height:1.7;color:#dcd8ee}
-.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.hell{background:linear-gradient(#7a1fd1,#3b0d7a)}.endb{display:block;width:100%;margin-top:10px;background:linear-gradient(#0e9bb8,#0b5f78)}.wrongb{width:100%;margin-top:10px;background:#7c4a03;border:2px solid #ffd24a;border-radius:12px;padding:8px;font-weight:800;font-size:16px}#who{cursor:pointer}.inp{width:100%;font-size:22px;padding:8px;border-radius:10px;border:2px solid #ffd24a;background:#0b0d22;color:#fff;margin-top:8px}.qbox{font-size:34px;font-weight:900;text-align:center;margin:10px 0;color:#ffd24a;word-break:break-all}
-.big{border:0;border-radius:16px;padding:14px 8px;text-align:center;font-weight:800;font-size:17px;color:#fff}
-.big span{display:block;font-size:42px}.big small{display:block;font-weight:400;font-size:12px;margin-top:4px;line-height:1.5}
-.teach{background:linear-gradient(#35b46a,#1f7f49)}.chal{background:linear-gradient(#e8573d,#a82a1a)}
-.x{float:right;background:none;border:0;font-size:22px}
+/* ===== 小屋場景 ===== */
+#room{position:fixed;inset:0;overflow:hidden}
+#room svg.bg{position:absolute;inset:0;width:100%;height:100%}
+#room svg .tap{cursor:pointer}
+#room svg .tap:hover{filter:brightness(1.12)}
+#heroG{animation:breathe 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes breathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.02,.975)}}
+.flame{transform-box:fill-box;transform-origin:50% 100%;animation:flame 1s ease-in-out infinite alternate}
+.flame.f2{animation-duration:.8s}.flame.f3{animation-duration:1.25s}
+@keyframes flame{0%{transform:scaleY(1) rotate(-4deg)}100%{transform:scaleY(1.2) rotate(4deg)}}
+.md-on{filter:drop-shadow(0 0 8px #ffd24a)}
+#bubbleBox{font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif}
+#bubble{background:#fff;border:4px solid #a0632b;border-radius:18px;padding:10px 14px;font-weight:800;font-size:22px;line-height:1.45;color:#4a2b10;box-shadow:0 4px 0 #0002;cursor:pointer;animation:pop .4s ease-out;display:inline-block}
+@keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+/* 頂端資訊 */
+#top{position:fixed;left:0;right:0;top:0;z-index:20;display:flex;gap:8px;align-items:center;padding:8px 10px;flex-wrap:wrap}
+.pill{background:#fff8eaee;border:3px solid #a0632b;border-radius:99px;padding:3px 12px;font-weight:900;font-size:15px;box-shadow:0 3px 0 #0003}
+#top .sp{margin-left:auto}
+#gear{width:42px;height:42px;border-radius:50%;padding:0;font-size:20px}
+/* 底部圖示 */
+#dock{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:clamp(6px,2vw,22px);padding:0 8px 12px;flex-wrap:nowrap}
+.ic{position:relative;width:clamp(66px,13vw,118px);display:flex;flex-direction:column;align-items:center;border:0;background:none;padding:0}
+.ic .c{width:clamp(58px,11vw,100px);height:clamp(58px,11vw,100px);border-radius:50%;background:radial-gradient(circle at 50% 35%,#fffdf5,#fbe6c2);border:5px solid #c47a33;box-shadow:0 5px 0 #8a4f1c,0 8px 14px #0004;display:flex;align-items:center;justify-content:center;font-size:clamp(28px,5.4vw,50px);transition:transform .12s}
+.ic:active .c,.ic:hover .c{transform:translateY(-4px) scale(1.04)}
+.ic .l{margin-top:-14px;background:#fff8ea;border:3px solid #c47a33;border-radius:12px;padding:1px 8px;font-weight:900;font-size:clamp(12px,2.2vw,17px);white-space:nowrap;box-shadow:0 3px 0 #8a4f1c}
+.ic .n{position:absolute;right:4px;top:0;min-width:24px;height:24px;border-radius:99px;background:#e8461a;color:#fff;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid #fff;padding:0 5px}
+.ic .n.ok{background:#2e9e5b}
+.ic.soon{opacity:.75}
+/* 視窗 */
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:50;padding:12px}.modal.on{display:flex}
+.box{background:var(--card);border:5px solid #c47a33;border-radius:22px;padding:16px 18px;max-width:560px;width:100%;max-height:92vh;overflow:auto;box-shadow:0 8px 0 #8a4f1c,0 14px 30px #0006;color:var(--ink)}
+.box.wide{max-width:720px}
+.box h2{margin:0 0 8px;color:#8a4f1c}.story{background:#f3e3c5;border-radius:12px;padding:10px 12px;font-size:15px;line-height:1.7;color:#5a3a1a}
+.x{float:right;background:#c47a33;color:#fff;border:0;border-radius:50%;width:34px;height:34px;font-size:18px;line-height:34px;padding:0}
+.row{display:flex;justify-content:space-between;gap:6px;padding:7px 2px;border-bottom:2px dashed #e2c99c;font-size:15px}
+.row i{font-style:normal;font-size:20px;width:28px;text-align:center}.row span{flex:1}.row em{font-style:normal;color:#b8650b;font-weight:900}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.big{border:0;border-radius:16px;padding:14px 8px;text-align:center;font-weight:800;font-size:17px;color:#fff;box-shadow:0 4px 0 #0003}
+.big span{display:block;font-size:40px}.big small{display:block;font-weight:500;font-size:12px;margin-top:4px;line-height:1.5}
+.teach{background:linear-gradient(#35b46a,#1f7f49)}.chal{background:linear-gradient(#e8573d,#a82a1a)}.hell{background:linear-gradient(#7a1fd1,#3b0d7a)}
+.endb{display:block;width:100%;margin-top:10px;background:linear-gradient(#0e9bb8,#0b5f78)}
+.inp{width:100%;font-size:22px;padding:8px;border-radius:10px;border:3px solid #c47a33;background:#fff;color:#333;margin-top:8px}
+.qbox{font-size:34px;font-weight:900;text-align:center;margin:10px 0;color:#b8650b;word-break:break-all}
+.two{display:grid;gap:10px;margin-top:10px}
+.sbtn{border:0;border-radius:12px;padding:10px 14px;font-weight:900;font-size:16px;color:#fff;background:#c47a33;box-shadow:0 4px 0 #8a4f1c}
+/* 五角形地圖 */
+#mapSvg{width:100%;height:auto;max-height:66vh;display:block}
+.wedge{cursor:pointer;transition:filter .15s}.wedge:hover{filter:brightness(1.2)}
+.wedge text{pointer-events:none;text-anchor:middle;fill:#fff;paint-order:stroke;stroke:#0008;stroke-width:4px}
+.rec{animation:pulse 1.6s ease-in-out infinite}@keyframes pulse{50%{opacity:.5}}
+/* 勇者資料 */
+.hero-card{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center}
+@media(max-width:520px){.hero-card{grid-template-columns:1fr}.hero-card img{margin:0 auto}}
+.hero-card img{height:170px;filter:drop-shadow(0 4px 3px #0004)}
+.bar{height:16px;background:#e2c99c;border-radius:99px;overflow:hidden;border:2px solid #a0632b}.bar i{display:block;height:100%;background:linear-gradient(90deg,#6bd68f,#2e9e5b)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}.stats div{background:#f3e3c5;border-radius:10px;padding:6px;text-align:center;font-weight:900}.stats small{display:block;font-weight:600;color:var(--dim);font-size:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.chips span{background:#f3e3c5;border-radius:99px;padding:3px 10px;font-size:13px;font-weight:800}
+/* 遊戲畫面 */
 #stage{position:fixed;inset:0;background:#000;z-index:80;display:none}#stage.on{display:block}
 #stage iframe{width:100%;height:100%;border:0;display:block}
-#home{position:absolute;left:6px;bottom:6px;z-index:5;opacity:.85;background:#000a;border:2px solid var(--gold);border-radius:99px;padding:6px 12px;font-size:14px}
+#home{position:absolute;left:6px;bottom:6px;z-index:5;opacity:.88;background:#fff8ea;color:#4a2b10;border:3px solid #c47a33;border-radius:99px;padding:5px 12px;font-size:14px;font-weight:900}
+@media (max-height:520px){#dock .ic .c{width:52px;height:52px;font-size:26px;border-width:4px}.ic .l{font-size:12px;margin-top:-10px}}
 </style></head><body>
-<header><b>⚔️ 整數勇者傳說</b><span class="pill" id="who">👤 訪客</span><span class="pill" id="total">🏆 總積分 0</span>
-<span><button class="hbtn" id="how">📜 玩法</button> <button class="hbtn" id="reset">⚙️ 重置</button></span></header>
-<main>
-<button id="daily"></button>
-<div id="mapbox"><svg id="map" viewBox="0 0 600 640"></svg><button id="gate">🌀 深淵之門（第六章・負數）</button></div>
-<aside class="side"><h3>📊 光榮榜（各章累積最高分）</h3><div id="board"></div>
-<button class="wrongb" id="wrongbtn">📝 錯題練習</button>
-<p style="font-size:12px;color:var(--dim);margin:10px 0 0">每答對一題：100 × 連擊數 ÷ 作答秒數。三種難度共用進度，難度只決定星等上限。</p></aside>
-</main>
+<div id="room">
+ <svg class="bg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+  <defs>
+   <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9773b"/><stop offset="1" stop-color="#9c5f2a"/></linearGradient>
+   <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd3ff"/><stop offset="1" stop-color="#e2f6ff"/></linearGradient>
+   <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2c27e"/><stop offset="1" stop-color="#d9a35b"/></linearGradient>
+   <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9bd47a"/><stop offset="1" stop-color="#5fae4a"/></linearGradient>
+   <pattern id="planks" width="120" height="900" patternUnits="userSpaceOnUse"><rect width="120" height="900" fill="url(#wall)"/><rect x="0" width="6" height="900" fill="#8a5222" opacity=".55"/><circle cx="60" cy="140" r="4" fill="#7a4518" opacity=".5"/><circle cx="34" cy="420" r="3" fill="#7a4518" opacity=".45"/></pattern>
+   <radialGradient id="gold" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#fff7c2"/><stop offset=".6" stop-color="#f5b301"/><stop offset="1" stop-color="#a86a00"/></radialGradient>
+   <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffb347" stop-opacity=".55"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>
+  </defs>
+  <!-- 牆 -->
+  <rect width="1600" height="620" fill="url(#planks)"/>
+  <rect y="600" width="1600" height="24" fill="#7a4518"/>
+  <!-- 窗戶 -->
+  <g transform="translate(560,90)">
+   <rect x="-14" y="-14" width="508" height="318" rx="16" fill="#7a4518"/>
+   <rect width="480" height="290" rx="8" fill="url(#sky)"/>
+   <circle cx="380" cy="70" r="38" fill="#ffe66d"/>
+   <path d="M0 230 L90 140 L170 210 L260 110 L360 200 L420 150 L480 210 L480 290 L0 290Z" fill="#7cc36a"/>
+   <path d="M0 260 L120 200 L240 250 L360 210 L480 250 L480 290 L0 290Z" fill="#5fae4a"/>
+   <g fill="#fff" opacity=".9"><ellipse cx="110" cy="70" rx="46" ry="18"/><ellipse cx="150" cy="60" rx="34" ry="20"/><ellipse cx="250" cy="100" rx="40" ry="14"/></g>
+   <rect x="234" width="12" height="290" fill="#7a4518"/><rect y="139" width="480" height="12" fill="#7a4518"/>
+   <rect x="-26" y="290" width="532" height="22" rx="6" fill="#8a5222"/>
+  </g>
+  <!-- 小屋招牌 -->
+  <g transform="translate(800,40)"><rect x="-130" y="-6" width="260" height="56" rx="12" fill="#f6e2b8" stroke="#7a4518" stroke-width="6"/><text x="0" y="33" text-anchor="middle" font-size="30" font-weight="900" fill="#7a4518" font-family="Noto Sans TC,Microsoft JhengHei,sans-serif">⚔️ 勇者小屋</text></g>
+  <!-- 勳章架 -->
+  <g transform="translate(1100,215)"><rect x="-10" y="58" width="430" height="20" rx="6" fill="#7a4518"/><rect x="10" y="78" width="14" height="40" fill="#6a3a12"/><rect x="386" y="78" width="14" height="40" fill="#6a3a12"/><g id="medals" class="tap"></g></g>
+  <!-- 武器架 -->
+  <g transform="translate(1340,345)">
+   <rect x="-10" y="0" width="200" height="16" rx="5" fill="#7a4518"/>
+   <g transform="translate(55,20) rotate(8)"><rect x="-5" y="0" width="10" height="190" fill="#cfd8e3" stroke="#6b7a8c" stroke-width="3"/><rect x="-26" y="-6" width="52" height="12" rx="4" fill="#a0632b"/><rect x="-5" y="-40" width="10" height="36" rx="3" fill="#7a4518"/><circle cy="-44" r="9" fill="#ffd24a"/></g>
+   <g transform="translate(140,110)"><path d="M-48 -60 L48 -60 L44 10 Q0 70 -44 10Z" fill="#c0392b" stroke="#7a1f14" stroke-width="7"/><path d="M0 -50 L0 50 M-36 -12 L36 -12" stroke="#ffd24a" stroke-width="10"/></g>
+  </g>
+  <!-- 壁爐 -->
+  <g transform="translate(60,250)">
+   <ellipse cx="130" cy="300" rx="190" ry="120" fill="url(#glow)"/>
+   <rect x="0" y="40" width="260" height="330" rx="14" fill="#8c8f99" stroke="#5f626b" stroke-width="8"/>
+   <g fill="#a4a8b3" stroke="#6f737c" stroke-width="3"><rect x="14" y="54" width="70" height="36" rx="6"/><rect x="94" y="54" width="70" height="36" rx="6"/><rect x="174" y="54" width="70" height="36" rx="6"/></g>
+   <rect x="-20" y="20" width="300" height="34" rx="8" fill="#7a4518"/>
+   <path d="M40 370 L40 200 Q130 120 220 200 L220 370Z" fill="#2b1a10"/>
+   <rect x="70" y="340" width="120" height="18" rx="9" fill="#6a3a12"/><rect x="80" y="326" width="100" height="16" rx="8" fill="#7a4518"/>
+   <g transform="translate(130,334)"><path class="flame" d="M-34 0 Q-40 -60 -8 -96 Q-4 -60 18 -70 Q30 -30 34 0Z" fill="#ff7a1a"/><path class="flame f2" d="M-20 0 Q-24 -44 -2 -70 Q6 -40 22 -46 Q26 -18 20 0Z" fill="#ffb347"/><path class="flame f3" d="M-10 0 Q-12 -26 0 -42 Q10 -24 10 0Z" fill="#fff3a0"/></g>
+  </g>
+  <!-- 地板 -->
+  <rect y="624" width="1600" height="190" fill="url(#floor)"/>
+  <g stroke="#c48a45" stroke-width="4" opacity=".7"><line x1="0" y1="670" x2="1600" y2="670"/><line x1="0" y1="720" x2="1600" y2="720"/><line x1="0" y1="770" x2="1600" y2="770"/></g>
+  <g stroke="#c48a45" stroke-width="3" opacity=".5"><line x1="220" y1="624" x2="220" y2="670"/><line x1="620" y1="670" x2="620" y2="720"/><line x1="1020" y1="624" x2="1020" y2="670"/><line x1="1380" y1="720" x2="1380" y2="770"/><line x1="420" y1="720" x2="420" y2="770"/></g>
+  <!-- 地毯 -->
+  <ellipse cx="800" cy="690" rx="270" ry="52" fill="#c0392b" opacity=".9"/><ellipse cx="800" cy="690" rx="230" ry="40" fill="none" stroke="#ffd24a" stroke-width="6" stroke-dasharray="14 10"/>
+  <!-- 前緣與草地 -->
+  <!-- 地圖桌 -->
+  <g id="mapTableG" class="tap" transform="translate(1210,600)"><ellipse cx="0" cy="118" rx="120" ry="14" fill="#0003"/><rect x="-110" y="20" width="220" height="24" rx="10" fill="#a0632b"/><rect x="-92" y="42" width="18" height="74" fill="#7a4518"/><rect x="74" y="42" width="18" height="74" fill="#7a4518"/>
+   <g transform="translate(0,10) rotate(-6)"><rect x="-78" y="-30" width="156" height="50" rx="8" fill="#f6e2b8" stroke="#a0632b" stroke-width="5"/><path d="M-54 -6 L-16 -18 L18 4 L54 -14" stroke="#c0392b" stroke-width="5" fill="none" stroke-dasharray="8 6"/><circle cx="54" cy="-14" r="7" fill="#c0392b"/></g>
+   <rect x="-86" y="-86" width="172" height="40" rx="20" fill="#fff8ea" stroke="#a0632b" stroke-width="4"/><text x="0" y="-58" text-anchor="middle" font-size="24" font-weight="900" fill="#4a2b10" font-family="Noto Sans TC,Microsoft JhengHei,sans-serif">🗺️ 冒險地圖</text></g>
+  <!-- 勇者 -->
+  <g id="heroWrap" class="tap" transform="translate(800,700)"><g id="heroG"><image href="./assets/hero/hero-idle.png" x="-170" y="-360" width="340" height="360" preserveAspectRatio="xMidYMax meet"/></g>
+   <rect id="tagBg" x="-90" y="10" width="180" height="40" rx="20" fill="#fff8ea" stroke="#a0632b" stroke-width="4"/><text id="heroTagT" x="0" y="38" text-anchor="middle" font-size="22" font-weight="900" fill="#4a2b10" font-family="Noto Sans TC,Microsoft JhengHei,sans-serif"></text></g>
+  <foreignObject id="bubbleBox" x="920" y="300" width="420" height="160"><div xmlns="http://www.w3.org/1999/xhtml" id="bubble"></div></foreignObject>
+  <rect y="800" width="1600" height="26" fill="#a0632b"/>
+  <rect y="826" width="1600" height="74" fill="url(#grass)"/>
+  <g fill="#7a4518"><rect x="150" y="826" width="34" height="74"/><rect x="560" y="826" width="34" height="74"/><rect x="1006" y="826" width="34" height="74"/><rect x="1416" y="826" width="34" height="74"/></g>
+ </svg>
+</div>
+<div id="top"><span class="pill" id="lvPill">🧙 Lv.1</span><span class="pill" id="scorePill">🏆 0</span><span class="sp"></span><button class="pill" id="gear" title="設定">⚙️</button></div>
+<div id="dock">
+ <button class="ic" id="icDaily"><span class="c">📜</span><span class="l">今日任務</span><span class="n" id="nDaily">!</span></button>
+ <button class="ic" id="icMap"><span class="c">🗺️</span><span class="l">冒險地圖</span></button>
+ <button class="ic" id="icBoard"><span class="c">🏆</span><span class="l">光榮榜</span></button>
+ <button class="ic" id="icWrong"><span class="c">📝</span><span class="l">錯題練習</span><span class="n" id="nWrong" style="display:none"></span></button>
+ <button class="ic" id="icBag"><span class="c">🎒</span><span class="l">收藏</span></button>
+ <button class="ic soon" id="icShop"><span class="c">🏪</span><span class="l">商店</span></button>
+</div>
 <div class="modal" id="mm"><div class="box" id="mbox"></div></div>
-<div id="stage"><button id="home">🏠 回勇者總部</button><iframe id="fr" allow="fullscreen; autoplay"></iframe></div>
+<div id="stage"><button id="home">🏠 回勇者小屋</button><iframe id="fr" allow="fullscreen; autoplay"></iframe></div>
+<script src="./hero-config.js"></script>
 <script>
-/* ===== 設定區：版本更新時只要改這裡的檔名 ===== */
+/* 教師版密碼與名字長度等，都可在修改器 hero-editor.html 調整 */
+const HC=window.HERO_CONFIG||{};const TEACHER_PASS=HC.teacherPass!=null?String(HC.teacherPass):'1234';const GRAD=HC.graduate||3,NAMEMAX=HC.nameMax||12;
+const BASE=Object.assign({hp:1000,atk:50,def:20,spd:100},HC.base||{}),GROW=Object.assign({hp:100,atk:5,def:3,spd:1},HC.growth||{}),EXPA=(HC.exp&&HC.exp.a)||50,EXPB=(HC.exp&&HC.exp.b)||50;
 const G=[
 {id:'add',file:'addition.html',sym:'＋',name:'加法',ch:'第一章',t:'聖光覺醒',c:['#f6c343','#c98a10'],pk:'additionHero',mk:'additionHero_mode',lk:'additionHero_local_save_v1',total:18,
  story:'魔物侵襲世界，初出茅廬的勇者為了世界和平踏上征途。每解開一題加法，就是把新的力量「加」到自己身上，盾牌與長劍越變越大，最後擊敗為禍一方的遠古法老王。',medal:'加法奧義勳章',eff:'最大心數 +1'},
@@ -66,40 +169,66 @@ const J=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){retur
 const q=new URLSearchParams(location.search);
 function stu(){const a=J('keyagent_active_student',null);return q.get('student')||(a&&a.studentNumber)||null}
 function who(){const a=J('keyagent_active_student',null);return (a&&a.name)||(stu()?'學號 '+stu():'訪客')}
-const HK=()=>'intHeroHub_v1:'+(stu()||'guest');
-const hub=()=>Object.assign({best:{},seen:{},daily:{}},J(HK(),{}));
-const saveHub=h=>{try{localStorage.setItem(HK(),JSON.stringify(h))}catch(e){}};
 function blob(g){const s=stu();return Object.assign({},J(g.lk||'_',{}),s?J('keyagent_save_v1:'+s,{}):{})}
-/* 讀進度：回傳 {teach:通關數, chal:通關數} */
+/* 讀進度：all＝通關小關數；stars＝各關最高星 */
 function prog(g){
- const b=blob(g),cnt=o=>o?Object.values(o).filter(x=>x&&x.stars>0).length:0;
- if(g.neg){const n=b.negativeHero||{};let P=n.P??J('negHero_P',[]);if(!Array.isArray(P))P=[];const c=P.filter(x=>x>0).length;return{teach:c,chal:c,all:c}}
+ const b=blob(g),cnt=o=>o?Object.values(o).filter(x=>x&&x.stars>0).length:0,sum=o=>o?Object.values(o).reduce((a,x)=>a+((x&&x.stars)||0),0):0;
+ if(g.neg){const n=b.negativeHero||{};let P=n.P??J('negHero_P',[]);if(!Array.isArray(P))P=[];const c=P.filter(x=>x>0).length;return{all:c,stars:P.reduce((a,x)=>a+(x||0),0)}}
  let get=k=>{const v=b[k];return v?(v.stages||v.layers):null};
  let t=get(g.pk+'Teach'),c=get(g.pk);
  if(g.layers&&!stu()){for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/perfect-deduct-egypt-progress/.test(k)){const v=J(k,{});if(/teach/i.test(k))t=t||v;else c=c||v}}}
- return{teach:cnt(t),chal:cnt(c),all:Math.max(cnt(t),cnt(c))}}
+ return{all:Math.max(cnt(t),cnt(c)),stars:Math.max(sum(t),sum(c))}}
 const RK=()=>J('heroRPG_v1:'+(stu()||'guest'),{});
-const lvOf=()=>{let l=1,r=RK().exp||0;while(r>=50+l*l*50){r-=50+l*l*50;l++}return l};
+const saveRK=o=>{try{localStorage.setItem('heroRPG_v1:'+(stu()||'guest'),JSON.stringify(o))}catch(e){}};
+function lvInfo(){let l=1,r=RK().exp||0;const need=l=>EXPA+l*l*EXPB;while(r>=need(l)){r-=need(l);l++}return{level:l,cur:r,need:need(l)}}
 const chScore=id=>Object.values((RK().best||{})[id]||{}).reduce((a,b)=>a+b,0);
 const medal=g=>prog(g).all>=g.total;
 const shield=()=>G.slice(0,5).every(medal);
 const today=()=>new Date().toISOString().slice(0,10);
-const dailyGame=()=>{const d=today();let n=0;for(const ch of d)n=(n*31+ch.charCodeAt(0))%997;return G[n%G.length]};
-function recommend(){return G.find(g=>!medal(g))||null}
-/* ===== 畫面 ===== */
+const dailyGame=()=>{const d=today();let n=0;for(const ch of d)n=(n*31+ch.charCodeAt(0))%997;const pool=G.filter(g=>!g.neg||shield());return pool[n%pool.length]};
+const dailyDone=()=>{const dg=dailyGame(),lp=RK().lastPlay||{};return lp[dg.id+'|quick']===today()||lp[dg.id+'|hell']===today()};
+function recommend(){return G.find(g=>!g.neg&&!medal(g))||(shield()?G[5]:null)}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function openBox(html,wide){$('#mbox').className='box'+(wide?' wide':'');$('#mbox').innerHTML='<button class="x" onclick="shut()">✕</button>'+html;$('#mm').classList.add('on')}
+const shut=()=>{$('#mm').classList.remove('on');render()};
+/* ===== 小屋畫面 ===== */
+const TIPS=[()=>{const r=recommend();return r?`下一站：${r.ch}・${r.name}！點桌上的冒險地圖出發吧！`:'所有章節都通關了！要不要去地獄模式挑戰 5 顆星？'},
+ ()=>dailyDone()?'今天的特訓完成了，好厲害！':`今日特訓是「${dailyGame().name}」，完成會很有成就感喔！`,
+ ()=>{const n=(RK().wrong||[]).length;return n?`錯題本裡有 ${n} 題在等你，答對 ${GRAD} 次就畢業！`:'錯題本是空的，太棒了！'},
+ ()=>'點我可以看我的能力和冒險紀錄喔！',()=>'答得又快又準，會打出「⚡神速一擊」！'];
+let tipI=0;
 function render(){
- $('#who').textContent='🧙 '+(RK().name||who())+' ✏️';$('#wrongbtn').textContent='📝 錯題練習（'+((RK().wrong||[]).length)+'）';const h=hub();
- $('#total').textContent='🧙 Lv.'+lvOf()+'　🏆 總積分 '+G.reduce((a,g)=>a+chScore(g.id),0);
- const dg=dailyGame(),lp=RK().lastPlay||{},done=lp[dg.id+'|quick']===today()||lp[dg.id+'|hell']===today();
- $('#daily').className=done?'done':'';
- $('#daily').innerHTML=(done?'✅ 今日任務完成！':'🌟 今日特訓：'+dg.name+'大挑戰 🌟')+'<small>'+(done?'明天再來領新任務':'點我直接開始（挑戰模式）')+'</small>';
+ const li=lvInfo(),nm=RK().name||who();
+ $('#lvPill').textContent=`🧙 ${nm}　Lv.${li.level}`;
+ $('#scorePill').textContent='🏆 '+G.reduce((a,g)=>a+chScore(g.id),0).toLocaleString();
+ const tag=`${nm}　Lv.${li.level}`;$('#heroTagT').textContent=tag;const tw=Math.max(150,[...tag].reduce((a,c)=>a+(c.charCodeAt(0)>255?24:13),0)+36);$('#tagBg').setAttribute('x',-tw/2);$('#tagBg').setAttribute('width',tw);
+ $('#medals').innerHTML=G.map((g,i)=>{const on=medal(g),x=40+i*70;return`<g class="${on?'md-on':''}"><title>${g.medal}${on?'（已獲得）':'（還沒獲得）'}</title><circle cx="${x}" cy="28" r="27" fill="${on?'url(#gold)':'#d8c7a8'}" stroke="${on?'#a86a00':'#7a4a1d'}" stroke-width="5"/><text x="${x}" y="38" text-anchor="middle" font-size="28" font-weight="900" fill="${on?'#5a3200':'#9b8a70'}">${g.sym}</text></g>`}).join('');
+ const dd=dailyDone();$('#nDaily').textContent=dd?'✔':'!';$('#nDaily').className='n'+(dd?' ok':'');
+ const w=(RK().wrong||[]).length;$('#nWrong').style.display=w?'flex':'none';$('#nWrong').textContent=w;
+ $('#bubble').textContent=TIPS[tipI%TIPS.length]();
+}
+setInterval(()=>{if($('#mm').classList.contains('on')||$('#stage').classList.contains('on'))return;tipI++;const b=$('#bubble');b.style.animation='none';void b.offsetWidth;b.style.animation='';b.textContent=TIPS[tipI%TIPS.length]()},7000);
+/* ===== 勇者詳細資料 ===== */
+function heroCard(){
+ const o=RK(),li=lvInfo(),L=li.level,st=k=>Math.round(BASE[k]+GROW[k]*(L-1)),nm=o.name||who();
+ const total=G.reduce((a,g)=>a+chScore(g.id),0),medals=G.filter(medal).length,shards=Object.values(o.shards||{}).reduce((a,s)=>a+s.n,0);
+ const titles=[];if(medals>=1)titles.push('🏅 見習勇者');if(medals>=3)titles.push('🛡 熟練勇者');if(shield())titles.push('✨ 平衡守護者');if(total>=10000)titles.push('🔥 萬分高手');if(!(o.wrong||[]).length&&Object.keys(o.best||{}).length)titles.push('📝 零錯題');
+ openBox(`<h2>🧙 勇者資料</h2><div class="hero-card"><img src="./assets/hero/hero-idle.png" alt="">
+ <div><div style="font-size:24px;font-weight:900">${esc(nm)} <button class="sbtn" style="font-size:13px;padding:4px 10px" onclick="askName(false)">✏️ 改名</button></div>
+ <div style="margin:6px 0 2px;font-weight:900">Lv.${L}　<small style="color:var(--dim)">經驗 ${li.cur} / ${li.need}</small></div><div class="bar"><i style="width:${Math.round(li.cur/li.need*100)}%"></i></div>
+ <div class="stats"><div>❤️ ${st('hp')}<small>血量</small></div><div>⚔️ ${st('atk')}<small>攻擊</small></div><div>🛡️ ${st('def')}<small>防禦</small></div></div>
+ <div class="chips">${titles.length?titles.map(t=>`<span>${t}</span>`).join(''):'<span>還沒有稱號：通關一章就能得到第一個！</span>'}</div></div></div>
+ <h3 style="margin:14px 0 4px;color:#8a4f1c">📖 冒險紀錄</h3>
+ ${G.map(g=>{const p=prog(g),lock=g.neg&&!shield();return`<div class="row"><i>${g.sym}</i><span>${g.ch}・${g.name}${lock?'　🔒':''}</span><em>${medal(g)?'🏅 ':''}${p.all}/${g.total} 關　⭐${p.stars}　🏆${chScore(g.id)||0}</em></div>`}).join('')}
+ <div class="chips" style="margin-top:10px"><span>🏆 總積分 ${total.toLocaleString()}</span><span>🏅 勳章 ${medals}/6</span><span>🧩 碎片 ${shards}</span><span>📝 錯題 ${(o.wrong||[]).length}</span></div>`)}
+/* ===== 冒險地圖（五角形）===== */
+function openMap(){
  const six=shield(),n=six?6:5,list=G.slice(0,n),cx=300,cy=300,R=285,rec=recommend();
  let s='<defs>'+G.map(g=>`<linearGradient id="gr-${g.id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${g.c[0]}"/><stop offset="1" stop-color="${g.c[1]}"/></linearGradient>`).join('')+'</defs>';
  const step=360/n;
  list.forEach((g,i)=>{
   const a0=(-90-step/2+i*step)*Math.PI/180,a1=a0+step*Math.PI/180,am=(a0+a1)/2,p=(a,r)=>[cx+r*Math.cos(a),cy+r*Math.sin(a)];
   const A=p(a0,R),B=p(a1,R),M=p(am,R*.60),pr=prog(g),isRec=rec&&rec.id===g.id;
-  const sealed=g.neg&&!six;
   s+=`<g class="wedge" data-id="${g.id}"><polygon points="${cx},${cy} ${A} ${B}" fill="url(#gr-${g.id})" stroke="#ffe9a0" stroke-width="3" stroke-linejoin="round"/>
   ${isRec?`<polygon class="rec" points="${cx},${cy} ${A} ${B}" fill="none" stroke="#fff" stroke-width="6"/>`:''}
   <text x="${M[0]}" y="${M[1]-6}" font-size="${n==5?78:70}" font-weight="900">${g.sym}</text>
@@ -107,74 +236,99 @@ function render(){
   <text x="${M[0]}" y="${M[1]+48}" font-size="18">${medal(g)?'🏅':'🎯'} ${pr.all}/${g.total}　🏆 ${chScore(g.id)||'—'}</text></g>`;
  });
  s+=`<circle cx="${cx}" cy="${cy}" r="46" fill="#14163a" stroke="#ffd24a" stroke-width="4"/><text x="${cx}" y="${cy+14}" text-anchor="middle" font-size="40">${six?'🛡️':'🔒'}</text>`;
- $('#map').innerHTML=s;
+ openBox(`<h2>🗺️ 冒險地圖</h2><div style="font-size:13px;color:var(--dim)">點一塊島嶼進入那一章。閃動白框＝建議你下一站去的地方。</div><svg id="mapSvg" viewBox="0 0 600 600">${s}</svg>
+ ${six?'':'<button class="sbtn" style="display:block;margin:6px auto 0;background:#5e2bb5;box-shadow:0 4px 0 #2a1650" onclick="open(\'neg\')">🌀 深淵之門（第六章・負數）</button>'}`,true);
  document.querySelectorAll('.wedge').forEach(e=>e.onclick=()=>open(e.dataset.id));
- $('#gate').style.display=six?'none':'block';
- $('#board').innerHTML=G.map(g=>{const b=chScore(g.id);return`<div class="row"><i>${g.sym}</i><span>${g.name}</span><em>${b?b+'分':'—'}</em></div>`}).join('');
 }
 function open(id){
- const g=G.find(x=>x.id===id),h=hub(),pr=prog(g);
+ const g=G.find(x=>x.id===id),pr=prog(g);
  if(g.neg&&!shield()&&!confirm('平衡之神盾還沒煉成（前五章的勳章還沒集滿）。\n要不要直接闖進深淵？'))return;
- $('#mbox').innerHTML=`<button class="x" onclick="shut()">✕</button><h2>${g.sym} ${g.ch}｜${g.t}</h2>
+ openBox(`<h2>${g.sym} ${g.ch}｜${g.t}</h2>
  <div class="story">${g.story}<br>🏅 <b>${g.medal}</b>：${g.eff}　（已通 ${pr.all}/${g.total} 關）</div>
- <div class="three"><button class="big teach" onclick="go('${id}','teach')"><span>🎓</span>教學<small>有提示・不限時<br>最高 ⭐2</small></button>
+ <div class="three"><button class="big teach" onclick="go('${id}','teach')"><span>🎓</span>教學<small>小老師教你・有提示<br>最高 ⭐2</small></button>
  <button class="big chal" onclick="go('${id}','quick')"><span>⚔️</span>挑戰<small>計時・連擊加分<br>最高 ⭐4</small></button>
  <button class="big hell" onclick="go('${id}','hell')"><span>🔥</span>地獄<small>限時更短・怪更兇<br>最高 ⭐5</small></button></div>
- ${(!g.neg&&medal(g))?`<button class="big endb" onclick="go('${id}','quick',1)">♾️ 章節無限模式<small>整章隨機怪物，打倒才結算經驗</small></button>`:(g.neg?'':'<div style="text-align:center;color:var(--dim);font-size:13px;margin-top:10px">🔒 通關整章後開啟「♾️ 章節無限模式」；各大關的無限練習在遊戲地圖左上角</div>')}`;
- $('#mm').classList.add('on');
+ ${(!g.neg&&medal(g))?`<button class="big endb" onclick="go('${id}','quick',1)">♾️ 章節無限模式<small>整章隨機怪物，打倒才結算經驗</small></button>`:(g.neg?'':'<div style="text-align:center;color:var(--dim);font-size:13px;margin-top:10px">🔒 通關整章後開啟「♾️ 章節無限模式」；各大關的無限練習在遊戲地圖左上角</div>')}`);
 }
-const shut=()=>$('#mm').classList.remove('on');
-/* ===== 開遊戲：模式直接用網址帶進去，遊戲不會再問一次 ===== */
+/* ===== 開遊戲：模式直接用網址帶進去 ===== */
 function go(id,m,endless){
- const g=G.find(x=>x.id===id);shut();
+ const g=G.find(x=>x.id===id);$('#mm').classList.remove('on');
  const qs='?mode='+m+(endless?'&endless=chapter':'')+(stu()?'&student='+encodeURIComponent(stu()):'');
  $('#fr').src=encodeURI(g.file)+qs;$('#stage').classList.add('on')}
+$('#fr').addEventListener('load',()=>{try{$('#fr').focus();$('#fr').contentWindow.focus()}catch(e){}});
 $('#home').onclick=()=>{$('#fr').src='about:blank';$('#stage').classList.remove('on');render()};
-$('#daily').onclick=()=>open0(dailyGame().id);
-function open0(id){go(id,'quick')}
-$('#gate').onclick=()=>open('neg');
+/* ===== 今日任務 ===== */
+function openDaily(){
+ const dg=dailyGame(),dd=dailyDone();
+ openBox(`<h2>📜 今日任務</h2><div class="story">每天一個特訓章節，用<b>挑戰</b>或<b>地獄</b>模式打完一關就完成！</div>
+ <div style="text-align:center;margin:14px 0"><div style="font-size:60px">${dg.sym}</div><div style="font-size:22px;font-weight:900">${dg.ch}・${dg.name}大挑戰</div>
+ <div style="margin-top:6px;font-weight:900;color:${dd?'#2e9e5b':'#b8650b'}">${dd?'✅ 今天已完成，明天再來領新任務！':'⏳ 還沒完成'}</div></div>
+ ${dd?'':`<button class="big chal" style="width:100%" onclick="go('${dg.id}','quick')"><span>⚔️</span>現在就出發（挑戰模式）</button>`}`)}
+/* ===== 光榮榜 ===== */
+function openBoard(){
+ const rows=G.map(g=>({g,s:chScore(g.id)})),total=rows.reduce((a,r)=>a+r.s,0),mx=Math.max(1,...rows.map(r=>r.s));
+ openBox(`<h2>🏆 光榮榜</h2><div class="story">各章累積最高分。每答對一題：100 × 連擊數 ÷ 作答秒數 × 難度倍率（教學×1、挑戰×2、地獄×3），情境題答對再 ×5。</div>
+ ${rows.map(r=>`<div class="row"><i>${r.g.sym}</i><span>${r.g.ch}・${r.g.name}<div class="bar" style="height:10px;margin-top:4px"><i style="width:${Math.round(r.s/mx*100)}%;background:linear-gradient(90deg,#ffd24a,#ff9f1c)"></i></div></span><em>${r.s?r.s.toLocaleString()+' 分':'—'}</em></div>`).join('')}
+ <div style="text-align:right;font-weight:900;margin-top:8px;font-size:18px">總積分 ${total.toLocaleString()}</div>`)}
 /* ===== 角色名稱 ===== */
-const saveRK=o=>{try{localStorage.setItem('heroRPG_v1:'+(stu()||'guest'),JSON.stringify(o))}catch(e){}};
 const BAD=['幹你','幹他','幹妳','幹您','幹死','幹林','幹拎','肏','操你','操他','操妳','靠北','靠腰','他媽','他馬','你媽','妳媽','媽的','媽逼','機掰','雞掰','雞巴','雞雞','屌','屄','妓','婊','賤人','賤貨','淫','色情','做愛','強姦','白痴','白癡','智障','腦殘','死全家','去死','傻逼','傻屄','殺人','希特勒','fuck','shit','bitch','asshole','jackass','dick','pussy','cunt','nigg','fag','whore','slut','sex','porn','rape','penis','vagina','cnm','nmsl','wcnm','hitler','nazi'];
 function nameCheck(n){
- n=n.trim();if(!n)return'請輸入名字';if([...n].length>12)return'名字最多 12 個字';
- if(!/^[\u4e00-\u9fffA-Za-z0-9_\- ·]+$/.test(n))return'名字只能用中文、英文、數字';
+ n=n.trim();if(!n)return'請輸入名字';if([...n].length>NAMEMAX)return'名字最多 '+NAMEMAX+' 個字';
+ if(!/^[一-鿿A-Za-z0-9_\- ·]+$/.test(n))return'名字只能用中文、英文、數字';
  const t=n.toLowerCase().replace(/[\s_\-·]/g,'').replace(/0/g,'o').replace(/1/g,'i').replace(/3/g,'e').replace(/4/g,'a').replace(/5/g,'s').replace(/7/g,'t');
  const raw=n.toLowerCase().replace(/[\s_\-·]/g,'');
  if(BAD.some(w=>t.includes(w)||raw.includes(w)))return'這個名字不太適合，請換一個溫柔一點的名字喔';
  return''}
 function askName(first){
  const cur=RK().name||'';
- $('#mbox').innerHTML=`${first?'':'<button class="x" onclick="shut()">✕</button>'}<h2>${first?'🧙 歡迎，勇者！':'✏️ 修改名字'}</h2><div class="story">請為你的勇者取一個名字。<br>中文、英文都可以，最多 12 個字。</div><input class="inp" id="nm" maxlength="12" value="${cur.replace(/"/g,'')}" placeholder="例如：小明 / Leo"><div id="nerr" style="color:#ff8a8a;min-height:24px;margin-top:6px"></div><div class="two" style="grid-template-columns:1fr"><button class="big teach" id="nok">✅ 確定</button></div>`;
- $('#mm').classList.add('on');$('#nm').focus();
- const ok=()=>{const v=$('#nm').value,e=nameCheck(v);if(e){$('#nerr').textContent=e;return}const o=RK();o.name=v.trim();saveRK(o);shut();render()};
+ openBox(`<h2>${first?'🧙 歡迎來到勇者小屋！':'✏️ 修改名字'}</h2><div class="story">請為你的勇者取一個名字。<br>中文、英文都可以，最多 ${NAMEMAX} 個字。</div><input class="inp" id="nm" maxlength="${NAMEMAX}" value="${esc(cur)}" placeholder="例如：小明 / Leo"><div id="nerr" style="color:#c0392b;min-height:24px;margin-top:6px;font-weight:800"></div><div class="two"><button class="big teach" id="nok">✅ 確定</button></div>`);
+ if(first)$('#mbox .x').style.display='none';
+ $('#nm').focus();
+ const ok=()=>{const v=$('#nm').value,e=nameCheck(v);if(e){$('#nerr').textContent=e;return}const o=RK();o.name=v.trim();saveRK(o);shut()};
  $('#nok').onclick=ok;$('#nm').onkeydown=e=>{if(e.key==='Enter')ok()}}
-$('#who').onclick=()=>askName(false);
-/* ===== 錯題練習：同一題答對 3 次就不再出現 ===== */
+/* ===== 錯題練習：同一題答對數次就不再出現 ===== */
 const CHN={add:'加法',sub:'減法',mul:'乘法',div:'除法',ops:'四則'};
 function openWrong(){
  const o=RK(),list=o.wrong||[];
- if(!list.length){$('#mbox').innerHTML=`<button class="x" onclick="shut()">✕</button><h2>📝 錯題練習</h2><div class="story">目前沒有錯題，太棒了！🎉<br>在遊戲裡答錯的題目會自動收集到這裡。</div>`;$('#mm').classList.add('on');return}
+ if(!list.length){openBox(`<h2>📝 錯題練習</h2><div class="story">目前沒有錯題，太棒了！🎉<br>在遊戲裡答錯的題目會自動收集到這裡。</div>`);return}
  const it=list[Math.floor(Math.random()*list.length)];
- $('#mbox').innerHTML=`<button class="x" onclick="shut();render()">✕</button><h2>📝 錯題練習（剩 ${list.length} 題）</h2>
- <div class="story">${CHN[it.c]||''}章的題目｜這題已答對 ${it.n}/3 次（答對 3 次就會畢業）</div><div class="qbox">${it.q.replace(/</g,'&lt;')}</div>
+ openBox(`<h2>📝 錯題練習（剩 ${list.length} 題）</h2>
+ <div class="story">${CHN[it.c]||''}章的題目｜這題已答對 ${it.n}/${GRAD} 次（答對 ${GRAD} 次就會畢業）</div><div class="qbox">${esc(it.q)}</div>
  <input class="inp" id="wa" inputmode="numeric" placeholder="${it.r!=null?'商':'答案'}">${it.r!=null?'<input class="inp" id="wr" inputmode="numeric" placeholder="餘數（沒有就填 0）">':''}
  <div id="wfb" style="min-height:30px;margin-top:8px;font-weight:800"></div>
- <div class="two" style="grid-template-columns:1fr 1fr"><button class="big teach" id="wsub">✅ 送出</button><button class="big hell" id="wnext" style="display:none">▶ 下一題</button></div>`;
- $('#mm').classList.add('on');$('#wa').focus();
+ <div class="two" style="grid-template-columns:1fr 1fr"><button class="big teach" id="wsub">✅ 送出</button><button class="big hell" id="wnext" style="display:none">▶ 下一題</button></div>`);
+ $('#wa').focus();
  const chk=()=>{
   const a=Number($('#wa').value.trim()),okA=$('#wa').value.trim()!==''&&a===Number(it.a);
   const okR=it.r==null?true:(Number(($('#wr').value||'0').trim())===Number(it.r));
   const ok=okA&&okR,o2=RK();const t=(o2.wrong||[]).find(x=>x.k===it.k);
-  if(t){if(ok){t.n++;if(t.n>=3)o2.wrong=o2.wrong.filter(x=>x.k!==it.k)}saveRK(o2)}
-  $('#wfb').innerHTML=ok?(t&&t.n>=3?'🎓 答對！這題畢業了，不會再出現':'✅ 答對了！'):`❌ 正確答案是 <b>${it.a}${it.r!=null?' … 餘 '+it.r:''}</b>，再記一次`;
+  if(t){if(ok){t.n++;if(t.n>=GRAD)o2.wrong=o2.wrong.filter(x=>x.k!==it.k)}saveRK(o2)}
+  $('#wfb').innerHTML=ok?(t&&t.n>=GRAD?'🎓 答對！這題畢業了，不會再出現':'✅ 答對了！'):`❌ 正確答案是 <b>${it.a}${it.r!=null?' … 餘 '+it.r:''}</b>，再記一次`;
   $('#wsub').style.display='none';$('#wnext').style.display='block';$('#wnext').focus()};
  $('#wsub').onclick=chk;$('#wnext').onclick=openWrong;
  $('#wa').onkeydown=e=>{if(e.key==='Enter'){if($('#wr'))$('#wr').focus();else chk()}};
  if($('#wr'))$('#wr').onkeydown=e=>{if(e.key==='Enter')chk()}}
-$('#wrongbtn').onclick=openWrong;
-$('#how').onclick=()=>{$('#mbox').innerHTML=`<button class="x" onclick="shut()">✕</button><h2>📜 玩法說明</h2><div class="story">1. 點任何一個三角形島嶼，就能進入那一章，不用照順序。<br>2. 每章都有兩種玩法：🎓教學（最高 ⭐2）、⚔️挑戰（最高 ⭐4）、🔥地獄（最高 ⭐5），進度共用。<br>3. 把前五章通關，會煉成🛡️平衡之神盾，五角形變六角形，第六章「負數」正式開啟。<br>4. 閃動的白框是建議你接下來去的章節。<br>5. 想不知道去哪？按上方「今日特訓」。<br>6. 通關一個大關，遊戲地圖左上角會開啟「♾️無限練習」；整章通關後，這裡也會出現「♾️章節無限模式」。<br>7. 答錯的題目會收集到「📝錯題練習」，同一題答對 3 次就畢業。<br>8. 點上方名字可以改名。</div>`;$('#mm').classList.add('on')};
-$('#reset').onclick=()=>{if(confirm('只會清除「總部」的最高分紀錄，不會動到遊戲本身的進度。確定嗎？')){localStorage.removeItem(HK());render()}};
+/* ===== 收藏（減法寶箱開出來的碎片）===== */
+const RAR=['','普通','優良','精緻','傳說','神話'],RC=['','#7b8591','#2e9e5b','#2f80ed','#8e3fd1','#e67e00'];
+const SUBL=['石刻心臟','卡諾卜罐','滑輪組裝圖','埃及曆法與星座圖','迷宮路線指引','雕像對應圖','黃金聖甲蟲','象形文字組合','密碼鎖','反射鏡使用法'];
+function openBag(){const sh=RK().shards||{};const keys=Object.keys(sh).filter(k=>k.startsWith('sub|')).sort((a,b)=>+a.split('|')[1]-+b.split('|')[1]);
+ const total=keys.reduce((a,k)=>a+sh[k].n,0);
+ openBox(`<h2>🎒 收藏</h2><div class="story">在減法章通關後打開寶箱，就會得到碎片。碎片的稀有度和你破關的星等有關，星等越高越容易開到好碎片！</div>
+ ${keys.length?`<div style="margin-top:10px">${keys.map(k=>{const s=sh[k],i=+k.split('|')[1];return`<div class="row"><i>🧩</i><span>第 ${i} 層 ${SUBL[i-1]||''}</span><em style="color:${RC[s.best]}">最高【${RAR[s.best]}】×${s.n}</em></div>`}).join('')}</div><p style="font-size:13px;color:var(--dim)">一共收集了 ${total} 片碎片。</p>`:'<p>還沒有碎片，先去減法章破關開寶箱吧！</p>'}`)}
+function openShop(){openBox(`<h2>🏪 商店（籌備中）</h2><div class="story">小屋的商店正在準備中！之後可以用冒險賺到的錢買：<br>🧪 甦醒藥、⏳ 時間沙漏等冒險小道具<br>🎖 稱號、頭像框、勇者造型<br>敬請期待！先去打倒頭目、多存一點吧～</div>`)}
+/* ===== 設定（玩法、教師版、重置）===== */
+const TFILES=[['第一章 加法','addition-teacher.html'],['第二章 減法','subtraction-teacher.html'],['第三章 乘法','multiplication-teacher.html'],['第四章 除法','division-teacher.html'],['第五章 四則','four-ops-teacher.html'],['第六章 負數','negative-teacher.html']];
+function openTeacherList(){
+ openBox(`<h2>👩‍🏫 教師測試版</h2><div class="story">獨立存檔，不會影響學生資料。可以解鎖全部關卡、一鍵通關、設定等級、自動答題、直接過關、直接進入任意關卡。</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">${TFILES.map(([n,f])=>`<button class="big endb" style="margin:0;font-size:16px;padding:12px 4px" onclick="openTeacher('${f}')">${n}</button>`).join('')}</div>`)}
+function openTeacher(f){$('#mm').classList.remove('on');$('#fr').src=encodeURI(f);$('#stage').classList.add('on')}
+function askTeacher(){if(TEACHER_PASS){const v=prompt('請輸入教師密碼');if(v!==TEACHER_PASS){if(v!==null)alert('密碼不對喔');return}}openTeacherList()}
+function openHow(){openBox(`<h2>📜 玩法說明</h2><div class="story">1. 點桌上的<b>冒險地圖</b>（或下面的 🗺️），選一塊島嶼進入那一章，不用照順序。<br>2. 每章都有三種玩法：🎓教學（小老師教你，最高 ⭐2）、⚔️挑戰（最高 ⭐4）、🔥地獄（最高 ⭐5），進度共用。<br>3. 前五章都通關，牆上的勳章架會亮滿，煉成🛡️平衡之神盾，第六章「負數」正式開啟。<br>4. 不知道去哪？看勇者頭上的對話泡泡，或打開 📜今日任務。<br>5. 通關一個大關，遊戲地圖左上角會開啟「♾️無限練習」；整章通關後，冒險地圖也會出現「♾️章節無限模式」。<br>6. 答錯的題目會收集到 📝錯題練習，同一題答對 ${GRAD} 次就畢業。<br>7. 點勇者可以看自己的能力、稱號和冒險紀錄，也可以改名。</div>`)}
+function openGear(){openBox(`<h2>⚙️ 設定</h2><div style="display:grid;gap:10px"><button class="sbtn" onclick="openHow()">📜 玩法說明</button><button class="sbtn" onclick="askName(false)">✏️ 修改勇者名字</button><button class="sbtn" style="background:#4b5563;box-shadow:0 4px 0 #2b3038" onclick="askTeacher()">👩‍🏫 教師測試版</button></div>`)}
+/* ===== 綁定 ===== */
+$('#heroWrap').onclick=heroCard;$('#lvPill').onclick=heroCard;$('#bubble').onclick=()=>{const r=recommend();if(tipI%TIPS.length===0&&r)openMap();else heroCard()};
+$('#mapTableG').onclick=openMap;$('#medals').onclick=heroCard;
+$('#icDaily').onclick=openDaily;$('#icMap').onclick=openMap;$('#icBoard').onclick=openBoard;$('#icWrong').onclick=openWrong;$('#icBag').onclick=openBag;$('#icShop').onclick=openShop;
+$('#gear').onclick=openGear;$('#scorePill').onclick=openBoard;
 $('#mm').onclick=e=>{if(e.target.id==='mm')shut()};
 render();
 if(!RK().name)askName(true);
