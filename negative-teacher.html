@@ -349,7 +349,7 @@ function start(stg){bgm(stg.ch+1);
  S={stg,mode,lv,pa,ma,md,pdef:bs.def,kH,pmax:ts.hp,mmax,mc:0,pc:0,correct:0,total:0,xp:0,coins:0,lock:true,over:false,in:''};
  S.php=S.pmax;S.mhp=mmax;
  if(stg.snap){const g=stg.snap;S.php=Math.max(1,Math.round(S.pmax*g.fp));S.mhp=Math.max(1,Math.round(mmax*g.fm));S.pc=g.pc||0;S.mc=g.mc||0;S.correct=g.correct||0;S.total=g.total||0;S.xp=g.xp||0;S.coins=g.coins||0;delete eInfo(stg.id).snap;sv('E',E)}
- /* 作答時間固定（困難／地獄 25 秒、第 5 章 40 秒），不受裝備速度影響 */const T=(mode==='teach'?0:(stg.ch===4?40:25));S.T=T;
+ /* 作答時間固定（困難／地獄 25 秒、第 5 章 40 秒），不受裝備速度影響 */const T=(mode==='teach'?0:((window.HERO_TIME&&window.HERO_TIME(stg))||(stg.ch===4?40:25)));S.T=T;
  $('home').hidden=true;document.body.classList.add('ingame');$('menu').hidden=true;$('battle').hidden=false;$('res').hidden=true;
  const NF=window.NEG_FORMS||{};$('stage').style.backgroundImage=`url(${(NF.bg||{})[stg.id]||BG_DIR+'bg-'+(stg.ch+1)+'-'+(sj+1)+'.jpg'})`;
  $('boss').src=(NF.boss||{})[stg.id]||`${BOSS_DIR}boss-${stg.ch+1}-${sj+1}.png`;$('bname').textContent=`${boss}　Lv.${lv}${kA>1.05?'　🛡裝備同步':''}`;

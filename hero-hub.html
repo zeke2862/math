@@ -47,10 +47,11 @@ main{max-width:1100px;margin:0 auto;padding:12px;display:grid;grid-template-colu
 </main>
 <div class="modal" id="mm"><div class="box" id="mbox"></div></div>
 <div id="stage"><button id="home">🏠 回勇者總部</button><iframe id="fr" allow="fullscreen; autoplay"></iframe></div>
+<script src="./hero-config.js"></script>
 <script>
 /* ===== 設定區：版本更新時只要改這裡的檔名 ===== */
 /* 教師版密碼（只是擋一般同學，不是真正的安全機制；想改就改這裡，留空＝不用密碼）*/
-const TEACHER_PASS='1234';
+const HC=window.HERO_CONFIG||{};const TEACHER_PASS=HC.teacherPass!=null?String(HC.teacherPass):'1234';const GRAD=HC.graduate||3,NAMEMAX=HC.nameMax||12;
 const G=[
 {id:'add',file:'addition.html',sym:'＋',name:'加法',ch:'第一章',t:'聖光覺醒',c:['#f6c343','#c98a10'],pk:'additionHero',mk:'additionHero_mode',lk:'additionHero_local_save_v1',total:18,
  story:'魔物侵襲世界，初出茅廬的勇者為了世界和平踏上征途。每解開一題加法，就是把新的力量「加」到自己身上，盾牌與長劍越變越大，最後擊敗為禍一方的遠古法老王。',medal:'加法奧義勳章',eff:'最大心數 +1'},
@@ -140,7 +141,7 @@ $('#gate').onclick=()=>open('neg');
 const saveRK=o=>{try{localStorage.setItem('heroRPG_v1:'+(stu()||'guest'),JSON.stringify(o))}catch(e){}};
 const BAD=['幹你','幹他','幹妳','幹您','幹死','幹林','幹拎','肏','操你','操他','操妳','靠北','靠腰','他媽','他馬','你媽','妳媽','媽的','媽逼','機掰','雞掰','雞巴','雞雞','屌','屄','妓','婊','賤人','賤貨','淫','色情','做愛','強姦','白痴','白癡','智障','腦殘','死全家','去死','傻逼','傻屄','殺人','希特勒','fuck','shit','bitch','asshole','jackass','dick','pussy','cunt','nigg','fag','whore','slut','sex','porn','rape','penis','vagina','cnm','nmsl','wcnm','hitler','nazi'];
 function nameCheck(n){
- n=n.trim();if(!n)return'請輸入名字';if([...n].length>12)return'名字最多 12 個字';
+ n=n.trim();if(!n)return'請輸入名字';if([...n].length>NAMEMAX)return'名字最多 '+NAMEMAX+' 個字';
  if(!/^[\u4e00-\u9fffA-Za-z0-9_\- ·]+$/.test(n))return'名字只能用中文、英文、數字';
  const t=n.toLowerCase().replace(/[\s_\-·]/g,'').replace(/0/g,'o').replace(/1/g,'i').replace(/3/g,'e').replace(/4/g,'a').replace(/5/g,'s').replace(/7/g,'t');
  const raw=n.toLowerCase().replace(/[\s_\-·]/g,'');
@@ -160,7 +161,7 @@ function openWrong(){
  if(!list.length){$('#mbox').innerHTML=`<button class="x" onclick="shut()">✕</button><h2>📝 錯題練習</h2><div class="story">目前沒有錯題，太棒了！🎉<br>在遊戲裡答錯的題目會自動收集到這裡。</div>`;$('#mm').classList.add('on');return}
  const it=list[Math.floor(Math.random()*list.length)];
  $('#mbox').innerHTML=`<button class="x" onclick="shut();render()">✕</button><h2>📝 錯題練習（剩 ${list.length} 題）</h2>
- <div class="story">${CHN[it.c]||''}章的題目｜這題已答對 ${it.n}/3 次（答對 3 次就會畢業）</div><div class="qbox">${it.q.replace(/</g,'&lt;')}</div>
+ <div class="story">${CHN[it.c]||''}章的題目｜這題已答對 ${it.n}/${GRAD} 次（答對 ${GRAD} 次就會畢業）</div><div class="qbox">${it.q.replace(/</g,'&lt;')}</div>
  <input class="inp" id="wa" inputmode="numeric" placeholder="${it.r!=null?'商':'答案'}">${it.r!=null?'<input class="inp" id="wr" inputmode="numeric" placeholder="餘數（沒有就填 0）">':''}
  <div id="wfb" style="min-height:30px;margin-top:8px;font-weight:800"></div>
  <div class="two" style="grid-template-columns:1fr 1fr"><button class="big teach" id="wsub">✅ 送出</button><button class="big hell" id="wnext" style="display:none">▶ 下一題</button></div>`;
@@ -169,8 +170,8 @@ function openWrong(){
   const a=Number($('#wa').value.trim()),okA=$('#wa').value.trim()!==''&&a===Number(it.a);
   const okR=it.r==null?true:(Number(($('#wr').value||'0').trim())===Number(it.r));
   const ok=okA&&okR,o2=RK();const t=(o2.wrong||[]).find(x=>x.k===it.k);
-  if(t){if(ok){t.n++;if(t.n>=3)o2.wrong=o2.wrong.filter(x=>x.k!==it.k)}saveRK(o2)}
-  $('#wfb').innerHTML=ok?(t&&t.n>=3?'🎓 答對！這題畢業了，不會再出現':'✅ 答對了！'):`❌ 正確答案是 <b>${it.a}${it.r!=null?' … 餘 '+it.r:''}</b>，再記一次`;
+  if(t){if(ok){t.n++;if(t.n>=GRAD)o2.wrong=o2.wrong.filter(x=>x.k!==it.k)}saveRK(o2)}
+  $('#wfb').innerHTML=ok?(t&&t.n>=GRAD?'🎓 答對！這題畢業了，不會再出現':'✅ 答對了！'):`❌ 正確答案是 <b>${it.a}${it.r!=null?' … 餘 '+it.r:''}</b>，再記一次`;
   $('#wsub').style.display='none';$('#wnext').style.display='block';$('#wnext').focus()};
  $('#wsub').onclick=chk;$('#wnext').onclick=openWrong;
  $('#wa').onkeydown=e=>{if(e.key==='Enter'){if($('#wr'))$('#wr').focus();else chk()}};
