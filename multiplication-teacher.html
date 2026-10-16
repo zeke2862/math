@@ -1706,7 +1706,7 @@
 
         if (isWin) {
             const stars = calculateStars();
-            title.innerText = "⭐ 關卡克里爾！⭐";
+            title.innerText = "⭐ 關卡通過！⭐";
             title.style.color = "#2ECC71";
             starsEl.style.fontSize = "";
             starsEl.innerHTML = "★".repeat(stars) + `<span style="color:#7F8C8D;">${"☆".repeat(5-stars)}</span>`;
@@ -1986,6 +1986,7 @@ document.addEventListener('keydown', function(e) {
 <script src="./hero-config.js"></script>
 <script src="./hero-scenarios.js"></script>
 <script src="./hero-core.js"></script>
+<script src="./hero-fx.js"></script>
 <script src="./hero-teacher.js"></script>
 </body>
 </html>

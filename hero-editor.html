@@ -42,7 +42,7 @@ table{border-collapse:collapse;width:100%;font-size:14px}td,th{border:1px solid 
 <div class="tab" id="t4"><section><h3>📝 情境題題庫</h3>
 章節 <select id="sch"></select> <button class="g" id="sadd">＋ 新增一題</button> <button class="d" id="sdef">↺ 本章還原預設題庫</button> <button id="stestall">🧪 全部試出題</button>
 <div class="hint" style="margin-top:6px">每一題是一個「模板」，數字每次隨機，學生背不了答案。<br>
-<b>題目</b>：用 {a}、{b}… 放數字。<b>數字設定</b>：用分號隔開，「a=5~30」＝隨機 5 到 30（可以是負數，例如 a=-20~-1），「c=a*b」＝用算的（除法題建議先決定商與除數，再算被除數，例如 b=2~9; q=3~12; a=b*q）。<br>
+<b>題目</b>：用 {a}、{b}… 放數字。<b>數字設定</b>：用分號隔開，「a=5~30」＝隨機 5 到 30（可以是負數，例如 a=-20~-1），「c=a*b」＝用算的（除法題建議先決定商與除數，再算被除數，例如 b=2~9; q=3~12; a=b*q）。<br><b>三個難度</b>：同一個數字用「|」分成三級，例如 <b>a=2~9|12~60|120~900</b>（第1級｜第2級｜第3級），只寫一個就三級共用。遊戲依關卡位置選等級（本章前段 1 級、中段 2 級、後段 3 級；教學模式降一級、地獄升一級；負數章教學 1、困難 2、地獄 3）。<br><b>配合關卡內容</b>：遊戲會看這一關考哪些符號，只挑「算式用到的符號都在這一關出現過」的題目，例如四則章「加減混合」關只會出加減的情境題。<br>
 <b>正確算式</b>：只能用數字設定裡的名字和 + - * / ( )，答案一定要是整數。<b>出題條件</b>（選填）：例如 a&gt;b，不符合就重抽。<b>錯誤選項</b>（選填）：教學版的干擾算式，分號隔開，沒填會自動產生。<br>
 改完記得到上面按「下載 hero-config.js」。</div></section>
 <div id="slist"></div></div>
@@ -56,7 +56,8 @@ const D={base:{hp:1000,atk:50,def:20,spd:100},growth:{hp:100,atk:5,def:3,spd:1},
  battle:{hits:10,comboStep:.2,dmgFactor:1.1,monAtk:2,monDef:.5,stageScale:.03,hellAtk:1.5,healFactor:.5,missStep:.2},
  xp:{correct:10,wrong:1},score:{base:100,minSec:3,mult:{teach:1,quick:2,hell:3}},
  stars:[1,.9,.8,.7,.6],caps:{teach:2,quick:4,hell:5},hellTime:.6,failHint:3,graduate:3,nameMax:12,teacherPass:'1234',
- time:{},teachTime:1.5,mapZoom:2,bonus:{on:true,every:5,scoreMult:5,bossMult:3},chest:{same:.9,d1:.09,d2:.007,d3:.003},scenarios:{}};
+ time:{},teachTime:1.5,mapZoom:2,bonus:{on:true,every:5,scoreMult:5,bossMult:3},chest:{same:.9,d1:.09,d2:.007,d3:.003},scenarios:{},
+ crit:{on:true,sec:5,score:1.5},sound:{bgm:true,sfx:true,vol:.5},music:{}};
 const F=[['勇者基本能力',[
 ['base.hp','血量','勇者 1 級的血量',10],['base.atk','攻擊','1 級攻擊力（越高，怪物越快倒）',1],['base.def','防禦','1 級防禦（扣掉怪物的傷害）',1],['base.spd','速度','目前只作為能力顯示',1]]],
 ['每升一級增加',[['growth.hp','血量','每級 +',1],['growth.atk','攻擊','每級 +',.5],['growth.def','防禦','每級 +',.5],['growth.spd','速度','每級 +',.5]]],
@@ -82,7 +83,10 @@ const F3=[['情境題 BONUS',[
 ['減法寶箱（開出碎片的機率）',[
 ['chest.same','同星等 %','開出「和破關星等相同」稀有度碎片的機率（預設 90）',.1,'pct'],['chest.d1','差一階 %','高一階＋低一階合計（預設 9；只有一邊時只算一半）',.1,'pct'],
 ['chest.d2','差兩階 %','合計（預設 0.7）',.1,'pct'],['chest.d3','差三階 %','合計（預設 0.3）',.1,'pct']]],
-['大地圖',[['mapZoom','地圖放大倍數','大地圖放大幾倍讓玩家滑動尋找（1＝不放大，預設 2）',.1]]]];
+['大地圖',[['mapZoom','地圖放大倍數','大地圖放大幾倍讓玩家滑動尋找（1＝不放大，預設 2）',.1]]],
+['神速一擊（答得快的獎勵）',[['crit.on','開啟神速一擊','1＝開啟，0＝關閉',1,'bool'],['crit.score','神速分數倍數','答得夠快時這一題的分數倍數（預設 1.5）',.1],['crit.sec','減法章神速秒數','減法章幾秒內答對算神速（其他章用各關「極速門檻」的 4 成）',.5]]],
+['音樂與音效',[['sound.bgm','預設開背景音樂','1＝開，0＝關（學生可以用左下角🔊自己切換）',1,'bool'],['sound.sfx','預設開音效','1＝開，0＝關',1,'bool'],['sound.vol','總音量','0～1（預設 0.5）',.05],
+['music.add','加法章音樂檔','空白＝用電腦即時合成的章節音樂；要換成 mp3 就填路徑，例如 assets/audio/add.mp3',0,'text'],['music.sub','減法章音樂檔','同上',0,'text'],['music.mul','乘法章音樂檔','同上',0,'text'],['music.div','除法章音樂檔','同上',0,'text'],['music.ops','四則章音樂檔','同上',0,'text']]]];
 const get=(o,p)=>p.split('.').reduce((a,k)=>a==null?a:a[k],o),set=(o,p,v)=>{const k=p.split('.');let a=o;k.slice(0,-1).forEach(x=>{if(a[x]==null)a[x]={};a=a[x]});a[k.pop()]=v};
 const clone=o=>JSON.parse(JSON.stringify(o));
 let cur=clone(D);
@@ -90,12 +94,12 @@ function merge(d,o){if(!o||typeof o!=='object')return d;for(const k in o){if(d[k
 const pctPath=p=>/^stars\.\d$/.test(p);
 function field([p,l,h,st,ty]){
  const raw=get(cur,p),dv=get(D,p),k=pctPath(p)||ty==='pct'?100:1;
- const val=ty==='bool'?(raw?1:0):ty==='text'?raw:+(raw*k).toFixed(4),def=ty==='bool'?(dv?1:0):ty==='text'?dv:+(dv*k).toFixed(4);
+ const val=ty==='bool'?(raw?1:0):ty==='text'?(raw||''):+(raw*k).toFixed(4),def=ty==='bool'?(dv?1:0):ty==='text'?(dv||''):+(dv*k).toFixed(4);
  return`<div class="f"><label>${l}</label><input data-p="${p}" data-ty="${ty||''}" type="${ty==='text'?'text':'number'}" step="${st||1}" value="${String(val).replace(/"/g,'&quot;')}" class="${raw!==dv?'ch':''}"><small>${h}<br>預設：${def===''?'（空）':def}</small></div>`}
 function bindInputs(root){root.querySelectorAll('input[data-p]').forEach(i=>{
  if(i.dataset.p==='teachTime'||i.dataset.p==='hellTime'){i.value=get(cur,i.dataset.p);i.className=get(cur,i.dataset.p)!==get(D,i.dataset.p)?'ch':''}
  i.oninput=()=>{const p=i.dataset.p,ty=i.dataset.ty;let v=ty==='text'?i.value:Number(i.value);if(ty!=='text'&&(i.value===''||isNaN(v)))return;
-  if(pctPath(p)||ty==='pct')v=v/100;if(ty==='bool')v=!!v;set(cur,p,v);i.className=v!==get(D,p)?'ch':'';preview()}})}
+  if(pctPath(p)||ty==='pct')v=v/100;if(ty==='bool')v=!!v;set(cur,p,v);if(ty==='text'&&v===''&&get(D,p)===undefined){const k=p.split('.');let o=cur;k.slice(0,-1).forEach(x=>o=o[x]);delete o[k.pop()];i.className=''}else i.className=v!==get(D,p)?'ch':'';preview()}})}
 function drawForms(){
  document.getElementById('form').innerHTML=F.map(([t,rows])=>`<section><h3>${t}</h3>${rows.map(field).join('')}</section>`).join('');
  document.getElementById('form3').innerHTML=F3.map(([t,rows])=>`<section><h3>${t}</h3>${rows.map(field).join('')}</section>`).join('')+'<section class="hint">情境題規則：教學模式先選算式、再輸入答案；挑戰／地獄模式直接輸入答案、沒有提示。答錯不扣血、不中斷連擊；答對連擊 +1，分數與頭目傷害依上面的倍數加成。減法章沒有頭目，只加分數與連擊。<br>寶箱機率不會顯示給學生看。</section>';
@@ -133,13 +137,13 @@ const SAFE=/^[A-Za-z0-9_\s+\-*/().<>=!&|%]*$/;
 function ev(expr,vars){expr=String(expr);if(!SAFE.test(expr)||/=>/.test(expr))throw new Error('含有不能用的符號：'+expr);const bad=(expr.match(/[A-Za-z_]\w*/g)||[]).filter(n=>!(n in vars));if(bad.length)throw new Error('沒有設定的名字：'+bad.join('、'));const k=Object.keys(vars);return Function(...k,'"use strict";return ('+expr+')')(...k.map(x=>vars[x]))}
 const neg=n=>n<0?'−'+Math.abs(n):String(n);
 const showExpr=(f,vars)=>f.replace(/[A-Za-z_]\w*/g,m=>m in vars?(vars[m]<0?'('+neg(vars[m])+')':String(vars[m])):m).replace(/\*/g,' × ').replace(/\//g,' ÷ ').replace(/\+/g,' + ').replace(/(^|[^(])-/g,(m,p)=>p+' − ').replace(/\(-/g,'(−').replace(/\s+/g,' ').trim();
-function gen(t){
- let lastErr='';
+function gen(t,L){
+ L=L||2;let lastErr='';
  for(let i=0;i<80;i++){
   const vars={};
   try{
    for(const part of String(t.v||'').split(/[;；]/)){if(!part.trim())continue;const m=part.trim().match(/^([A-Za-z_]\w*)\s*=\s*(.+)$/);if(!m)throw new Error('數字設定看不懂：「'+part.trim()+'」');
-    const r=m[2].trim().match(/^(-?\d+)\s*~\s*(-?\d+)$/);vars[m[1]]=r?(+r[1]+Math.floor(Math.random()*(+r[2]-+r[1]+1))):ev(m[2],vars)}
+    const lvs=m[2].split('|'),ex=lvs[Math.min(L,lvs.length)-1].trim();m[2]=ex;const r=ex.match(/^(-?\d+)\s*~\s*(-?\d+)$/);vars[m[1]]=r?(+r[1]+Math.floor(Math.random()*(+r[2]-+r[1]+1))):ev(m[2],vars)}
    if(!String(t.t||'').trim())throw new Error('題目是空的');if(!String(t.f||'').trim())throw new Error('正確算式是空的');
    if(t.ok&&!ev(t.ok,vars)){lastErr='出題條件很難成立（試了 80 次都不符合）';continue}
    const ans=ev(t.f,vars);if(!Number.isInteger(ans)){lastErr='答案不是整數（例如除不盡），請調整數字設定';continue}
@@ -149,6 +153,7 @@ function gen(t){
   }catch(e){return {ok:false,err:e.message}}
  }
  return {ok:false,err:lastErr}}
+const lvOK=(t,L)=>{const m=String(t.lv||'').match(/^(\d)\s*-\s*(\d)$/);if(m)return L>=+m[1]&&L<=+m[2];if(/^\d$/.test(String(t.lv||'')))return +t.lv===L;return true};
 const defList=k=>((window.HERO_SCENARIOS_DEFAULT||{})[k]||[]);
 const listOf=k=>Array.isArray((cur.scenarios||{})[k])?cur.scenarios[k]:clone(defList(k));
 function setList(k,l){cur.scenarios=cur.scenarios||{};if(JSON.stringify(l)===JSON.stringify(defList(k)))delete cur.scenarios[k];else cur.scenarios[k]=l}
@@ -163,6 +168,7 @@ function drawScen(){
  <div class="row"><label>正確算式</label><input data-k="f" value="${(t.f||'').replace(/"/g,'&quot;')}" placeholder="例如 a+b"></div>
  <div class="row"><label>單位</label><input data-k="u" value="${(t.u||'').replace(/"/g,'&quot;')}" placeholder="例如 元（可空白）"></div>
  <div class="row"><label>出題條件</label><input data-k="ok" value="${(t.ok||'').replace(/"/g,'&quot;')}" placeholder="選填，例如 a>b"></div>
+ <div class="row"><label>出現等級</label><input data-k="lv" value="${(t.lv||'').replace(/"/g,'&quot;')}" placeholder="選填：空白＝三級都出現；1-2＝只在第1、2級；3＝只在第3級"></div>
  <div class="row"><label>錯誤選項</label><input data-k="w" value="${(t.w||'').replace(/"/g,'&quot;')}" placeholder="選填，教學版干擾算式，例如 a-b; a*b"></div>
  <div class="out" id="out${i}"></div></div>`).join('');
  box.querySelectorAll('.sc').forEach(c=>{const i=+c.dataset.i;
@@ -172,12 +178,12 @@ function drawScen(){
  box.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{const i=+b.dataset.up;if(!i)return;const l=listOf(k);[l[i-1],l[i]]=[l[i],l[i-1]];setList(k,l);drawScen()});
 }
 function check(i,t,n=1){const o=document.getElementById('out'+i);let h='',good=true;
- for(let r=0;r<n;r++){const g=gen(t);if(!g.ok){h=`<span class="bad">⚠ ${g.err}</span>`;good=false;break}h+=`<span class="ok">✔</span> ${g.text.replace(/</g,'&lt;')}\n　算式：${g.expr}　答案：<b>${neg(g.ans)}</b> ${t.u||''}\n`}
+ for(let L=1;L<=3;L++){if(t.lv&&!lvOK(t,L)){h+=`<span class="hint">第 ${L} 級：不出現</span>\n`;continue}for(let r=0;r<Math.max(1,n-2);r++){const g=gen(t,L);if(!g.ok){h+=`<span class="bad">⚠ 第 ${L} 級：${g.err}</span>\n`;good=false;break}h+=`<span class="ok">第 ${L} 級 ✔</span> ${g.text.replace(/</g,'&lt;')}　→ 算式：${g.expr}　答案：<b>${neg(g.ans)}</b> ${t.u||''}\n`}}
  if(o)o.innerHTML=h;return good}
 sch.onchange=drawScen;
 document.getElementById('sadd').onclick=()=>{const k=sch.value,l=listOf(k);l.push({t:'',v:'a=1~20; b=1~20',f:'a+b',u:''});setList(k,l);drawScen();window.scrollTo(0,document.body.scrollHeight)};
 document.getElementById('sdef').onclick=()=>{if(confirm('把'+CHN[sch.value]+'章的情境題還原成預設題庫？（你新增或修改的題目會清掉）')){delete cur.scenarios[sch.value];drawScen()}};
-document.getElementById('stestall').onclick=()=>{const L=listOf(sch.value);let bad=0;L.forEach((t,i)=>{if(!check(i,t,2))bad++});msg(bad?`有 ${bad} 題需要修正`:'全部題目都能正常出題 ✔')};
+document.getElementById('stestall').onclick=()=>{const L=listOf(sch.value);let bad=0;L.forEach((t,i)=>{if(!check(i,t,3))bad++});msg(bad?`有 ${bad} 題需要修正`:'全部題目都能正常出題 ✔')};
 /* ===== 分頁、存檔 ===== */
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.id===b.dataset.tab));if(b.dataset.tab==='t4')drawScen()});
 const msg=t=>{document.getElementById('msg').textContent=t;setTimeout(()=>document.getElementById('msg').textContent='',5000)};
@@ -189,7 +195,7 @@ document.getElementById('dl').onclick=()=>{
  if(cur.base.hp<1||cur.base.atk<1)bad.push('血量與攻擊至少要 1');
  const c=cur.chest;if(c.same+c.d1+c.d2+c.d3>1.0001)bad.push('寶箱機率加起來超過 100%');
  if(!(cur.bonus.every>=1))bad.push('情境題「每幾題出現一次」至少要 1');
- for(const k in (cur.scenarios||{})){const L=cur.scenarios[k];if(!L.length)bad.push(CHN[k]+'章的情境題是空的（至少留 1 題，或按「還原預設題庫」）');L.forEach((t,i)=>{const g=gen(t);if(!g.ok)bad.push(CHN[k]+'章第 '+(i+1)+' 題：'+g.err)})}
+ for(const k in (cur.scenarios||{})){const L=cur.scenarios[k];if(!L.length)bad.push(CHN[k]+'章的情境題是空的（至少留 1 題，或按「還原預設題庫」）');L.forEach((t,i)=>{for(let lv=1;lv<=3;lv++){if(!lvOK(t,lv))continue;const g=gen(t,lv);if(!g.ok){bad.push(CHN[k]+'章第 '+(i+1)+' 題（第 '+lv+' 級）：'+g.err);break}}})}
  if(bad.length){alert('先修正：\n'+bad.join('\n'));return}
  const txt='/* 由 hero-editor.html 產生 '+new Date().toLocaleString()+' ；放在和 hero-hub.html 同一層 */\nwindow.HERO_CONFIG = '+JSON.stringify(compact(),null,1)+';\n';
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/javascript'}));a.download='hero-config.js';a.click();msg('已下載 hero-config.js，請放進整合版資料夾覆蓋舊檔')};
