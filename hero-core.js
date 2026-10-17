@@ -491,14 +491,28 @@ function ev(expr,vars){expr=String(expr);if(!SAFE.test(expr)||/=>/.test(expr)||(
 const neg=n=>n<0?'−'+Math.abs(n):String(n);
 function showExpr(f,vars){
  return f.replace(/[A-Za-z_]\w*/g,m=>m in vars?(vars[m]<0?'('+neg(vars[m])+')':String(vars[m])):m).replace(/\*/g,' × ').replace(/\//g,' ÷ ').replace(/\+/g,' + ').replace(/(^|[^(])-/g,(m,p)=>p+' − ').replace(/\(-/g,'(−').replace(/\s+/g,' ').trim()}
-function genFrom(t,L){
+const dgt=v=>String(Math.abs(v)).length;
+function fitsProf(t,vars,pf){
+ const names=[...new Set(String(t.f).match(/[A-Za-z_]\w*/g)||[])].filter(n=>n in vars),vals=names.map(n=>vars[n]);
+ const okAt=(v,p)=>dgt(v)>=dgt(p[0])&&dgt(v)<=dgt(p[1]);
+ if(vals.length===2){const [x,y]=vals,[p,q]=pf.pos;return cfg.id==='div'?(okAt(x,p)&&okAt(y,q)):((okAt(x,p)&&okAt(y,q))||(okAt(x,q)&&okAt(y,p)))}
+ if(vals.length<2){const ps=pf.pos.slice().sort((x,y)=>x[1]-y[1]);return ps[0][1]<10&&vals.every(v=>okAt(v,ps[1]))}
+ return false}
+function genFrom(t,L,pf){
  L=L||2;
- for(let i=0;i<80;i++){
+ const names0=[...new Set(String(t.f).match(/[A-Za-z_]\w*/g)||[])];
+ for(let i=0;i<120;i++){
   const vars={};
-  for(const part of String(t.v||'').split(/[;；]/)){const m=part.trim().match(/^([A-Za-z_]\w*)\s*=\s*(.+)$/);if(!m)continue;
-   const lvs=m[2].split('|'),ex=lvs[Math.min(L,lvs.length)-1].trim(),r=ex.match(/^(-?\d+)\s*~\s*(-?\d+)$/);m[2]=ex;
+  if(pf&&cfg.id==='div'&&String(t.f).replace(/\s/g,'')==='a/b'&&/\bq\s*=/.test(t.v)&&/\ba\s*=\s*b\s*\*\s*q/.test(t.v)){
+   const [dv,ds]=pf.pos,b=ds[0]+Math.floor(Math.random()*(ds[1]-ds[0]+1)),lo=Math.ceil(Math.max(dv[0],b*pf.qmin)/b),hi=Math.floor(dv[1]/b);
+   if(hi<lo)continue;const q=lo+Math.floor(Math.random()*(hi-lo+1));vars.b=b;vars.q=q;vars.a=b*q}
+  else for(const part of String(t.v||'').split(/[;；]/)){const m=part.trim().match(/^([A-Za-z_]\w*)\s*=\s*(.+)$/);if(!m)continue;
+   const lvs=m[2].split('|');let ex=lvs[Math.min(L,lvs.length)-1].trim();
+   if(pf&&cfg.id!=='div'&&names0.length===2){const ix=names0.indexOf(m[1]);if(ix>=0&&/^-?\d+\s*~\s*-?\d+$/.test(ex))ex=pf.pos[ix][0]+'~'+pf.pos[ix][1]}
+   const r=ex.match(/^(-?\d+)\s*~\s*(-?\d+)$/);m[2]=ex;
    vars[m[1]]=r?(+r[1]+Math.floor(Math.random()*(+r[2]-+r[1]+1))):ev(m[2],vars)}
   if(t.ok&&!ev(t.ok,vars))continue;
+  if(pf&&!fitsProf(t,vars,pf))continue;
   const ans=ev(t.f,vars);if(!Number.isInteger(ans)||Math.abs(ans)>1e7)continue;
   if(Object.values(vars).some(v=>!Number.isFinite(v)))continue;
   return {vars,ans,text:String(t.t).replace(/\{([A-Za-z_]\w*)\}/g,(m,k)=>k in vars?neg(vars[k]):m),expr:showExpr(t.f,vars),t}}
@@ -511,8 +525,17 @@ function distractors(g){
  const names=Object.keys(g.vars).filter(k=>new RegExp('\\b'+k+'\\b').test(f));
  if(names.length>=2&&out.size<3){const x=f.replace(new RegExp('\\b'+names[0]+'\\b','g'),'§').replace(new RegExp('\\b'+names[1]+'\\b','g'),names[0]).replace(/§/g,names[1]);if(ok(x))out.add(showExpr(x,g.vars))}
  out.delete(g.expr);return [...out].sort(()=>Math.random()-.5).slice(0,3)}
+/* 這一關真正的位數設定（加：d1/d2；乘除：r1/r2）。情境題的數字會照這個出，位數才不會和關卡不符；混合關卡回傳 null */
+function stageProf(){
+ if(cfg.type!=='battle')return null;let s;try{s=currentStageObj}catch(e){return null}if(!s)return null;
+ const rg=d=>[d===1?2:Math.pow(10,d-1),Math.pow(10,d)-1];let pos=null;
+ if(cfg.id==='add'){if(!(s.d1>0&&s.d2>0))return null;pos=[rg(s.d1),rg(s.d2)]}
+ else if(cfg.id==='mul'||cfg.id==='div'){if(!Array.isArray(s.r1)||!Array.isArray(s.r2))return null;pos=[[Math.max(2,s.r1[0]),s.r1[1]],[Math.max(2,s.r2[0]),s.r2[1]]]}
+ else return null;
+ return {pos,max:Math.max(...pos.map(p=>String(p[1]).length)),qmin:Math.max(2,s.qmin||2)}}
 /* 這一關該出幾級難度：依關卡在本章的位置，教學降一級、地獄升一級；負數章依模式 */
 function bonusLevel(){
+ {const pf=stageProf();if(pf)return Math.min(3,pf.max)}
  if(cfg.type==='neg'){try{const S=window.eval('S');return {teach:1,hard:2,hell:3}[S.mode]||2}catch(e){return 2}}
  let idx=0,len=1;
  try{if(isBattle()){idx=allStagesList.findIndex(x=>x.id===currentStageObj.id);len=allStagesList.length}else{idx=layers.findIndex(x=>x.id===curLayer.id);len=layers.length}}catch(e){}
@@ -534,14 +557,14 @@ function lvOK(t,L){const m=String(t.lv||'').match(/^(\d)\s*-\s*(\d)$/);if(m)retu
 let deckKey='';
 function pickScenario(){
  const all=SCN();if(!all.length)return null;
- const L=bonusLevel(),so=stageOps();
+ const L=bonusLevel(),so=stageOps(),pf=stageProf();
  let pool=all.map((t,i)=>i).filter(i=>{const to=tplOps(all[i].f);return lvOK(all[i],L)&&[...to].every(x=>so.has(x))});
  if(!pool.length)pool=all.map((t,i)=>i).filter(i=>lvOK(all[i],L));
  if(!pool.length)pool=all.map((t,i)=>i);
  const key=pool.join(',');if(key!==deckKey){deckKey=key;deck=[]}
- for(let k=0;k<pool.length*2;k++){if(!deck.length)deck=pool.slice().sort(()=>Math.random()-.5);const g=genFrom(all[deck.pop()],L);if(g){g.level=L;return g}}
+ for(let k=0;k<pool.length*2;k++){if(!deck.length)deck=pool.slice().sort(()=>Math.random()-.5);const g=genFrom(all[deck.pop()],L,pf);if(g){g.level=L;return g}}
  return null}
-H.genScenario=(t,L)=>genFrom(t,L);
+H.genScenario=(t,L)=>genFrom(t,L);H.stageProf=stageProf;H.pickScenario=pickScenario;
 let bonusOpen=false;
 function runBonus(isTeach,done){
  const g=pickScenario();if(!g){done(null);return}

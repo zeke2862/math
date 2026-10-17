@@ -27,7 +27,7 @@ table{border-collapse:collapse;width:100%;font-size:14px}td,th{border:1px solid 
 <header><b>🛠 勇者修改器</b><span id="msg"></span>
 <button class="g" id="dl">⬇ 下載 hero-config.js</button><button id="imp">📂 載入設定檔</button><button class="r" id="rst">↺ 全部還原預設</button>
 <input type="file" id="file" accept=".js,.json,.txt" hidden></header>
-<nav><button data-tab="t1" class="on">⚔️ 能力・戰鬥・分數</button><button data-tab="t2">⏱ 各關作答秒數</button><button data-tab="t3">🎁 情境題・寶箱・地圖</button><button data-tab="t4">📝 情境題題庫（教師出題）</button><button data-tab="t5">❓ 怎麼用</button></nav>
+<nav><button data-tab="t1" class="on">⚔️ 能力・戰鬥・分數</button><button data-tab="t2">⏱ 各關作答秒數</button><button data-tab="t3">🎁 情境題・寶箱・怪物收服・地圖</button><button data-tab="t4">📝 情境題題庫（教師出題）</button><button data-tab="t5">❓ 怎麼用</button></nav>
 <main>
 <div class="tab on" id="t1"><div class="two"><div id="form"></div>
 <div class="pv"><section><h3>👀 即時預覽（改數字立刻更新）</h3>
@@ -50,6 +50,8 @@ table{border-collapse:collapse;width:100%;font-size:14px}td,th{border:1px solid 
 </main>
 <script src="./hero-stages.js"></script>
 <script src="./hero-scenarios.js"></script>
+<script src="./hero-capture-shop.js"></script>
+<script src="./hero-skin-library.js"></script><script src="./hero-capture-skins.js"></script>
 <script>
 const CHN={add:'加法',sub:'減法',mul:'乘法',div:'除法',ops:'四則',neg:'負數'};
 const D={base:{hp:1000,atk:50,def:20,spd:100},growth:{hp:100,atk:5,def:3,spd:1},exp:{a:50,b:50},
@@ -58,6 +60,9 @@ const D={base:{hp:1000,atk:50,def:20,spd:100},growth:{hp:100,atk:5,def:3,spd:1},
  stars:[1,.9,.8,.7,.6],caps:{teach:2,quick:4,hell:5},hellTime:.6,failHint:3,graduate:3,nameMax:12,teacherPass:'1234',
  time:{},teachTime:1.5,mapZoom:2,bonus:{on:true,every:5,scoreMult:5,bossMult:3},chest:{same:.9,d1:.09,d2:.007,d3:.003},scenarios:{},
  crit:{on:true,sec:5,score:1.5},sound:{bgm:true,sfx:true,vol:.5},music:{}};
+const ACC=window.HERO_PET_ACC||{slots:[],items:[]};
+const STY=window.HERO_PET_STYLES||[],ART=Object.entries(window.HERO_PET_SKINS||{}).flatMap(([k,l])=>l.map(x=>Object.assign({mon:k},x)));
+D.capture={shardNeed:3,restMax:6,missFirst:.4,missLast:.1,teachBonus:.1,gomokuSec:10,tttDrawLimit:2,q:{same:.9,d1:.09,d2:.007,d3:.003},skinPrice:Object.fromEntries(STY.concat(ART).map(i=>[i.id,i.price])),price:Object.fromEntries(ACC.items.map(i=>[i.id,i.price]))};
 const F=[['勇者基本能力',[
 ['base.hp','血量','勇者 1 級的血量',10],['base.atk','攻擊','1 級攻擊力（越高，怪物越快倒）',1],['base.def','防禦','1 級防禦（扣掉怪物的傷害）',1],['base.spd','速度','目前只作為能力顯示',1]]],
 ['每升一級增加',[['growth.hp','血量','每級 +',1],['growth.atk','攻擊','每級 +',.5],['growth.def','防禦','每級 +',.5],['growth.spd','速度','每級 +',.5]]],
@@ -83,10 +88,38 @@ const F3=[['情境題 BONUS',[
 ['減法寶箱（開出碎片的機率）',[
 ['chest.same','同星等 %','開出「和破關星等相同」稀有度碎片的機率（預設 90）',.1,'pct'],['chest.d1','差一階 %','高一階＋低一階合計（預設 9；只有一邊時只算一半）',.1,'pct'],
 ['chest.d2','差兩階 %','合計（預設 0.7）',.1,'pct'],['chest.d3','差三階 %','合計（預設 0.3）',.1,'pct']]],
+['👾 怪物收服：玩法',[
+['capture.shardNeed','輸幾次可免玩收服','輸一次得 1 片怪物碎片，集滿這個數量就能直接收服（預設 3）',1],['capture.restMax','休息區最多幾隻','地圖上同時顯示幾隻（預設 6）',1],
+['capture.missFirst','AI 失誤率：第一隻魔王 %','數字越大 AI 越笨、越容易贏（預設 40）',1,'pct'],['capture.missLast','AI 失誤率：最後一隻魔王 %','（預設 10）',1,'pct'],['capture.teachBonus','教學模式額外失誤 %','教學模式再多放水幾 %（預設 10）',1,'pct'],
+['capture.gomokuSec','五子棋每步秒數','超過會自動幫玩家亂下一步（預設 10）',1],['capture.tttDrawLimit','井字平手幾次後 AI 放水','（預設 2）',1]]],
+['👾 怪物品質機率（贏了收服後開寶箱）',[
+['capture.q.same','同星等 %','開出「和破關星等相同」品質的機率（預設 90）',.1,'pct'],['capture.q.d1','差一階 %','高一階＋低一階合計（預設 9）',.1,'pct'],
+['capture.q.d2','差兩階 %','合計（預設 0.7）',.1,'pct'],['capture.q.d3','差三階 %','合計（預設 0.3）。收服不會開到空箱，沒抽中的部分算「同星等」',.1,'pct']]],
+['👾 商店：怪物新樣貌價格（不分品質，一個樣貌一個價錢）',STY.map(x=>['capture.skinPrice.'+x.id,x.icon+' '+x.name+'（通用換色，每隻怪物各買各的）','勇者幣（預設 '+x.price+'）',10]).concat(ART.map(x=>['capture.skinPrice.'+x.id,(x.icon||'🎭')+' '+x.name+'（'+x.mon+' 專屬）','勇者幣（預設 '+x.price+'）',10]))],
+...ACC.slots.map(sl=>['👾 商店：打扮物品價格・'+sl.icon+sl.name,ACC.items.filter(x=>x.slot===sl.id).map(x=>['capture.price.'+x.id,x.icon+' '+x.name,'勇者幣（預設 '+x.price+'）',10])]),
 ['大地圖',[['mapZoom','地圖放大倍數','大地圖放大幾倍讓玩家滑動尋找（1＝不放大，預設 2）',.1]]],
 ['神速一擊（答得快的獎勵）',[['crit.on','開啟神速一擊','1＝開啟，0＝關閉',1,'bool'],['crit.score','神速分數倍數','答得夠快時這一題的分數倍數（預設 1.5）',.1],['crit.sec','減法章神速秒數','減法章幾秒內答對算神速（其他章用各關「極速門檻」的 4 成）',.5]]],
 ['音樂與音效',[['sound.bgm','預設開背景音樂','1＝開，0＝關（學生可以用左下角🔊自己切換）',1,'bool'],['sound.sfx','預設開音效','1＝開，0＝關',1,'bool'],['sound.vol','總音量','0～1（預設 0.5）',.05],
-['music.add','加法章音樂檔','空白＝用電腦即時合成的章節音樂；要換成 mp3 就填路徑，例如 assets/audio/add.mp3',0,'text'],['music.sub','減法章音樂檔','同上',0,'text'],['music.mul','乘法章音樂檔','同上',0,'text'],['music.div','除法章音樂檔','同上',0,'text'],['music.ops','四則章音樂檔','同上',0,'text']]]];
+['music.add','加法章音樂檔','空白＝用電腦即時合成的章節音樂；要換成 mp3 就填路徑，例如 assets/audio/add.mp3',0,'text'],['music.sub','減法章音樂檔','同上',0,'text'],['music.mul','乘法章音樂檔','同上',0,'text'],['music.div','除法章音樂檔','同上',0,'text'],['music.ops','四則章音樂檔','同上',0,'text'],
+['music.add_1','加法・第1大關（史萊姆棲地）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/add-1.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.add_2','加法・第2大關（木妖森林）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/add-2.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.add_3','加法・第3大關（吸血鬼古堡）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/add-3.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.add_4','加法・第4大關（殭屍墓穴）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/add-4.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.add_5','加法・第5大關（法老王金字塔）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/add-5.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.mul_1','乘法・第1大關（街道）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/mul-1.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.mul_2','乘法・第2大關（玩具王國）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/mul-2.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.mul_3','乘法・第3大關（海世界）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/mul-3.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.mul_4','乘法・第4大關（失落之地）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/mul-4.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.mul_5','乘法・第5大關（雪地）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/mul-5.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.div_1','除法・第1大關（街道）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/div-1.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.div_2','除法・第2大關（玩具王國）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/div-2.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.div_3','除法・第3大關（海世界）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/div-3.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.div_4','除法・第4大關（失落之地）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/div-4.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.div_5','除法・第5大關（雪地）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/div-5.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.ops_1','四則・第1大關（元素的平行共鳴）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/ops-1.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.ops_2','四則・第2大關（混沌的交織森林）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/ops-2.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.ops_3','四則・第3大關（結界的禁錮符咒）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/ops-3.mp3（檔案不存在時會自動改播合成曲）',0,'text'],
+['music.ops_4','四則・第4大關（核心重啟）音樂檔','空白＝用 assets/audio/bgm/ 裡附的預設曲；要換成別的檔就填路徑，例如 assets/audio/ops-4.mp3（檔案不存在時會自動改播合成曲）',0,'text']]]];
 const get=(o,p)=>p.split('.').reduce((a,k)=>a==null?a:a[k],o),set=(o,p,v)=>{const k=p.split('.');let a=o;k.slice(0,-1).forEach(x=>{if(a[x]==null)a[x]={};a=a[x]});a[k.pop()]=v};
 const clone=o=>JSON.parse(JSON.stringify(o));
 let cur=clone(D);
@@ -194,6 +227,7 @@ document.getElementById('dl').onclick=()=>{
  const bad=[];if(cur.battle.hits<1)bad.push('幾下打倒怪物至少要 1');if(!(cur.stars[0]>=cur.stars[1]&&cur.stars[1]>=cur.stars[2]&&cur.stars[2]>=cur.stars[3]&&cur.stars[3]>=cur.stars[4]))bad.push('星等門檻要由高到低（5星≥4星≥3星≥2星≥1星）');
  if(cur.base.hp<1||cur.base.atk<1)bad.push('血量與攻擊至少要 1');
  const c=cur.chest;if(c.same+c.d1+c.d2+c.d3>1.0001)bad.push('寶箱機率加起來超過 100%');
+ const cq=cur.capture.q;if(cq.same+cq.d1+cq.d2+cq.d3>1.0001)bad.push('怪物品質機率加起來超過 100%');
  if(!(cur.bonus.every>=1))bad.push('情境題「每幾題出現一次」至少要 1');
  for(const k in (cur.scenarios||{})){const L=cur.scenarios[k];if(!L.length)bad.push(CHN[k]+'章的情境題是空的（至少留 1 題，或按「還原預設題庫」）');L.forEach((t,i)=>{for(let lv=1;lv<=3;lv++){if(!lvOK(t,lv))continue;const g=gen(t,lv);if(!g.ok){bad.push(CHN[k]+'章第 '+(i+1)+' 題（第 '+lv+' 級）：'+g.err);break}}})}
  if(bad.length){alert('先修正：\n'+bad.join('\n'));return}

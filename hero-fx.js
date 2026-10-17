@@ -92,33 +92,73 @@ const Snd={
 H.sound=Snd;
 
 /* ============ 背景音樂（每章一首，即時合成；也可換成 mp3）============ */
-const THEMES={ // 調式、速度、音色：讓每一章聽起來不一樣
+const THEMES={ // 章節主題（地圖畫面用）：調式、速度、音色讓每一章聽起來不一樣
  add:{root:60,scale:[0,2,4,7,9],prog:[0,5,3,4],bpm:112,lead:'square',name:'明亮的冒險'},
  sub:{root:64,scale:[0,1,4,5,7,8,10],prog:[0,1,0,6],bpm:96,lead:'triangle',name:'金字塔的神秘'},
  mul:{root:62,scale:[0,2,3,5,7,9,10],prog:[0,3,6,4],bpm:132,lead:'square',name:'熱血的軍團'},
  div:{root:57,scale:[0,2,3,5,7,8,10],prog:[0,5,2,4],bpm:104,lead:'triangle',name:'鋼鐵的防線'},
  ops:{root:60,scale:[0,2,3,5,7,8,11],prog:[0,5,3,4],bpm:120,lead:'sawtooth',name:'平衡之島'},
  neg:{root:57,scale:[0,1,3,5,7,8,10],prog:[0,5,6,4],bpm:100,lead:'triangle',name:'深淵'}};
-const Music={timer:0,audio:null,battle:false,bar:0,step:0,next:0,
+/* 各大關（地形）專屬風格：戰鬥時依「章_大關」挑曲，沒有的就用章節主題。
+   欄位：root 主音(MIDI) scale 音階 prog 和弦進行 bpm 速度 lead 主旋律音色 arp 分解和弦音色(null=不要)
+   rest 休止機率 pad 長音和弦 drone 低音長音 bell 高音鈴聲 swing 搖擺感 kick/hat 鼓點(戰鬥時) wind 風聲 */
+Object.assign(THEMES,{
+ add_1:{name:'史萊姆棲地・Q彈輕快',root:60,scale:[0,2,4,7,9],prog:[0,5,3,4],bpm:116,lead:'square',arp:'triangle',rest:.25,bell:1,kick:[0,4],hat:[1,3,5,7]},
+ add_2:{name:'木妖森林・神秘森林',root:57,scale:[0,2,3,5,7,9,10],prog:[0,3,0,4],bpm:100,lead:'triangle',arp:'sine',rest:.35,pad:1,bell:1,kick:[0],hat:[2,6]},
+ add_3:{name:'吸血鬼古堡・哥德風琴',root:52,scale:[0,2,3,5,7,8,11],prog:[0,5,3,4],bpm:92,lead:'sawtooth',leadVol:.045,arp:'triangle',rest:.3,pad:1,drone:1,kick:[0,4],hat:[2,6]},
+ add_4:{name:'殭屍墓穴・陰森低鳴',root:50,scale:[0,1,3,5,7,8,10],prog:[0,1,0,6],bpm:84,lead:'triangle',arp:null,rest:.5,drone:1,kick:[0,3],hat:[]},
+ add_5:{name:'法老王金字塔・沙漠神殿',root:57,scale:[0,1,4,5,7,8,10],prog:[0,1,0,6],bpm:108,lead:'square',leadVol:.06,arp:'triangle',rest:.22,kick:[0,3,4],hat:[2,5,6]},
+ mul_1:{name:'街道・街頭放克',root:55,scale:[0,2,4,5,7,9,10],prog:[0,3,4,3],bpm:118,lead:'square',leadVol:.06,arp:'triangle',rest:.3,swing:.28,kick:[0,3,4],hat:[1,3,5,7]},
+ mul_2:{name:'玩具王國・音樂盒進行曲',root:72,scale:[0,2,4,7,9],prog:[0,3,4,0],bpm:126,lead:'sine',arp:'triangle',rest:.2,bell:1,kick:[0,4],hat:[2,6]},
+ mul_3:{name:'海世界・夢幻深藍',root:60,scale:[0,2,4,6,7,9,11],prog:[0,4,5,3],bpm:90,lead:'sine',arp:'sine',rest:.3,pad:1,bell:1,kick:[0],hat:[]},
+ mul_4:{name:'失落之地・部落戰鼓',root:57,scale:[0,3,5,7,10],prog:[0,0,3,4],bpm:126,lead:'triangle',arp:null,rest:.4,drone:1,kick:[0,2,4,6],hat:[1,5]},
+ mul_5:{name:'雪地・冰晶鈴聲',root:69,scale:[0,2,3,5,7,8,10],prog:[0,5,3,4],bpm:96,lead:'triangle',arp:'sine',rest:.3,pad:1,bell:1,wind:1,kick:[0],hat:[4]},
+ div_1:{name:'街道・硬派藍調',root:52,scale:[0,3,5,6,7,10],prog:[0,0,3,0],bpm:100,lead:'sawtooth',leadVol:.05,arp:'triangle',rest:.32,swing:.2,kick:[0,4],hat:[2,6]},
+ div_2:{name:'玩具王國・機械進行曲',root:60,scale:[0,2,4,5,7,9,11],prog:[0,4,5,3],bpm:112,lead:'square',arp:'square',rest:.2,kick:[0,2,4,6],hat:[1,3,5,7]},
+ div_3:{name:'海世界・深海潛行',root:50,scale:[0,2,3,5,7,8,10],prog:[0,5,3,4],bpm:80,lead:'sine',arp:null,rest:.4,pad:1,drone:1,kick:[0],hat:[]},
+ div_4:{name:'失落之地・古文明遺跡',root:55,scale:[0,1,4,5,7,8,10],prog:[0,1,0,6],bpm:104,lead:'triangle',arp:'triangle',rest:.35,drone:1,kick:[0,3],hat:[2,6]},
+ div_5:{name:'雪地・暴風雪',root:57,scale:[0,2,3,5,7,8,10],prog:[0,5,2,4],bpm:118,lead:'sawtooth',leadVol:.05,arp:'triangle',rest:.28,wind:1,kick:[0,4],hat:[2,6]},
+ ops_1:{name:'元素的平行共鳴・電子琶音',root:60,scale:[0,2,4,7,9],prog:[0,5,3,4],bpm:124,lead:'square',arp:'square',rest:.2,kick:[0,4],hat:[2,6]},
+ ops_2:{name:'混沌的交織森林・詭譎全音階',root:58,scale:[0,2,4,6,8,10],prog:[0,2,4,2],bpm:108,lead:'triangle',arp:'sine',rest:.35,pad:1,bell:1,kick:[0,4],hat:[2,6]},
+ ops_3:{name:'結界的禁錮符咒・咒文管風琴',root:55,scale:[0,2,3,5,7,8,11],prog:[0,5,3,4],bpm:116,lead:'sawtooth',leadVol:.05,arp:'triangle',rest:.3,pad:1,kick:[0,3,4],hat:[2,6]},
+ ops_4:{name:'核心重啟・終局決戰',root:57,scale:[0,2,3,5,7,8,11],prog:[0,5,6,4],bpm:140,lead:'sawtooth',leadVol:.06,arp:'square',rest:.2,kick:[0,2,4,6],hat:[1,3,5,7]}
+});
+H.themes=THEMES;
+const Music={timer:0,audio:null,battle:false,bar:0,step:0,next:0,key:'',
  seedRand(seed){let s=seed;return()=>{s=(s*9301+49297)%233280;return s/233280}},
- build(th){ // 用固定種子產生 8 小節旋律，所以每次聽到的是同一首歌
-  const R=this.seedRand([...String(cfg.id||'x')].reduce((a,c)=>a+c.charCodeAt(0),7));const mel=[];let deg=4;
-  for(let b=0;b<8;b++){const bar=[];for(let s=0;s<8;s++){if(R()<.28&&s){bar.push(null);continue}deg=Math.max(0,Math.min(th.scale.length*2-1,deg+Math.round((R()-.5)*3)));bar.push(deg)}mel.push(bar)}
+ build(th,key){ // 用固定種子產生 8 小節旋律，所以每次聽到的是同一首歌
+  const R=this.seedRand([...String(key||cfg.id||'x')].reduce((a,c)=>a*3+c.charCodeAt(0),7)%100000+7);const mel=[];let deg=4;const rest=th.rest!=null?th.rest:.28;
+  for(let b=0;b<8;b++){const bar=[];for(let s=0;s<8;s++){if(R()<rest&&s){bar.push(null);continue}deg=Math.max(0,Math.min(th.scale.length*2-1,deg+Math.round((R()-.5)*3)));bar.push(deg)}mel.push(bar)}
   return mel},
+ /* 現在該播哪一首：戰鬥中依「章_大關」，其他時候用章節主題 */
+ curKey(){let k=cfg.id||'add';if(this.battle){try{const t=currentStageObj&&currentStageObj.terrainId;if(t&&THEMES[k+'_'+t])k=k+'_'+t}catch(e){}}return k},
+ fileFor(k){const m=C.music||{};return m[k]||m[cfg.id]||('assets/audio/bgm/'+k+'.mp3')},// 預設用 assets/audio/bgm/<章_大關>.mp3；檔案不存在就自動改播合成曲
+ sync(){const k=this.curKey();if(k===this.key)return;this.key=k;
+  const th=THEMES[k]||THEMES[cfg.id]||THEMES.add;this.th=th;this.mel=this.build(th,k);this.bar=0;this.step=0;if(AC)this.next=AC.currentTime+.1;
+  if(this.audio){this.audio.pause();this.audio=null}
+  const f=this.fileFor(k);if(f&&musicOn){const a=new Audio(f);a.loop=true;a.volume=.35;a.onerror=()=>{if(this.audio===a)this.audio=null};this.audio=a;a.play().catch(()=>{})}},
  start(){
   if(!musicOn||cfg.type==='neg')return;
-  const file=(C.music||{})[cfg.id];
-  if(file){if(!this.audio){this.audio=new Audio(file);this.audio.loop=true;this.audio.volume=.35}this.audio.play().catch(()=>{});return}
-  if(this.timer||!ac())return;const th=THEMES[cfg.id]||THEMES.add;this.th=th;this.mel=this.mel||this.build(th);this.next=AC.currentTime+.1;
+  ac();this.key='';this.sync();
+  if(this.timer||!AC)return;
   this.timer=setInterval(()=>this.sched(),60)},
- stop(){clearInterval(this.timer);this.timer=0;if(this.audio)this.audio.pause()},
- sched(){const th=this.th,a=AC;if(!a)return;const spb=60/(th.bpm*(this.battle?1.18:1))/2;// 八分音符
-  while(this.next<a.currentTime+.25){const t=this.next,b=this.bar%8,s=this.step,chord=th.prog[Math.floor(b/2)%4];
+ stop(){clearInterval(this.timer);this.timer=0;if(this.audio)this.audio.pause();this.key=''},
+ /* 有真的音樂檔（或頁面自己的 mp3 正在播）就不再播合成曲；檔案不存在時自動改播合成曲 */
+ external(){if(this.audio&&!this.audio.paused&&!this.audio.error)return true;try{const b=bgmAudio;if(b&&!b.paused&&!b.error&&b.src)return true}catch(e){}return false},
+ sched(){const th=this.th,a=AC;if(!a||!th)return;
+  if(this.external()){this.next=a.currentTime+.1;return}
+  const spb=60/(th.bpm*(this.battle?1.18:1))/2;// 八分音符
+  while(this.next<a.currentTime+.25){const s=this.step,sw=(th.swing&&s%2===1)?spb*th.swing:0,t=this.next+sw,b=this.bar%8,chord=th.prog[Math.floor(b/2)%4];
    const sc=th.scale,note=d=>th.root+sc[d%sc.length]+12*Math.floor(d/sc.length);
-   if(s%2===0)tone(N(note(chord)-24),t,spb*1.6,'triangle',.22,musBus);// 低音
-   const arp=[0,2,4,2][s%4];tone(N(note(chord+arp)-12),t,spb*.8,'square',.045,musBus);// 分解和弦
-   const m=this.mel[b][s];if(m!=null)tone(N(note(m)),t,spb*.95,th.lead,.07,musBus);// 旋律
-   if(this.battle){if(s%2===1)noise(t,.03,.05,7000,musBus);if(s%4===0)tone(90,t,.08,'sine',.18,musBus,40)}// 戰鬥鼓點
+   if(th.drone&&s===0&&b%2===0)tone(N(note(chord)-24),t,spb*7.5,'sine',.2,musBus);// 低音長音
+   else if(s%2===0)tone(N(note(chord)-24),t,spb*1.6,'triangle',.22,musBus);// 低音
+   if(th.pad&&s===0&&b%2===0){[0,2,4].forEach(i=>tone(N(note(chord+i)),t,spb*7.5,'sine',.035,musBus))}// 長音和弦
+   if(th.arp!==null){const arp=[0,2,4,2][s%4];tone(N(note(chord+arp)-12),t,spb*.8,th.arp||'square',.045,musBus)}// 分解和弦
+   const m=this.mel[b][s];if(m!=null){tone(N(note(m)),t,spb*.95,th.lead,th.leadVol||.07,musBus);if(th.bell)tone(N(note(m)+12),t+.02,spb*1.4,'sine',.035,musBus)}// 旋律
+   if(th.wind&&s===0&&b%4===0)noise(t,spb*6,.05,1800,musBus);// 風聲
+   if(this.battle){
+    const K=th.kick||[0,4],Hh=th.hat||[1,3,5,7];
+    if(Hh.includes(s))noise(t,.03,.05,7000,musBus);if(K.includes(s))tone(90,t,.08,'sine',.18,musBus,40)}// 戰鬥鼓點
    this.next+=spb;this.step=(s+1)%8;if(this.step===0)this.bar++}}
 };
 H.music=Music;
@@ -126,7 +166,7 @@ H.music=Music;
 const unlock=()=>{ac();Music.start();window.removeEventListener('pointerdown',unlock,true);window.removeEventListener('keydown',unlock,true)};
 window.addEventListener('pointerdown',unlock,true);window.addEventListener('keydown',unlock,true);
 // 戰鬥中節奏變快
-setInterval(()=>{const bs=$('#battle-screen')||$('#puzzle-screen')||$('#battle');Music.battle=!!bs&&!bs.classList.contains('hidden')&&!bs.hidden&&getComputedStyle(bs).display!=='none'},500);
+setInterval(()=>{const bs=$('#battle-screen')||$('#puzzle-screen')||$('#battle');Music.battle=!!bs&&!bs.classList.contains('hidden')&&!bs.hidden&&getComputedStyle(bs).display!=='none';if(musicOn&&(Music.timer||Music.audio))Music.sync()},500);
 
 /* ============ 接上遊戲事件 ============ */
 H.on('hit',d=>{

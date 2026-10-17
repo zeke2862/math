@@ -187,6 +187,10 @@ button{font:inherit;cursor:pointer;color:inherit}
 <script src="./fullscreen-block.js"></script>
 <script src="./hero-items.js"></script>
 <script src="./hero-decor.js"></script>
+<script src="./hero-capture-data.js"></script>
+<script src="./hero-capture-shop.js"></script>
+<script src="./hero-skin-library.js"></script><script src="./hero-capture-skins.js"></script>
+<script src="./hero-capture.js"></script>
 <script>
 /* 教師版密碼與名字長度等，都可在修改器 hero-editor.html 調整 */
 const HC=window.HERO_CONFIG||{};const TEACHER_PASS=HC.teacherPass!=null?String(HC.teacherPass):'1234';const GRAD=HC.graduate||3,NAMEMAX=HC.nameMax||12;
@@ -382,7 +386,7 @@ const RAR=['','普通','優良','精緻','傳說','神話'],RC=['','#7b8591','#2
 const SUBL=['石刻心臟','卡諾卜罐','滑輪組裝圖','埃及曆法與星座圖','迷宮路線指引','雕像對應圖','黃金聖甲蟲','象形文字組合','密碼鎖','反射鏡使用法'];
 function openBag(){const sh=RK().shards||{};const keys=Object.keys(sh).filter(k=>k.startsWith('sub|')).sort((a,b)=>+a.split('|')[1]-+b.split('|')[1]);
  const total=keys.reduce((a,k)=>a+sh[k].n,0);
- openBox(`<h2>🎒 收藏</h2><div class="story">在減法章通關後打開寶箱，就會得到碎片。碎片的稀有度和你破關的星等有關，星等越高越容易開到好碎片！</div>
+ openBox(`<h2>🎒 收藏</h2><button class="sbtn" style="margin:4px 0 8px" onclick="HeroPets.openCollection()">👾 怪物圖鑑（打倒魔王後收服的怪物）</button><div class="story">在減法章通關後打開寶箱，就會得到碎片。碎片的稀有度和你破關的星等有關，星等越高越容易開到好碎片！</div>
  ${keys.length?`<div style="margin-top:10px">${keys.map(k=>{const s=sh[k],i=+k.split('|')[1];return`<div class="row"><i>🧩</i><span>第 ${i} 層 ${SUBL[i-1]||''}</span><em style="color:${RC[s.best]}">最高【${RAR[s.best]}】×${s.n}</em></div>`}).join('')}</div><p style="font-size:13px;color:var(--dim)">一共收集了 ${total} 片碎片。</p>`:'<p>還沒有碎片，先去減法章破關開寶箱吧！</p>'}`)}
 /* ===== 商店：用勇者幣買東西（道具／勇者造型／小屋背景／房間飾品）===== */
 const IT=window.HERO_ITEMS,DC=window.HERO_DECOR;
@@ -445,7 +449,7 @@ function thumb(x){
  if(x.cat==='decor'&&IT.dim(SH+'decor/'+x.id+'.png'))return `<img src="${SH}decor/${x.id}.png" alt="" style="width:100%;height:100%;object-fit:contain">`;
  if(x.cat==='decor'){const a=DC.art[x.id];return a?`<svg viewBox="${a.vb.join(' ')}" preserveAspectRatio="xMidYMid meet">${artOf(a)}</svg>`:x.icon}
  return x.icon}
-const TABS=[['item','🧪 道具'],['skin','🧙 勇者'],['gear','🧣 配件'],['theme','🏡 背景'],['decor','🪑 飾品']];
+const TABS=[['item','🧪 道具'],['skin','🧙 勇者'],['gear','🧣 配件'],['theme','🏡 背景'],['decor','🪑 飾品'],['pet','👾 怪物']];
 function itemRow(x,o){
  const id=x.id,p=priceOf(id),coin=o.coin||0,it=o.items||{},lv=lvInfo().level;
  let info='',btn='';
@@ -462,6 +466,7 @@ function itemRow(x,o){
  }
  return `<div class="gd"><div class="th">${thumb(x)}</div><div class="tx"><b>${x.icon} ${x.name}</b><br><small>${x.desc||''}</small><br>${info}</div><div class="bt">${btn}</div></div>`}
 function shopBody(o){
+ if(shopTab==='pet')return window.HeroPets?HeroPets.shopBody():'';
  if(shopTab==='item'){
   const g=(t,k)=>`<div class="shopsec">${t}</div>`+IT.consumables.filter(x=>x.kind===k).map(x=>itemRow(Object.assign({cat:'item'},x),o)).join('');
   return g('🧃 血瓶（戰鬥中按右邊 🎒 使用）','heal')+g('🧪 復活藥（倒下時自動使用）','revive')+g('🛡️ 防禦盾（擋下怪物攻擊）','shield')+g('🎟️ 積分券（這場戰鬥積分加成）','ticket')+`<div class="shopsec">🪪 其他</div>`+itemRow(RENAME,o)+

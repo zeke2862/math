@@ -1,0 +1,58 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>怪物樣貌圖片庫</title>
+<script src="./hero-capture-data.js"></script><script src="./hero-skin-library.js"></script>
+<style>
+body{font-family:system-ui,"Microsoft JhengHei",sans-serif;background:#f6f1e7;margin:0;color:#3b2a1a}
+header{background:#7a4b22;color:#fff;padding:14px 20px;position:sticky;top:0;z-index:5;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+header h1{font-size:20px;margin:0;flex:1}
+button{background:#f0a030;border:0;border-radius:10px;padding:8px 14px;font-size:14px;cursor:pointer;font-weight:700}
+button.g{background:#4a9a4a;color:#fff}button.r{background:#c04040;color:#fff}
+.tip{margin:14px 20px;background:#fff;border-radius:12px;padding:12px 16px;line-height:1.7;font-size:14px}
+.tabs{margin:0 20px;display:flex;gap:8px;flex-wrap:wrap}.tabs button{background:#e4d5bd}.tabs button.on{background:#7a4b22;color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;padding:16px 20px}
+.card{background:#fff;border-radius:14px;padding:12px;box-shadow:0 2px 6px #0002}
+.top{display:flex;gap:10px;align-items:center}.top img{width:64px;height:64px;object-fit:contain;background:#eee;border-radius:8px}
+.top b{font-size:16px}.top small{color:#888;display:block}
+.sk{display:flex;gap:8px;align-items:center;border-top:1px dashed #ddd;margin-top:8px;padding-top:8px;font-size:13px}
+.sk img{width:48px;height:48px;object-fit:contain;background:#eee;border-radius:6px}
+.sk .miss{width:48px;height:48px;background:#fdd;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#a00;text-align:center}
+.sk input{width:100%;box-sizing:border-box;padding:3px;margin:1px 0}
+.sk .f{flex:1}
+.add{margin-top:8px;width:100%}
+code{background:#eee;padding:1px 5px;border-radius:4px}
+</style></head><body>
+<header><h1>🎨 怪物樣貌圖片庫</h1>
+<button class="g" id="dl">⬇ 下載 hero-skin-library.js</button></header>
+<div class="tip"><b>怎麼用（3 步驟）</b><br>
+① 在想要有新樣貌的怪物卡片按「＋新增樣貌」，填名稱、圖示、價格（一個樣貌一個價錢，不分品質）。<br>
+② 卡片會告訴你「圖片要存成什麼檔名」，把圖放進 <code>assets/skins/</code> 資料夾。<br>
+③ 按上方「下載 hero-skin-library.js」，覆蓋原本的檔案，商店就會出現新樣貌。<br>
+<b>以後換圖</b>：直接用同檔名的新圖覆蓋，不用改任何程式。紅色「缺圖」代表資料夾裡還沒有這張圖（要用網頁伺服器開啟本頁才看得到圖）。</div>
+<div class="tabs" id="tabs"></div><div class="grid" id="grid"></div>
+<script>
+var CAT=window.HERO_PET_CATALOG,LIB=(window.HERO_SKIN_LIB||[]).map(function(r){return r.slice()}),cur=Object.keys(CAT)[0];
+function fn(k,t){return 'assets/skins/'+k.replace('|','-')+'-'+t+'.png'}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function tabs(){document.getElementById('tabs').innerHTML=Object.keys(CAT).map(function(g){return '<button class="'+(g==cur?'on':'')+'" data-g="'+g+'">'+CAT[g].name+'</button>'}).join('')}
+function render(){tabs();var h='';CAT[cur].stages.forEach(function(s){var k=cur+'|'+s.id;
+ h+='<div class="card"><div class="top"><img src="'+esc(s.img)+'" onerror="this.style.opacity=.2"><div><b>'+esc(s.name)+'</b><small>代號 '+k+'</small></div></div>';
+ LIB.forEach(function(r,i){if(r[0]!=k)return;
+  h+='<div class="sk"><img src="'+fn(k,r[1])+'" onerror="this.outerHTML=\'<div class=miss>缺圖</div>\'"><div class="f">'
+   +'<input data-i="'+i+'" data-f="2" value="'+esc(r[2])+'" placeholder="名稱">'
+   +'<div style="display:flex;gap:4px"><input data-i="'+i+'" data-f="3" value="'+esc(r[3])+'" style="width:44px"><input data-i="'+i+'" data-f="4" type="number" value="'+r[4]+'" style="width:70px"><button class="r" data-del="'+i+'">刪</button></div>'
+   +'<small>檔名：<code>'+fn(k,r[1])+'</code></small></div></div>'});
+ h+='<button class="add" data-add="'+k+'">＋新增樣貌</button></div>'});
+ document.getElementById('grid').innerHTML=h}
+document.addEventListener('click',function(e){var t=e.target;
+ if(t.dataset.g){cur=t.dataset.g;render()}
+ if(t.dataset.add){var tag=prompt('樣貌英文代號（只用英文或數字，例如 hero、blue2）：');if(!tag)return;tag=tag.replace(/[^a-zA-Z0-9_]/g,'');if(!tag)return;
+  if(LIB.some(function(r){return r[0]==t.dataset.add&&r[1]==tag})){alert('這個代號已存在');return}
+  LIB.push([t.dataset.add,tag,'新樣貌','🎭',300]);render()}
+ if(t.dataset.del){if(confirm('確定刪除這個樣貌？（圖片檔不會被刪）')){LIB.splice(+t.dataset.del,1);render()}}});
+document.addEventListener('change',function(e){var t=e.target;if(t.dataset.f){LIB[+t.dataset.i][+t.dataset.f]=t.dataset.f=='4'?(+t.value||0):t.value}});
+document.getElementById('dl').onclick=function(){
+ var src=['/* 怪物樣貌圖片庫 hero-skin-library.js （由 skin-library.html 產生）','   欄位：[怪物代號, 樣貌代號, 樣貌名稱, 圖示, 價格]；圖片：assets/skins/<怪物代號用-取代|>-<樣貌代號>.png','   換圖：同檔名覆蓋即可。 */','window.HERO_SKIN_LIB=['];
+ LIB.forEach(function(r,i){src.push(' '+JSON.stringify([r[0],r[1],r[2],r[3],+r[4]])+(i<LIB.length-1?',':''))});src.push('];');
+ var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([src.join('\n')],{type:'text/javascript'}));a.download='hero-skin-library.js';a.click()};
+render();
+</script></body></html>
