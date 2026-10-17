@@ -107,7 +107,7 @@
         #map-wrap {
             position: relative;
             width: calc(100% - 16px);
-            aspect-ratio: 1695 / 928;
+            aspect-ratio: 1408 / 768;
             border-radius: 10px;
             box-shadow: 0 0 0 4px #5D4037, 0 10px 24px rgba(0,0,0,0.45);
             overflow: hidden;
@@ -620,34 +620,34 @@
     //                 有設的關卡，兩種模式都要多填「餘數」，剛好除盡就填 0
     //   limit       ：每題限時（秒）
     //   fast / quick：幾秒內答對，傷害 x2 / x1.5（也用來算星等）；想調整難易度改這幾個數字就好
-    //   mx / my / mw：該關卡「標籤」在大地圖圖片（1694×928）上的中心座標與寬度（單位：圖片像素），
+    //   mx / my / mw：該關卡「標籤」在大地圖圖片（1408×768）上的中心座標與寬度（單位：圖片像素），
     //                 也就是點擊熱區；勇者的腳會站在標籤正上方一點點
     //   fx / fy / fr：解鎖該關時，迷霧散開的圓心與半徑（要蓋住整個場景）
     //   wide        ：怪物圖是橫幅型（又長又扁）時設 true，戰鬥畫面會把它放大一點
     //                 ★ 換成自己畫的地圖後，只要改這幾個數字，熱區、迷霧、勇者站位都會跟著移動
-    const MAP_W = 1694, MAP_H = 928, NODE_H = 36;
-    const SHOW_NODE_LABELS = false;  // 新地圖已經把「1-1 黑道老大…」等標籤畫在圖上，所以這裡關掉；用別張地圖想顯示編號標籤就改成 true
+    const MAP_W = 1408, MAP_H = 768, NODE_H = 30;   // 鋼鐵帝國新地圖的圖片大小；所有 mx/my/fx/fy 都是以這個大小計算的像素座標
+    const SHOW_NODE_LABELS = true;   // 新地圖沒有畫關卡編號，由程式顯示 1-1、2-1… 標籤；之後地圖自己畫了標籤就改成 false
     const terrains = [
-        { id: 1, name: "第一關：街道", short: "第一關 街道", stages: [
-            { id: "1-1", boss: "黑道老大與混混小弟們", r1: [4, 81], r2: [2, 9], qmin: 2, desc: "九九乘法表反過來（例：56 ÷ 7）", limit: 45, fast: 8, quick: 16, mx: 276, my: 392, mw: 282, fx: 257, fy: 246, fr: 260 }
+        { id: 1, name: "第一關：鐵鏽高地", short: "第一關 鐵鏽高地", stages: [
+            { id: "1-1", boss: "初階鋼鐵哨兵", r1: [4, 81], r2: [2, 9], qmin: 2, desc: "九九乘法表反過來（例：56 ÷ 7）", limit: 45, fast: 8, quick: 16, mx: 262, my: 600, mw: 84, fx: 255, fy: 585, fr: 215 }
         ]},
-        { id: 2, name: "第二關：玩具王國", short: "第二關 玩具王國", stages: [
-            { id: "2-1", boss: "玩具士兵們", r1: [20, 99], r2: [2, 9], qmin: 10, desc: "兩位數 ÷ 一位數（商是兩位數）", limit: 60, fast: 15, quick: 30, mx: 164, my: 785, mw: 175, fx: 171, fy: 685, fr: 230 },
-            { id: "2-2", boss: "玩具戰馬群", r1: [20, 99], r2: [10, 49], qmin: 2, desc: "兩位數 ÷ 兩位數", limit: 60, fast: 15, quick: 30, mx: 434, my: 812, mw: 180, fx: 411, fy: 685, fr: 230, wide: true }
+        { id: 2, name: "第二關：齒輪工廠", short: "第二關 齒輪工廠", stages: [
+            { id: "2-1", boss: "齒輪分配兵", r1: [20, 99], r2: [2, 9], qmin: 10, desc: "兩位數 ÷ 一位數（商是兩位數）", limit: 60, fast: 15, quick: 30, mx: 520, my: 640, mw: 84, fx: 525, fy: 580, fr: 170 },
+            { id: "2-2", boss: "蒸汽傳送帶長", r1: [20, 99], r2: [10, 49], qmin: 2, desc: "兩位數 ÷ 兩位數", limit: 60, fast: 15, quick: 30, mx: 705, my: 650, mw: 84, fx: 705, fy: 595, fr: 165 }
         ]},
-        { id: 3, name: "第三關：海世界", short: "第三關 海世界", stages: [
-            { id: "3-1", boss: "海龜精群", r1: [100, 999], r2: [2, 9], qmin: 2, desc: "三位數 ÷ 一位數", limit: 75, fast: 20, quick: 40, mx: 637, my: 310, mw: 148, fx: 697, fy: 223, fr: 220 },
-            { id: "3-2", boss: "大鯊魚精群", r1: [100, 999], r2: [10, 99], qmin: 2, desc: "三位數 ÷ 兩位數", limit: 90, fast: 25, quick: 50, mx: 660, my: 552, mw: 152, fx: 697, fy: 520, fr: 220 },
-            { id: "3-3", boss: "海龍王與蝦兵蟹將", r1: [200, 999], r2: [100, 499], qmin: 2, desc: "三位數 ÷ 三位數（商是一位數）", limit: 75, fast: 20, quick: 40, mx: 734, my: 833, mw: 232, fx: 754, fy: 760, fr: 230 }
+        { id: 3, name: "第三關：熔爐深處", short: "第三關 熔爐深處", stages: [
+            { id: "3-1", boss: "熔爐鑄造師", r1: [100, 999], r2: [2, 9], qmin: 2, desc: "三位數 ÷ 一位數", limit: 75, fast: 20, quick: 40, mx: 545, my: 305, mw: 84, fx: 565, fy: 235, fr: 190 },
+            { id: "3-2", boss: "鐵水噴射龍", r1: [100, 999], r2: [10, 99], qmin: 2, desc: "三位數 ÷ 兩位數", limit: 90, fast: 25, quick: 50, mx: 815, my: 292, mw: 84, fx: 795, fy: 235, fr: 150 },
+            { id: "3-3", boss: "熔爐守衛・巨像", r1: [200, 999], r2: [100, 499], qmin: 2, desc: "三位數 ÷ 三位數（商是一位數）", limit: 75, fast: 20, quick: 40, mx: 700, my: 232, mw: 84, fx: 695, fy: 170, fr: 190 }
         ]},
-        { id: 4, name: "第四關：失落之地", short: "第四關 失落之地", stages: [
-            { id: "4-1", boss: "土著聚落", r1: [1000, 9999], r2: [2, 9], qmin: 2, remRate: 0.4, desc: "四位數 ÷ 一位數（約 40% 有餘數）", limit: 90, fast: 25, quick: 50, mx: 1050, my: 338, mw: 148, fx: 1051, fy: 246, fr: 220 },
-            { id: "4-2", boss: "三角龍群", r1: [1000, 9999], r2: [10, 99], qmin: 2, remRate: 0.4, desc: "四位數 ÷ 兩位數（約 40% 有餘數）", limit: 120, fast: 40, quick: 80, mx: 1445, my: 300, mw: 150, fx: 1439, fy: 228, fr: 250, wide: true },
-            { id: "4-3", boss: "鳳凰部族", r1: [1000, 9999], r2: [100, 999], qmin: 2, remRate: 0.4, desc: "四位數 ÷ 三位數（約 40% 有餘數）", limit: 120, fast: 35, quick: 70, mx: 1075, my: 536, mw: 150, fx: 1062, fy: 508, fr: 215 },
-            { id: "4-4", boss: "地獄三頭犬家族", r1: [2000, 9999], r2: [1000, 4999], qmin: 2, remRate: 0.4, desc: "四位數 ÷ 四位數（商是一位數，約 40% 有餘數）", limit: 90, fast: 25, quick: 50, mx: 1199, my: 700, mw: 186, fx: 1257, fy: 634, fr: 230 }
+        { id: 4, name: "第四關：天空鐵橋", short: "第四關 天空鐵橋", stages: [
+            { id: "4-1", boss: "螺旋槳偵察機", r1: [1000, 9999], r2: [2, 9], qmin: 2, remRate: 0.4, desc: "四位數 ÷ 一位數（約 40% 有餘數）", limit: 90, fast: 25, quick: 50, mx: 895, my: 468, mw: 84, fx: 895, fy: 440, fr: 120 },
+            { id: "4-2", boss: "鋼索蜘蛛", r1: [1000, 9999], r2: [10, 99], qmin: 2, remRate: 0.4, desc: "四位數 ÷ 兩位數（約 40% 有餘數）", limit: 120, fast: 40, quick: 80, mx: 985, my: 425, mw: 84, fx: 985, fy: 397, fr: 115 },
+            { id: "4-3", boss: "飛艇指揮官", r1: [1000, 9999], r2: [100, 999], qmin: 2, remRate: 0.4, desc: "四位數 ÷ 三位數（約 40% 有餘數）", limit: 120, fast: 35, quick: 70, mx: 1075, my: 383, mw: 84, fx: 1075, fy: 355, fr: 115, wide: true },
+            { id: "4-4", boss: "雷霆戰艦", r1: [2000, 9999], r2: [1000, 4999], qmin: 2, remRate: 0.4, desc: "四位數 ÷ 四位數（商是一位數，約 40% 有餘數）", limit: 90, fast: 25, quick: 50, mx: 1150, my: 337, mw: 84, fx: 1150, fy: 310, fr: 120, wide: true }
         ]},
-        { id: 5, name: "第五關：雪地", short: "第五關 雪地", stages: [
-            { id: "5-1", boss: "大腳雪怪族群", r1: 'mixed', r2: 'mixed', qmin: 2, remRate: 0.4, desc: "隨機位數 ÷ 隨機位數（約 40% 有餘數）", limit: 150, fast: 50, quick: 100, mx: 1487, my: 796, mw: 165, fx: 1473, fy: 640, fr: 260 }
+        { id: 5, name: "第五關：帝國總部", short: "第五關 帝國總部", stages: [
+            { id: "5-1", boss: "鐵甲大帝", r1: 'mixed', r2: 'mixed', qmin: 2, remRate: 0.4, desc: "隨機位數 ÷ 隨機位數（約 40% 有餘數）", limit: 150, fast: 50, quick: 100, mx: 1255, my: 350, mw: 84, fx: 1220, fy: 250, fr: 200 }
         ]}
     ];
 
@@ -1877,7 +1877,7 @@
             } else {
                 nextBtn.style.display = "none"; // 全破
                 title.innerText = "🏆 完美通關 🏆";
-                statsEl.innerHTML += `<div style="color:#8E44AD; font-weight:bold; margin-top:10px;">你已經打敗了大腳雪怪，成為最強的除法勇者！</div>`;
+                statsEl.innerHTML += `<div style="color:#8E44AD; font-weight:bold; margin-top:10px;">你已經打敗了鐵甲大帝，成為最強的除法勇者！</div>`;
             }
             saveProgress();
             if (tokensEarned > 0) awardTokens(tokensEarned);
