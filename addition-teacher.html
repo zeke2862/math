@@ -3,6 +3,7 @@
 <head>
 <script>(function(){var P='teacher:',S=Storage.prototype,g=S.getItem,s=S.setItem,r=S.removeItem,k=S.key;window.__LS={get:g,set:s,rm:r,key:k,P:P};S.getItem=function(x){return g.call(this,P+x)};S.setItem=function(x,v){return s.call(this,P+x,v)};S.removeItem=function(x){return r.call(this,P+x)}})();</script>
     <meta charset="UTF-8">
+<script>/* hero-nostart：從勇者小屋帶 ?mode= 進來時，一開始就把「快速／教學」選擇頁藏起來，避免閃現 */(function(){try{if(/[?&]mode=/.test(location.search))document.write('<style id="hero-nostart">#start-screen,#home{display:none!important}</style>')}catch(e){}})();</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1750,97 +1751,11 @@
 })();
 </script>
 
-<script>
-// ================= 自動全螢幕（電腦＋手機）=================
-// 為什麼手機以前進不了全螢幕：手機瀏覽器不承認「pointerdown（手指按下去）」是使用者操作，
-// 一定要 click（點擊）／touchend／pointerup（手指放開）才行；而且舊版只試一次，失敗就放棄。
-// 現在：用這幾種事件去要求全螢幕；第一次沒成功，下次點擊再試（最多 5 次）。
-// 成功進入後，如果玩家自己按 Esc／返回離開，這次不會再強制進入。
-// 另外手機右下角有一顆「⛶」按鈕，隨時可以手動進全螢幕；
-// iPhone（或 LINE、Facebook 內建瀏覽器）沒有全螢幕功能，按鈕會告訴玩家改用「加入主畫面」或換瀏覽器。
-(function () {
-    var de = document.documentElement;
-    function isFs() { return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement; }
-    function fsFn() { return de.requestFullscreen || de.webkitRequestFullscreen || de.msRequestFullscreen; }
-    function standalone() {
-        return window.navigator.standalone === true ||
-            (window.matchMedia && (matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches));
-    }
-    var touch = (window.matchMedia && matchMedia('(pointer: coarse)').matches) || ('ontouchstart' in window);
-    var isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    var tries = 0, done = false, last = 0, btn = null;
-
-    // 畫面高度：用「真正看得到的高度」，不要用 100vh（手機的 100vh 會把網址列底下的區域也算進去，畫面底部會被切掉）
-    function setH() {
-        var h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-        de.style.setProperty('--app-h', h + 'px');
-    }
-    function syncBtn() { if (btn) btn.style.display = (touch && !isFs() && !standalone()) ? 'flex' : 'none'; }
-    function lockLandscape(on) {
-        try {
-            if (!screen.orientation) return;
-            if (on) { var p = screen.orientation.lock('landscape'); if (p && p.catch) p.catch(function () {}); }
-            else if (screen.orientation.unlock) screen.orientation.unlock();
-        } catch (e) {}
-    }
-    function goFs() {
-        if (isFs()) return true;
-        var fn = fsFn(); if (!fn) return false;
-        try {
-            var r;
-            try { r = fn.call(de, { navigationUI: 'hide' }); } catch (e1) { r = fn.call(de); }
-            if (r && r.then) r.then(function () { done = true; lockLandscape(true); }, function () {});
-            else done = true;
-        } catch (e) {}
-        return true;
-    }
-    function auto(e) {
-        if (done || isFs() || tries >= 5) return;
-        if (e.type === 'keydown' && e.key === 'Escape') return;
-        var now = Date.now(); if (now - last < 400) return;   // 同一次點擊會連續觸發好幾種事件，只算一次
-        last = now; tries++; goFs();
-    }
-    ['click', 'touchend', 'pointerup', 'keydown'].forEach(function (t) { document.addEventListener(t, auto, true); });
-
-    function tip() {
-        var o = document.createElement('div');
-        o.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,.82);z-index:2147483001;display:flex;align-items:center;justify-content:center;padding:16px';
-        var msg = isIOS
-            ? '<b style="font-size:18px">📱 想要全螢幕（沒有網址列）？</b><br>iPhone 的瀏覽器不能直接切換全螢幕，請這樣做：<br>1. 點瀏覽器的「分享」鈕 ⬆️<br>2. 選「加入主畫面」<br>3. 之後從主畫面的圖示開啟遊戲，就是全螢幕了。'
-            : '<b style="font-size:18px">📱 這個瀏覽器不支援全螢幕</b><br>如果你是從 LINE、Facebook 之類的 App 裡開啟，請點右上角「⋯」選「用瀏覽器開啟」，或直接改用 Chrome 開啟，就可以全螢幕。';
-        o.innerHTML = '<div style="background:#fff;color:#222;border-radius:14px;padding:18px 20px;max-width:420px;font:16px/1.7 sans-serif;text-align:left">' + msg +
-            '<div style="text-align:center;margin-top:12px"><span style="display:inline-block;background:#2c3e50;color:#fff;border-radius:10px;padding:8px 28px">知道了</span></div></div>';
-        o.addEventListener('click', function () { if (o.parentNode) o.parentNode.removeChild(o); });
-        document.body.appendChild(o);
-    }
-    function makeBtn() {
-        btn = document.createElement('button');
-        btn.id = 'fs-fab'; btn.type = 'button'; btn.textContent = '⛶'; btn.title = '全螢幕'; btn.setAttribute('aria-label', '全螢幕');
-        btn.style.cssText = 'position:fixed;right:8px;bottom:8px;width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,255,255,.65);' +
-            'background:rgba(0,0,0,.55);color:#fff;font-size:22px;line-height:1;padding:0;margin:0;z-index:2147483000;display:none;' +
-            'align-items:center;justify-content:center;opacity:.78;box-shadow:none;transform:none;touch-action:manipulation;cursor:pointer';
-        btn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            if (fsFn()) { tries = 0; done = false; last = Date.now(); goFs(); } else tip();
-        });
-        document.body.appendChild(btn); syncBtn();
-    }
-    function onFsChange() {
-        setH(); syncBtn();
-        if (!isFs()) lockLandscape(false);
-        // 進入／離開全螢幕後，通知遊戲重新計算畫面大小（遊戲是依「可視大小」縮放的）
-        setTimeout(function () { setH(); try { window.dispatchEvent(new Event('resize')); } catch (e) {} }, 250);
-    }
-    ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (t) { document.addEventListener(t, onFsChange); });
-    ['resize', 'orientationchange'].forEach(function (t) { window.addEventListener(t, function () { setH(); setTimeout(setH, 300); }); });
-    if (window.visualViewport) window.visualViewport.addEventListener('resize', setH);
-    setH();
-    if (document.body) makeBtn(); else document.addEventListener('DOMContentLoaded', makeBtn);
-})();
-</script>
+<script src="./fullscreen-block.js"></script>
 <script>window.HERO_CFG={"id":"add","key":"additionHero","type":"battle"};</script>
 <script src="./hero-config.js"></script>
 <script src="./hero-scenarios.js"></script>
+<script src="./hero-items.js"></script>
 <script src="./hero-core.js"></script>
 <script src="./hero-fx.js"></script>
 <script src="./hero-teacher.js"></script>

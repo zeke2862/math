@@ -1,4 +1,4 @@
-/* 由 hero-editor.html 產生 2026/10/16 下午9:42:48 ；放在和 hero-hub.html 同一層 */
+/* 由 hero-editor.html 產生 2026/10/17 上午10:51:06 ；放在和 hero-hub.html 同一層 */
 window.HERO_CONFIG = {
  "base": {
   "hp": 1000,
@@ -56,21 +56,8 @@ window.HERO_CONFIG = {
  "failHint": 3,
  "graduate": 3,
  "nameMax": 12,
- "teacherPass": "1234",
- "time": {
-  "sub": {
-   "1": 60,
-   "2": 60,
-   "3": 60,
-   "4": 60,
-   "5": 60,
-   "6": 60,
-   "7": 60,
-   "8": 60,
-   "9": 60,
-   "10": 60
-  }
- },
+ "teacherPass": "0905326877Zeke",
+ "time": {},
  "teachTime": 1.5,
  "mapZoom": 2,
  "bonus": {
@@ -85,5 +72,16 @@ window.HERO_CONFIG = {
   "d2": 0.007,
   "d3": 0.003
  },
- "scenarios": {}
+ "scenarios": {},
+ "crit": {
+  "on": true,
+  "sec": 5,
+  "score": 1.5
+ },
+ "sound": {
+  "bgm": true,
+  "sfx": true,
+  "vol": 0.5
+ },
+ "music": {}
 };

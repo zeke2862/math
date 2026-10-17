@@ -1,0 +1,21 @@
+{
+ "name": "整數勇者傳說",
+ "short_name": "整數勇者",
+ "start_url": "./hero-hub.html",
+ "display": "fullscreen",
+ "orientation": "landscape",
+ "background_color": "#7cc36a",
+ "theme_color": "#7cc36a",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  }
+ ]
+}

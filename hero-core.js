@@ -134,14 +134,24 @@ let sw,ep;
 function mapVisible(){const m=document.getElementById('map-screen');return !!m&&!m.classList.contains('hidden')&&getComputedStyle(m).display!=='none'}
 function buildPanels(){
  if(sw||cfg.type==='neg')return;
- const st=E('style',null,'#hero-tier,#hero-endless{position:fixed;left:6px;z-index:70;display:none;gap:6px;flex-wrap:wrap;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;max-width:96vw}#hero-tier{top:6px}#hero-endless{top:60px}#hero-tier button,#hero-endless button{font-weight:900;font-size:clamp(16px,4.4vw,24px);line-height:1.2;font-family:inherit;white-space:nowrap;padding:7px clamp(8px,2.6vw,14px);border-radius:12px;border:3px solid #fff;color:#fff;cursor:pointer;box-shadow:0 4px 0 #0007;opacity:.72}#hero-tier button.on{opacity:1;transform:translateY(-2px);outline:4px solid #ffd24a}#hero-tier .t{background:#2e9e5b}#hero-tier .c{background:#d9472f}#hero-tier .h{background:#7a1fd1}#hero-endless button{font-size:clamp(15px,4vw,20px);background:#0e7490}#hero-endless button.lock{background:#4b5563;opacity:.6}#hero-endless button.open{opacity:1;box-shadow:0 0 14px #67e8f9}');
+ const st=E('style',null,'#hero-tier{position:fixed;left:6px;z-index:70;display:none;gap:6px;flex-wrap:wrap;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;max-width:96vw;top:6px}#hero-tier button{font-weight:900;font-size:clamp(16px,4.4vw,24px);line-height:1.2;font-family:inherit;white-space:nowrap;padding:7px clamp(8px,2.6vw,14px);border-radius:12px;border:3px solid #fff;color:#fff;cursor:pointer;box-shadow:0 4px 0 #0007;opacity:.72}#hero-tier button.on{opacity:1;transform:translateY(-2px);outline:4px solid #ffd24a}#hero-tier .t{background:#2e9e5b}#hero-tier .c{background:#d9472f}#hero-tier .h{background:#7a1fd1}'
+ +'#hero-endless{position:fixed;left:0;top:56px;z-index:70;display:none;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;transform:translateX(-100%);transition:transform .2s ease}#hero-endless.open{transform:none}'
+ +'#hero-endless .he-list{display:flex;flex-direction:column;gap:6px;padding:8px 8px 8px 6px;background:#0b1b2bd9;border-radius:0 14px 14px 0;border:2px solid #67e8f9;border-left:0;max-height:calc(var(--app-h,100vh) - 70px);overflow-y:auto}'
+ +'#hero-endless .he-tab{position:absolute;left:100%;top:0;width:28px;height:52px;padding:0;border:2px solid #67e8f9;border-left:0;border-radius:0 26px 26px 0;background:#0e7490e6;color:#fff;font-size:17px;line-height:1;opacity:.62;cursor:pointer;touch-action:manipulation;box-shadow:none}#hero-endless.open .he-tab{opacity:1}'
+ +'#hero-endless .he-list button{font-weight:900;font-size:clamp(14px,3.6vw,18px);line-height:1.2;font-family:inherit;white-space:nowrap;padding:6px 12px;border-radius:12px;border:3px solid #fff;color:#fff;cursor:pointer;box-shadow:0 3px 0 #0007;background:#0e7490;opacity:.72;text-align:left}#hero-endless .he-list button.lock{background:#4b5563;opacity:.6}#hero-endless .he-list button.open{opacity:1;box-shadow:0 0 14px #67e8f9}');
  document.head.appendChild(st);
  sw=E('div',null,'');sw.id='hero-tier';
  sw.onclick=e=>{const t=e.target.closest('button');if(t)switchTier(t.dataset.t)};
- ep=E('div');ep.id='hero-endless';ep.onclick=e=>{const b=e.target.closest('button');if(!b)return;
-  if(b.classList.contains('lock')){toast(b.dataset.msg);return}H.startEndless(b.dataset.s)};
+ ep=E('div',null,'<div class="he-list"></div><button type="button" class="he-tab" aria-label="無限練習">♾️</button>');ep.id='hero-endless';
+ let epTimer=0;const epClose=()=>{clearTimeout(epTimer);ep.classList.remove('open')};
+ const epOpen=()=>{ep.classList.add('open');clearTimeout(epTimer);epTimer=setTimeout(epClose,7000)};
+ ep.onclick=e=>{
+  if(e.target.closest('.he-tab')){ep.classList.contains('open')?epClose():epOpen();return}
+  const b=e.target.closest('.he-list button');if(!b)return;
+  if(b.classList.contains('lock')){toast(b.dataset.msg);epOpen();return}epClose();H.startEndless(b.dataset.s)};
+ H.closeEndless=epClose;
  document.body.appendChild(sw);document.body.appendChild(ep);
- setInterval(()=>{const v=mapVisible();sw.style.display='none';ep.style.display=v&&!H.endless?'flex':'none';if(v){refreshEndless();ep.style.top='58px'}},400);
+ setInterval(()=>{const v=mapVisible();sw.style.display='none';ep.style.display=v&&!H.endless?'flex':'none';if(v){refreshEndless();ep.style.top='56px'}else ep.classList.remove('open')},400);
 }
 function syncSwitch(){if(!sw)return;sw.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.t===TIER))}
 function toast(m){if(typeof showMapToast==='function')showMapToast(m);else modal(m,[['好',null]])}
@@ -169,7 +179,7 @@ function refreshEndless(){
  }
  const okc=clearedAll(poolOf('chapter'));
  h+=`<button class="${okc?'open':'lock'}" data-s="chapter" data-msg="通關整個章節後開啟全章無限練習">${okc?'♾️':'🔒'} 全章</button>`;
- if(ep.dataset.h!==h){ep.innerHTML=h;ep.dataset.h=h}
+ const lst=ep.querySelector('.he-list');if(lst&&ep.dataset.h!==h){lst.innerHTML=h;ep.dataset.h=h}
 }
 H.startEndless=function(scope){
  const list=poolOf(scope);
@@ -670,6 +680,8 @@ window.addEventListener('load',()=>{
   wrap('tierFor',(o,a)=>{const t=o.apply(null,a),cp=CAP[TIER||'quick'];if(!t||t.stars<=cp)return t;return (window.TIERS||[]).find(x=>x.stars===cp)||t});
  }
  if(q.get('mode')&&cfg.type!=='neg'){try{if(typeof chooseMode==='function')chooseMode(TIER==='teach'?'teach':'quick')}catch(e){}}
+ const unhideStart=()=>{const n=document.getElementById('hero-nostart');if(n)n.remove()};  /* 已經直接進入地圖了，選擇頁的「預先隱藏」可以拿掉（之後玩家自己回首頁還看得到）*/
+ if(cfg.type!=='neg')unhideStart();
  const old=document.getElementById('mode-switch');if(old)old.style.display='none';
  hud();syncSwitch();
  /* ===== 減法勇者（拼圖層）===== */
@@ -704,6 +716,7 @@ window.addEventListener('load',()=>{
   hookNegBonus();hookPick();
   try{const st=E('style',null,'#modes{display:none!important}');document.head.appendChild(st)}catch(e){}
   if(TIER){try{const mp={teach:'teach',quick:'hard',hell:'hell'};if(typeof enterMode==='function')enterMode(mp[TIER])}catch(e){}}
+  unhideStart();
   /* 四則勇者全通關 → 負數與其他章合併等級／經驗值（只做一次，之後共用同一份）*/
   try{
    const sh=(()=>{const s=stu;const a=s?JSON.parse(localStorage.getItem('keyagent_save_v1:'+s)||'{}'):{};const b=JSON.parse(localStorage.getItem('fourOpsHero_local_save_v1')||'{}');return Object.assign({},b,a)})();
@@ -725,4 +738,131 @@ window.addEventListener('load',()=>{
     if(S.over&&!S._sv){S._sv=1;H.saveScore();hud()}}}catch(e){}},300);
  }
 });
+/* ===================== 商店道具（戰鬥中使用）＋勇者造型 =====================
+   道具資料在 hero-items.js；小屋商店買的東西存在 heroRPG_v1 的 items / own / equip。
+   ① 🎒 按鈕（戰鬥畫面右側）：血瓶回血、防禦盾擋攻擊、積分券加分
+   ② 復活藥：血量歸零的瞬間自動使用（遊戲本來「連對 5 題」的甦醒藥優先用）
+   ③ 勇者造型：對地圖、戰鬥、負數章的勇者圖片套上換色／光環 */
+(function itemsBlock(){
+const ITM=window.HERO_ITEMS;if(!ITM)return;
+const FX={shield:0,tk:1,heal:0},FONT='"Noto Sans TC","Microsoft JhengHei",sans-serif';
+const inv=()=>ld().items||{};
+/* ---- 勇者造型：① 換色造型（濾鏡）② 全新角色（換圖片）③ 配件（披風、帽子、表情等疊在勇者身上）---- */
+const EQ=(()=>{try{return ld().equip||{}}catch(e){return {}}})(),SD=ITM.SHOP_DIR;
+try{const sk=ITM.skin(EQ.skin);
+ if(sk&&sk.id!=='default'&&!sk.char){const sel='#map-hero,#hero-avatar-el,img#hero';
+  const rb=n=>`hue-rotate(${n}deg) saturate(${sk.sat}) brightness(${sk.br}) drop-shadow(0 0 8px ${sk.glow})`;
+  document.head.appendChild(E('style',null,sk.rainbow?`${sel}{animation:heroSkinRb 6s linear infinite}@keyframes heroSkinRb{from{filter:${rb(0)}}to{filter:${rb(360)}}}`:`${sel}{filter:${ITM.skinCss(sk)}}`))}}catch(e){}
+/* 全新角色：把遊戲裡 hero-idle.png / hero-run-right.gif … 這些圖片，自動換成 assets/shop/heroes/角色id/ 裡的同名狀態圖 */
+const CHID=ITM.charIds.includes(EQ.skin)?EQ.skin:null;
+const HRE=/assets\/hero[^\/]*\/hero-(idle|run-right|run-left|attack|hurt|lose)\.(?:png|gif)(?:\?.*)?$/;
+let chOK=false;
+const swapU=(v,img)=>{if(!CHID||!chOK||(img&&img.classList&&img.classList.contains('aw')))return v;const m=HRE.exec(v);return m?SD+'heroes/'+CHID+'/'+m[1]+'.png':v};
+if(CHID){
+ try{const d=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,'src');
+  Object.defineProperty(HTMLImageElement.prototype,'src',{get:d.get,set(v){v=String(v);const w=swapU(v,this);if(w!==v)this.dataset.hsw=v;d.set.call(this,w)},configurable:true,enumerable:true});
+  document.addEventListener('error',ev=>{const t=ev.target;if(t&&t.tagName==='IMG'&&t.dataset&&t.dataset.hsw){const o=t.dataset.hsw;delete t.dataset.hsw;d.set.call(t,o)}},true);
+  const of=window.fetch;if(of)window.fetch=function(u,o){return of.call(this,typeof u==='string'?swapU(u):u,o)};
+  const fix=n=>{if(n.nodeType!==1)return;(n.tagName==='IMG'?[n]:[].slice.call(n.querySelectorAll('img'))).forEach(i=>{const a=i.getAttribute('src');if(a&&swapU(a,i)!==a)i.src=a})};
+  new MutationObserver(ms=>ms.forEach(m=>{if(m.type==='attributes')fix(m.target);else m.addedNodes.forEach(fix)})).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['src']});
+  ITM.probe(SD+'heroes/'+CHID+'/idle.png',u=>{if(ITM.dim(u)){chOK=true;[].forEach.call(document.images,i=>{const a=i.getAttribute('src');if(a&&swapU(a,i)!==a)i.src=a})}})}catch(e){}}
+/* 配件：用「貼在勇者圖片旁邊的透明圖層」疊上去，會跟著勇者移動、跳躍、翻轉 */
+(function gearOverlay(){
+ const sl=['cape','outfit','head','face','expr'];if(!sl.some(k=>EQ[k]&&ITM.find(EQ[k])))return;
+ const GT='#map-hero,#hero-avatar-el,img#hero,#mh',L=new WeakMap();let ready=false,stamp=0;const gl=sl.map(k=>EQ[k]).filter(Boolean).map(id=>SD+'gear/'+id+'.png');
+ ITM.probe(gl,()=>{ready=true;stamp++});
+ const mk=()=>{const d=document.createElement('div');d.className='hgl';d.style.cssText='position:absolute;pointer-events:none;margin:0;padding:0;border:0;z-index:0';return d};
+ function tick(){
+  document.querySelectorAll(GT).forEach(img=>{
+   const par=img.parentNode;if(!par)return;let o=L.get(img);
+   if(!o||o.back.parentNode!==par||o.front.parentNode!==par){o={back:mk(),front:mk(),k:''};L.set(img,o);
+    if(getComputedStyle(img).position==='static')img.style.position='relative';
+    par.insertBefore(o.back,img);par.insertBefore(o.front,img.nextSibling)}
+   const cs=getComputedStyle(img),nw=img.naturalWidth,nh=img.naturalHeight,iw=img.offsetWidth,ih=img.offsetHeight;
+   const lose=/lose\.(png|gif)/.test(img.src),hide=!ready||!nw||!iw||cs.display==='none'||cs.visibility==='hidden'||lose;
+   [o.back,o.front].forEach(l=>{l.style.display=hide?'none':''});if(hide)return;
+   const sc=Math.min(iw/nw,ih/nh),bw=nw*sc,bh=nh*sc,dx=(iw-bw)/2,dy=(ih-bh)/2,ox=(parseFloat(cs.transformOrigin)||iw/2),oy=(parseFloat(cs.transformOrigin.split(' ')[1])||ih/2);
+   const ch=CHID&&chOK?CHID:'default',k=ch+'|'+stamp;
+   if(o.k!==k){o.k=k;o.back.innerHTML=ITM.gearHTML(EQ,ch,'back');o.front.innerHTML=ITM.gearHTML(EQ,ch,'front')}
+   const z=parseInt(cs.zIndex)||0;
+   [[o.back,z-1],[o.front,z+1]].forEach(([l,zz])=>{const st=l.style;st.left=(img.offsetLeft+dx)+'px';st.top=(img.offsetTop+dy)+'px';st.width=bw+'px';st.height=bh+'px';
+    st.transform=cs.transform==='none'?'':cs.transform;st.transformOrigin=(ox-dx)+'px '+(oy-dy)+'px';st.opacity=cs.opacity;st.zIndex=cs.zIndex==='auto'?'':zz;st.filter=''});
+  });
+  requestAnimationFrame(tick)}
+ requestAnimationFrame(tick)})();
+/* ---- 小工具 ---- */
+const say=(t,ms)=>{ms=ms||1700;const d=E('div','position:fixed;left:50%;top:20%;transform:translateX(-50%);z-index:9998;background:#1b1e3bee;color:#fff;border:3px solid #ffd24a;border-radius:14px;padding:8px 18px;font:800 20px/1.4 '+FONT+';pointer-events:none;transition:opacity .5s;text-align:center;max-width:92vw',t);document.body.appendChild(d);setTimeout(()=>{d.style.opacity='0'},ms);setTimeout(()=>d.remove(),ms+600)};
+const hp=()=>{try{if(cfg.type==='neg'){const S=window.eval('S');return S?{cur:S.php,max:S.pmax}:null}if(cfg.type==='battle')return{cur:window.eval('playerHP'),max:window.eval('maxPlayerHP')}}catch(e){}return null};
+const setHp=v=>{v=Math.round(v);if(cfg.type==='neg'){window.eval('S').php=v;window.upd()}else{window.eval('playerHP='+v);window.updateUI()}};
+const consume=id=>upd(o=>{o.items=o.items||{};if(o.items[id]>0)o.items[id]--;const s=o.stat=o.stat||{buy:{},use:{},spent:0};s.use=s.use||{};s.use[id]=(s.use[id]||0)+1});
+const resultOpen=()=>{const r=document.getElementById(cfg.type==='neg'?'res':'result-overlay');return !!r&&!r.hidden&&!r.classList.contains('hidden')};
+/* ---- 使用道具 ---- */
+function use(id){
+ const d=ITM.find(id);if(!d||(inv()[id]||0)<1)return;
+ if(d.kind==='heal'){const h=hp();if(!h||h.cur<=0)return;
+  if(h.cur>=h.max){say('血量已經是滿的囉！');return}
+  if(FX.heal>=ITM.HEAL_CAP){say(`這場戰鬥最多喝 ${ITM.HEAL_CAP} 瓶喔！`);return}
+  const nv=Math.min(h.max,h.cur+Math.round(h.max*d.pct)),g=Math.round(nv-h.cur);setHp(nv);FX.heal++;consume(id);
+  try{if(cfg.type==='battle')window.showFloatingDamage('hero','+'+g,'#5dff9b')}catch(e){}say(`${d.icon} ${d.name}：血量 +${g}`)}
+ else if(d.kind==='shield'){if(FX.shield>0){say('身上已經有盾牌了，先用完再換喔！');return}
+  FX.shield=d.hits;consume(id);say(`${d.icon} ${d.name}：可以擋下 ${d.hits} 次攻擊！`)}
+ else if(d.kind==='ticket'){if(FX.tk>1){say('這場已經用過積分券囉！');return}
+  FX.tk=d.mult;consume(id);say(`${d.icon} ${d.name}：這場戰鬥積分 ×${d.mult}！`)}
+ openT=false;draw()}
+/* ---- 🎒 道具列 ---- */
+let bar,tray,chips,btn,openT=false;
+function build(){if(bar)return;
+ bar=E('div','position:fixed;right:6px;top:38%;z-index:250;display:none;flex-direction:column;align-items:flex-end;gap:6px;font-family:'+FONT+';-webkit-user-select:none;user-select:none');bar.id='hero-items';
+ chips=E('div','display:flex;flex-direction:column;gap:3px;align-items:flex-end;pointer-events:none');
+ tray=E('div','display:none;flex-direction:column;gap:5px;background:#1b1e3bf2;border:3px solid #ffd24a;border-radius:14px;padding:8px;width:min(230px,62vw);max-height:56vh;overflow:auto');
+ btn=E('button','width:50px;height:50px;border-radius:50%;border:3px solid #fff;background:linear-gradient(#ffd24a,#f5a300);font-size:26px;cursor:pointer;box-shadow:0 4px 0 #0006;padding:0','🎒');btn.title='道具';
+ btn.onclick=()=>{openT=!openT;draw()};
+ bar.appendChild(chips);bar.appendChild(tray);bar.appendChild(btn);document.body.appendChild(bar)}
+function draw(){build();
+ const it=inv(),pz=cfg.type==='puzzle';
+ const usable=ITM.consumables.filter(c=>c.kind!=='revive'&&it[c.id]>0&&(!pz||c.kind==='ticket')),rev=pz?[]:ITM.consumables.filter(c=>c.kind==='revive'&&it[c.id]>0);
+ const chip=t=>`<span style="background:#1b1e3bdd;color:#fff;border:2px solid #ffd24a;border-radius:99px;padding:1px 10px;font:800 14px/1.5 ${FONT}">${t}</span>`;
+ chips.innerHTML=(FX.shield>0?chip('🛡 擋 ×'+FX.shield):'')+(FX.tk>1?chip('🎟 積分 ×'+FX.tk):'');
+ tray.style.display=openT?'flex':'none';if(!openT)return;
+ tray.innerHTML='';
+ if(!usable.length&&!rev.length){tray.appendChild(E('div','color:#fff;font-size:15px;line-height:1.6;text-align:center','還沒有道具喔～<br>回小屋的 🏪 商店逛逛吧！'));return}
+ usable.forEach(c=>{const b=E('button','font:800 16px/1.3 '+FONT+';padding:8px 10px;border-radius:10px;border:0;background:#4a5bd8;color:#fff;cursor:pointer;text-align:left',`${c.icon} ${c.name} <b style="color:#ffd24a">×${it[c.id]}</b><div style="font-weight:500;font-size:12px;opacity:.85">${c.desc.replace(/（.*?）/g,'')}</div>`);b.onclick=()=>use(c.id);tray.appendChild(b)});
+ rev.forEach(c=>tray.appendChild(E('div','color:#9ff2ff;font-size:13px;line-height:1.5',`${c.icon} ${c.name} ×${it[c.id]}　<small>倒下時自動使用</small>`)));
+ if(pz)tray.appendChild(E('div','color:#bbb;font-size:12px','（減法章沒有血量，只能用積分券）'))}
+setInterval(()=>{build();const on=inBattle()&&!resultOpen()&&!document.getElementById('hero-modal');bar.style.display=on?'flex':'none';if(!on&&openT){openT=false;draw()}},400);
+/* 每場新戰鬥：血瓶次數歸零；盾牌和積分券只在「同一場」有效（無限模式連續打怪時保留）*/
+const reset=()=>{if(!H.endless){FX.shield=0;FX.tk=1}FX.heal=0;if(bar)draw()};
+H.on('start',reset);
+if(cfg.type==='neg'){let ls=null;setInterval(()=>{try{const S=window.eval('typeof S!=="undefined"&&S?S:null');if(S!==ls){ls=S;FX.shield=0;FX.tk=1;FX.heal=0;if(bar)draw()}}catch(e){}},300)}
+/* ---- 積分券：所有算分都經過 H.pts ---- */
+const pts0=H.pts;H.pts=function(){const p=pts0.apply(H,arguments);return FX.tk>1?Math.round(p*FX.tk):p};
+/* ---- 復活藥：由弱到強，先用便宜的 ---- */
+function tryRevive(){const it=inv(),r=ITM.consumables.filter(c=>c.kind==='revive').sort((a,b)=>a.pct-b.pct).find(c=>it[c.id]>0);if(!r)return null;consume(r.id);return r}
+const flash=f=>{H._flash=f;setTimeout(()=>{H._flash=null},0);if(bar)draw()};
+/* ---- 戰鬥章（加乘除四則）：包住 H.hurt，盾牌→回傳 0；致命一擊→改成「剛好回到復活後的血量」---- */
+if(cfg.type==='battle'){
+ const hurt0=H.hurt;
+ H.hurt=function(){const d=hurt0.apply(H,arguments);
+  if(FX.shield>0){FX.shield--;flash({t:'shield'});return 0}
+  try{const cur=window.eval('playerHP'),max=window.eval('maxPlayerHP'),hr=window.eval('hasRevive');
+   if(cur-d<=0&&!hr){const r=tryRevive();if(r){flash({t:'revive',r});return cur-Math.max(1,Math.round(max*r.pct))}}}catch(e){}
+  return d};
+ window.addEventListener('load',()=>{
+  wrap('showMessage',(o,a)=>{const f=H._flash;let t=a[0];
+   if(f&&typeof t==='string'&&/受到 -?\d+ 傷害/.test(t))t=t.replace(/受到 -?\d+ 傷害，?/,f.t==='shield'?'🛡 盾牌擋下了攻擊！':`💥 致命一擊！${f.r.icon}${f.r.name}發動，回復到 ${Math.round(f.r.pct*100)}% 血量！ `);
+   return o.apply(null,[t].concat([].slice.call(a,1)))});
+  wrap('showFloatingDamage',(o,a)=>{const f=H._flash;if(f&&a[0]==='hero'){H._flash=null;return o.apply(null,['hero',f.t==='shield'?'🛡 擋下！':f.r.icon+' 復活！',f.t==='shield'?'#7fd4ff':'#7dff9b'])}return o.apply(null,a)})
+ });
+}
+/* ---- 負數章：包住 resolve，答錯後修正血量 ---- */
+if(cfg.type==='neg'){
+ window.addEventListener('load',()=>{
+  wrap('resolve',(o,a)=>{const S=window.eval('S'),p0=S?S.php:0;const r=o.apply(null,a);
+   try{if(S&&S.php<p0){let note='';
+     if(FX.shield>0){FX.shield--;S.php=p0;note='🛡 盾牌擋下了攻擊，魂火不減！'}
+     else if(S.php<=0){const rv=tryRevive();if(rv){S.php=Math.max(1,Math.round(S.pmax*rv.pct));note=`💥 致命一擊！${rv.icon}${rv.name}發動，魂火回復到 ${Math.round(rv.pct*100)}%！`}}
+     if(note){window.upd();const m=document.getElementById('msg');if(m)m.innerHTML=`<span style="color:#7dff9b">${note}</span>`;try{window.fl('hero','🛡','#7fd4ff')}catch(e){}draw()}}}catch(e){}
+   return r})});
+}
+})();
 })();

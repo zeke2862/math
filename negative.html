@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<script>/* hero-nostart：從勇者小屋帶 ?mode= 進來時，一開始就把「快速／教學」選擇頁藏起來，避免閃現 */(function(){try{if(/[?&]mode=/.test(location.search))document.write('<style id="hero-nostart">#start-screen,#home{display:none!important}</style>')}catch(e){}})();</script><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>亡靈序曲：骷髏暴君的逆襲 2.1</title>
 <script src="./sync-client.js"></script>
 <script src="./assets/negative/forms.js"></script>
@@ -218,7 +219,7 @@ let mode=ld('mode','teach'),P=(()=>{const o=ld('P',[]);if(Array.isArray(o))retur
 const passed=i=>(P[i]||0)>0, unlocked=i=>i===0||passed(i-1), allDone=()=>passed(ST.length-1);
 function setMode(m){mode=m;sv('mode',m);heroId=null;menu()}
 // 起始畫面 → 選模式 → 全螢幕（瀏覽器規定一定要「點一下」才能進全螢幕，所以放在按鈕的點擊裡）
-function goFs(){const el=document.documentElement,fn=el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen;
+function goFs(){if(window.HERO_EMBED||window.parent!==window){try{parent.postMessage({hero:'fs'},'*')}catch(e){}return}const el=document.documentElement,fn=el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen;
  if(!(document.fullscreenElement||document.webkitFullscreenElement)&&fn){try{const r=fn.call(el);if(r&&r.catch)r.catch(()=>{})}catch(e){}}}
 const HM={teach:{t:'🧮 教學模式',d:'一位數・不計時\n先去括號、再一步一步算\n適合剛學負數'},hard:{t:'⚔️ 困難模式',d:'兩位數・每題限時 25 秒\n直接輸入答案'},hell:{t:'🔥 地獄模式',d:'三位數・每題限時 25 秒（與困難相同）\n直接輸入答案'}};
 function renderHome(){
@@ -1058,6 +1059,7 @@ try{if(bestStar(3)>0&&sbReady()&&mySid())startPendingListen()}catch(e){}
 </script><script>window.HERO_CFG={"id":"neg","type":"neg"};</script>
 <script src="./hero-config.js"></script>
 <script src="./hero-scenarios.js"></script>
+<script src="./hero-items.js"></script>
 <script src="./hero-core.js"></script>
 <script src="./hero-fx.js"></script>
 </body></html>
