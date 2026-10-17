@@ -59,7 +59,8 @@ const D={base:{hp:1000,atk:50,def:20,spd:100},growth:{hp:100,atk:5,def:3,spd:1},
  xp:{correct:10,wrong:1},score:{base:100,minSec:3,mult:{teach:1,quick:2,hell:3}},
  stars:[1,.9,.8,.7,.6],caps:{teach:2,quick:4,hell:5},hellTime:.6,failHint:3,graduate:3,nameMax:12,teacherPass:'1234',
  time:{},teachTime:1.5,mapZoom:2,bonus:{on:true,every:5,scoreMult:5,bossMult:3},chest:{same:.9,d1:.09,d2:.007,d3:.003},scenarios:{},
- crit:{on:true,sec:5,score:1.5},sound:{bgm:true,sfx:true,vol:.5},music:{}};
+ crit:{on:true,sec:5,score:1.5},sound:{bgm:true,sfx:true,vol:.5},music:{},
+ wrong:{minCount:5,waitMin:10,maxRound:8,gap:3,rest1:30,rest2:1440,variant:true}};
 const ACC=window.HERO_PET_ACC||{slots:[],items:[]};
 const STY=window.HERO_PET_STYLES||[],ART=Object.entries(window.HERO_PET_SKINS||{}).flatMap(([k,l])=>l.map(x=>Object.assign({mon:k},x)));
 D.capture={shardNeed:3,restMax:6,missFirst:.4,missLast:.1,teachBonus:.1,gomokuSec:10,tttDrawLimit:2,q:{same:.9,d1:.09,d2:.007,d3:.003},skinPrice:Object.fromEntries(STY.concat(ART).map(i=>[i.id,i.price])),price:Object.fromEntries(ACC.items.map(i=>[i.id,i.price]))};
@@ -97,6 +98,14 @@ const F3=[['情境題 BONUS',[
 ['capture.q.d2','差兩階 %','合計（預設 0.7）',.1,'pct'],['capture.q.d3','差三階 %','合計（預設 0.3）。收服不會開到空箱，沒抽中的部分算「同星等」',.1,'pct']]],
 ['👾 商店：怪物新樣貌價格（不分品質，一個樣貌一個價錢）',STY.map(x=>['capture.skinPrice.'+x.id,x.icon+' '+x.name+'（通用換色，每隻怪物各買各的）','勇者幣（預設 '+x.price+'）',10]).concat(ART.map(x=>['capture.skinPrice.'+x.id,(x.icon||'🎭')+' '+x.name+'（'+x.mon+' 專屬）','勇者幣（預設 '+x.price+'）',10]))],
 ...ACC.slots.map(sl=>['👾 商店：打扮物品價格・'+sl.icon+sl.name,ACC.items.filter(x=>x.slot===sl.id).map(x=>['capture.price.'+x.id,x.icon+' '+x.name,'勇者幣（預設 '+x.price+'）',10])]),
+['📝 錯題練習（先休息、隔一陣子再練、每次換數字）',[
+['wrong.minCount','累積幾題就開放','不在休息中的錯題累積到這個數量，錯題練習就開放（預設 5）',1],
+['wrong.waitMin','最久等幾分鐘','題目少時，有一題放了這麼多分鐘也會開放（預設 10）。不會一答錯馬上連續考同一題',1],
+['wrong.maxRound','一輪最多幾題','一次練習最多出幾題，避免變成罰寫（預設 8）',1],
+['wrong.gap','答錯後隔幾題再考','練習中答錯的題目，至少隔這麼多題才再出現；題數不夠就留到下一輪（預設 3）',1],
+['wrong.rest1','第1次答對後隔幾分鐘','答對一次後，這種題要休息多久才會再練（預設 30 分鐘）',1],
+['wrong.rest2','第2次答對後隔幾分鐘','答對兩次後再休息多久（預設 1440＝一天）。想一天內練完可改成 240',10],
+['wrong.variant','換數字出同型題','1＝每次換數字（練方法，不是背答案），0＝出原題（預設 1）',1,'bool']]],
 ['大地圖',[['mapZoom','地圖放大倍數','大地圖放大幾倍讓玩家滑動尋找（1＝不放大，預設 2）',.1]]],
 ['神速一擊（答得快的獎勵）',[['crit.on','開啟神速一擊','1＝開啟，0＝關閉',1,'bool'],['crit.score','神速分數倍數','答得夠快時這一題的分數倍數（預設 1.5）',.1],['crit.sec','減法章神速秒數','減法章幾秒內答對算神速（其他章用各關「極速門檻」的 4 成）',.5]]],
 ['音樂與音效',[['sound.bgm','預設開背景音樂','1＝開，0＝關（學生可以用左下角🔊自己切換）',1,'bool'],['sound.sfx','預設開音效','1＝開，0＝關',1,'bool'],['sound.vol','總音量','0～1（預設 0.5）',.05],

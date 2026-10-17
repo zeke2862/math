@@ -54,7 +54,7 @@ const H=window.HERO={on(n,f){(EV[n]=EV[n]||[]).push(f)},emit(n,d){(EV[n]||[]).fo
  heal(){return Math.max(1,Math.round((H.pa*.95-H.md)*C.battle.healFactor))},
  hurt(){H.qn++;H.mc++;H.addXp(C.xp.wrong);H.recWrong();hud();H.emit('hurt',{mc:H.mc});return Math.max(1,Math.round(H.ma*(1+C.battle.missStep*(H.mc-1))-H.pdef))},
  bonusText(c){return c>=2?'(連擊 ×'+(1+C.battle.comboStep*(c-1)).toFixed(1)+')':''},
- /* 錯題收集：題目文字＋正確答案；到總部「錯題練習」答對 3 次才會消失 */
+ /* 錯題收集：題目文字＋正確答案；到總部「錯題練習」隔一陣子答對 3 次（每次換數字）才會消失；since＝放進錯題本的時間、due＝最早可再練的時間 */
  recWrong(){try{
   const el=(typeof ui!=='undefined'&&ui&&ui.question)||document.getElementById('pz-question')||document.getElementById('question');
   const t=(el&&el.innerText||'').replace(/\s+/g,' ').trim();
@@ -63,7 +63,7 @@ const H=window.HERO={on(n,f){(EV[n]=EV[n]||[]).push(f)},emit(n,d){(EV[n]||[]).fo
   const r=(cfg.id==='div'&&typeof currentRem!=='undefined')?currentRem:null;
   const to=typeof timeLeft!=='undefined'&&timeLeft<=0;if(to)H.timeouts++;H.stageWrong.push({q:t,a,r,to});
   upd(o=>{o.wrong=o.wrong||[];const k=cfg.id+'|'+t,it=o.wrong.find(x=>x.k===k);
-   if(it)it.n=0;else{o.wrong.push({k,c:cfg.id,q:t,a,r,n:0});if(o.wrong.length>200)o.wrong.shift()}})}catch(e){}},
+   const now=Date.now();if(it){it.n=0;it.since=now;it.due=0}else{o.wrong.push({k,c:cfg.id,q:t,a,r,n:0,since:now,due:0});if(o.wrong.length>200)o.wrong.shift()}})}catch(e){}},
  saveScore(){
   if(!H.stageKey||H.score<=0)return;const o=ld();o.best=o.best||{};const b=o.best[cfg.id]=o.best[cfg.id]||{};
   const k=H.stageKey+'|'+(TIER||'quick');if(!(b[k]>=H.score))b[k]=H.score;

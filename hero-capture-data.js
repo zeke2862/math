@@ -160,57 +160,57 @@ window.HERO_PET_CATALOG={
   "stages": [
    {
     "id": "1-1",
-    "name": "黑道老大與混混小弟們",
+    "name": "初階鋼鐵哨兵",
     "img": "./assets/bosses/division/monster-1-1.png"
    },
    {
     "id": "2-1",
-    "name": "玩具士兵們",
+    "name": "齒輪分配兵",
     "img": "./assets/bosses/division/monster-2-1.png"
    },
    {
     "id": "2-2",
-    "name": "玩具戰馬群",
+    "name": "蒸汽傳送帶長",
     "img": "./assets/bosses/division/monster-2-2.png"
    },
    {
     "id": "3-1",
-    "name": "海龜精群",
+    "name": "熔爐鑄造師",
     "img": "./assets/bosses/division/monster-3-1.png"
    },
    {
     "id": "3-2",
-    "name": "大鯊魚精群",
+    "name": "鐵水噴射龍",
     "img": "./assets/bosses/division/monster-3-2.png"
    },
    {
     "id": "3-3",
-    "name": "海龍王與蝦兵蟹將",
+    "name": "熔爐守衛・巨像",
     "img": "./assets/bosses/division/monster-3-3.png"
    },
    {
     "id": "4-1",
-    "name": "土著聚落",
+    "name": "螺旋槳偵察機",
     "img": "./assets/bosses/division/monster-4-1.png"
    },
    {
     "id": "4-2",
-    "name": "三角龍群",
+    "name": "鋼索蜘蛛",
     "img": "./assets/bosses/division/monster-4-2.png"
    },
    {
     "id": "4-3",
-    "name": "鳳凰部族",
+    "name": "飛艇指揮官",
     "img": "./assets/bosses/division/monster-4-3.png"
    },
    {
     "id": "4-4",
-    "name": "地獄三頭犬家族",
+    "name": "雷霆戰艦",
     "img": "./assets/bosses/division/monster-4-4.png"
    },
    {
     "id": "5-1",
-    "name": "大腳雪怪族群",
+    "name": "鐵甲大帝",
     "img": "./assets/bosses/division/monster-5-1.png"
    }
   ]
