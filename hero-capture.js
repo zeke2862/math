@@ -59,9 +59,18 @@ const rollCapture=stars=>rollRarity(Math.max(1,Math.min(5,stars||1)))||Math.max(
 const imgTag=(src,cls,sty)=>`<img class="${cls||''}" src="${esc(src||'')}" alt="" draggable="false"${sty?` style="filter:${sty}"`:''} onerror="this.outerHTML='<span class=&quot;cap-ph&quot;>👾</span>'">`;
 /* 帶打扮的怪物圖：h＝圖高(px)，fit＝{head,face,neck,hold,color,aura} */
 const accOf=id=>ACC.items.find(x=>x.id===id);
+/* 怪物打扮對位：依「這張怪物圖量到的頭、臉、脖子、身體位置」（RIGS）決定表情符號配件放哪裡、多大；沒量到的圖用預設比例 */
+const DEFR=[100,100,.5,.06,.55,.42,.5,.5,.55,.45,.72,.97];
+function accLay(src,elW,elH,flip){
+ const R=(window.HERO_ITEMS&&HERO_ITEMS.rigOf&&HERO_ITEMS.rigOf(src))||DEFR;
+ const s=Math.min(elW/R[0],elH/R[1]),cw=R[0]*s,chh=R[1]*s,ox=(elW-cw)/2,oy=(elH-chh)/2,X=x=>ox+(flip?1-x:x)*cw,Y=y=>oy+y*chh;
+ const hh=R[5],hwp=Math.min(R[4]*cw,hh*chh*1.12);
+ return{head:{x:X(R[2]),y:Y(R[3]+.3*hh),fs:hwp*.95,t:'translate(-50%,-100%)'},face:{x:X(R[2]),y:Y(R[3]+.56*hh),fs:hwp*.62,t:'translate(-50%,-50%)'},
+  neck:{x:X(R[7]),y:Y(R[6]),fs:hwp*.5,t:'translate(-50%,-30%)'},hold:{x:X(Math.min(.95,R[7]+Math.min(R[8],.8)*.5)),y:Y(R[10]),fs:hwp*.55,t:'translate(-30%,-50%)'}}}
+const accI=(s,it,L)=>{const p=L[s];return `<i class="cap-a ${s}" style="left:${p.x.toFixed(1)}px;top:${p.y.toFixed(1)}px;right:auto;bottom:auto;font-size:${Math.max(10,p.fs).toFixed(1)}px;transform:${p.t}">${it.icon}</i>`};
 function fig(src,fit,h,flip,v){fit=fit||{};const it=s=>accOf(fit[s]),au=it('aura');
  const f=[v&&v.filter,au&&au.filter].filter(Boolean).join(' ');
- const ov=['head','face','neck','hold'].map(s=>it(s)?`<i class="cap-a ${s}">${it(s).icon}</i>`:'').join('');
+ const rg=(window.HERO_ITEMS&&HERO_ITEMS.rigOf&&HERO_ITEMS.rigOf(src)),nat=rg||DEFR,elW=Math.min(h*nat[0]/nat[1],h*1.5),L=accLay(src,elW,h,flip),ov=['head','face','neck','hold'].map(s=>it(s)?accI(s,it(s),L):'').join('');
  const an=(v&&v.anim)||(au&&au.anim)||'';
  return `<span class="cap-fig${an?' '+an:''}${flip?' flip':''}" style="--h:${h}px">${imgTag(src,'',f)}${ov}</span>`}
 function figM(k,p,h){const f=infoOf(k),m=mon(p,k),v=curSkinOf(p,k);return fig(v&&v.img?v.img:f.s.img,m.fit,h,false,v)}
@@ -528,7 +537,7 @@ function bossOverlay(){
    if(!el||el.parentNode!==par){el=document.createElement('div');el.className='cap-hgl';el.style.cssText='position:absolute;pointer-events:none;margin:0;padding:0;border:0';if(getComputedStyle(img).position==='static')img.style.position='relative';par.insertBefore(el,img.nextSibling);key=''}
    const cs=getComputedStyle(img),iw=img.offsetWidth,ih=img.offsetHeight,hide=!img.naturalWidth||!iw||cs.display==='none'||cs.visibility==='hidden'||par.classList.contains('boss-defeated');
    el.style.display=hide?'none':'';
-   if(!hide){const k2=JSON.stringify(bossFit)+ih;if(k2!==key){key=k2;el.innerHTML=SL.map(x=>{const it=accOf(bossFit[x]);return it?`<i class="cap-a ${x}">${it.icon}</i>`:''}).join('')}
+   if(!hide){const k2=JSON.stringify(bossFit)+ih;if(k2!==key){key=k2;const L=accLay(img.getAttribute('src')||img.src,iw,ih,false);el.innerHTML=SL.map(x=>{const it=accOf(bossFit[x]);return it?accI(x,it,L):''}).join('')}
     const st=el.style;st.left=img.offsetLeft+'px';st.top=img.offsetTop+'px';st.width=iw+'px';st.height=ih+'px';st.setProperty('--h',ih+'px');st.transform=cs.transform==='none'?'':cs.transform;st.transformOrigin=cs.transformOrigin;st.opacity=cs.opacity}}
   else if(el)el.style.display='none';
   requestAnimationFrame(tick)}

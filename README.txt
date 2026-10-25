@@ -1,1 +1,4 @@
-把 hero-capture.js 覆蓋到遊戲資料夾（和 index.html 同一層），按 Ctrl+F5。
+Place into the game folder (overwrite), then Ctrl+F5:
+ hero-items.js, hero-capture.js, assets/shop/gear/*.png
+tools/ is optional (for teacher/dev): python3 tools/build_rigs.py <game folder> <game folder>/hero-items.js
+Re-run it whenever new characters/monsters/gear images are added.
