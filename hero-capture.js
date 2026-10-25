@@ -88,7 +88,7 @@ const sLose=()=>[330,262,196].forEach((f,i)=>setTimeout(()=>beep(f,.2,'sawtooth'
 /* ===================== 樣式 ===================== */
 const css=document.createElement('style');css.textContent=`
 #cap-ov{position:fixed;inset:0;z-index:100000;background:rgba(10,12,28,.82);display:flex;align-items:center;justify-content:center;padding:10px;font-family:inherit;-webkit-user-select:none;user-select:none}
-.cap-box{background:linear-gradient(#fffaf0,#fff3d6);border:4px solid #8d5524;border-radius:18px;width:min(560px,100%);max-height:96vh;overflow:auto;padding:14px 14px 12px;color:#3b2a14;box-shadow:0 10px 40px #000a;text-align:center}
+.cap-box{background:linear-gradient(#fffaf0,#fff3d6);border:4px solid #8d5524;border-radius:18px;width:min(720px,100%);max-height:96vh;overflow:auto;padding:14px 14px 12px;color:#3b2a14;box-shadow:0 10px 40px #000a;text-align:center}
 .cap-box h2{margin:0 0 6px;font-size:22px}
 .cap-box button{font-family:inherit;cursor:pointer}
 .cap-big{font-size:20px;font-weight:900;padding:10px 22px;border-radius:14px;border:3px solid #ffd24a;background:linear-gradient(#a0522d,#5c2e0e);color:#ffe9a0;margin:6px}
@@ -105,13 +105,20 @@ const css=document.createElement('style');css.textContent=`
 .cap-ptxt{min-width:0;overflow-wrap:anywhere}
 .cap-pbtns{max-width:100%;justify-content:center}
 .cap-pbtns button{max-width:100%;white-space:normal}
+/* ---- 結算＋收服：加寬成左右兩欄，不用滾軸、字體不縮小 ---- */
+#result-overlay .modal-box.has-cap{width:min(900px,96%);max-height:none;overflow:visible;padding:18px 28px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);column-gap:22px;align-items:center;text-align:center}
+#result-overlay .modal-box.has-cap h1{grid-column:1;margin:0 0 4px;font-size:40px}
+#result-overlay .modal-box.has-cap .star-result{grid-column:1;margin:2px 0;font-size:48px}
+#result-overlay .modal-box.has-cap .stats-details{grid-column:1;margin:0}
+#result-overlay .modal-box.has-cap .cap-panel{grid-column:2;grid-row:1/4;margin:0;align-self:center}
+#result-overlay .modal-box.has-cap .modal-buttons{grid-column:1/3;margin-top:10px;justify-content:center}
+@media(max-width:560px) and (orientation:portrait){#result-overlay .modal-box.has-cap{display:block;width:96%;max-height:96%;overflow-y:auto}}
 @media(max-width:520px),(max-height:480px){
  #result-overlay .modal-box{padding:12px 16px}#result-overlay .modal-box h1{font-size:30px;margin:0 0 6px}#result-overlay .star-result{font-size:36px;margin:6px 0}
  .cap-box{padding:10px 10px 8px}.cap-box h2{font-size:19px}
  .cap-big{font-size:17px;padding:8px 14px}.cap-btn{font-size:15px;padding:7px 12px;margin:3px}
  .cap-card{width:min(190px,72%)}.cap-card img,.cap-card .cap-ph{height:96px}
- .cap-ptxt{font-size:14px;flex-basis:120px}.cap-pbtns button{font-size:14px;padding:7px 10px}
- .cap-panel .cap-pimg img,.cap-panel .cap-pimg .cap-ph{height:56px;max-width:80px}
+ .cap-pbtns button{padding:7px 10px}
 }
 @media(max-height:480px){.cap-gb{width:min(210px,94%)}.cap-tbar{width:min(210px,94%)}}
 .cap-score{font-size:20px;font-weight:900;margin:2px 0 6px}
@@ -378,11 +385,11 @@ function confetti(host){const c=document.createElement('div');c.style.cssText='p
  document.body.appendChild(c);setTimeout(()=>c.remove(),3500)}
 
 /* ===================== 結算畫面上的「要收服嗎？」===================== */
-function removePanel(){const o=$('#cap-panel');if(o)o.remove()}
+function removePanel(){const o=$('#cap-panel');if(o)o.remove();const b=$('#result-overlay .modal-box');if(b)b.classList.remove('has-cap')}
 function offerPanel(gid,st,stars){
  removePanel();const box=$('#result-overlay .modal-box');if(!box)return;
  const key=gid+'|'+st.id,p=document.createElement('div');p.id='cap-panel';p.className='cap-panel';
- const btns=$('.modal-buttons',box);btns?box.insertBefore(p,btns):box.appendChild(p);
+ box.classList.add('has-cap');const btns=$('.modal-buttons',box);btns?box.insertBefore(p,btns):box.appendChild(p);
  const ctx0={gid,st,key,stars};
  function render(state){
   const m=mon(read(),key),sh=m.sh||0;
