@@ -80,7 +80,6 @@ for(const k in pets)art[k]={vb:petVb[k],svg:pets[k]};
 
 /* ---------- 地毯（取代原本的紅地毯）---------- */
 const rugs={
- default:`<ellipse cx="800" cy="690" rx="270" ry="52" fill="#c0392b" opacity=".9"/><ellipse cx="800" cy="690" rx="230" ry="40" fill="none" stroke="#ffd24a" stroke-width="6" stroke-dasharray="14 10"/>`,
  r_blue:`<ellipse cx="800" cy="690" rx="270" ry="52" fill="#1f3b8a"/><ellipse cx="800" cy="690" rx="238" ry="42" fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="4 12" stroke-linecap="round"/>${[0,1,2,3,4,5,6,7].map(i=>{const a=i*Math.PI/4;return `<text x="${(800+185*Math.cos(a)).toFixed(0)}" y="${(698+31*Math.sin(a)).toFixed(0)}" text-anchor="middle" font-size="22" fill="#fff">★</text>`}).join('')}`,
  r_green:`<ellipse cx="800" cy="690" rx="270" ry="52" fill="#2e7d32"/><ellipse cx="800" cy="690" rx="236" ry="42" fill="#3f9b45"/><ellipse cx="800" cy="690" rx="190" ry="32" fill="none" stroke="#c8f0c0" stroke-width="5" stroke-dasharray="16 10"/>${[0,1,2,3,4,5].map(i=>{const a=i*Math.PI/3+.3;return `<ellipse cx="${(800+120*Math.cos(a)).toFixed(0)}" cy="${(690+20*Math.sin(a)).toFixed(0)}" rx="14" ry="6" fill="#a5d6a7" transform="rotate(${i*30} ${(800+120*Math.cos(a)).toFixed(0)} ${(690+20*Math.sin(a)).toFixed(0)})"/>`}).join('')}`,
  r_rainbow:['#ef4444','#f59e0b','#fde047','#22c55e','#3b82f6','#8b5cf6'].map((c,i)=>`<ellipse cx="800" cy="690" rx="${270-i*36}" ry="${52-i*7}" fill="${c}"/>`).join(''),
@@ -88,25 +87,10 @@ const rugs={
 };
 art.r_blue={vb:[520,630,560,120],svg:rugs.r_blue};art.r_green={vb:[520,630,560,120],svg:rugs.r_green};art.r_rainbow={vb:[520,630,560,120],svg:rugs.r_rainbow};art.r_gold={vb:[520,630,560,120],svg:rugs.r_gold};
 
-/* ---------- 背景樣式 ----------
-   wall 牆色上下｜line 木板線顏色｜wood 木頭／窗框顏色｜floor 地板上下｜fl 地板線｜fx 牆面圖樣｜sky 窗外 */
-function rnd(seed){let s=seed;return()=>{s=(s*16807)%2147483647;return s/2147483647}}
-const fxs={
- bricks:()=>`<pattern id="fxp" width="150" height="70" patternUnits="userSpaceOnUse"><path d="M0 0 H150 M0 35 H150 M0 70 H150 M50 0 V35 M125 0 V35 M0 35 V70 M75 35 V70 M150 35 V70" stroke="#5f646f" stroke-width="3" fill="none" opacity=".55"/></pattern><rect width="1600" height="620" fill="url(#fxp)"/>`,
- stars:()=>{const r=rnd(7);let s='';for(let i=0;i<46;i++){const x=r()*1600,y=r()*580,z=10+r()*16;s+=`<text x="${x.toFixed(0)}" y="${y.toFixed(0)}" font-size="${z.toFixed(0)}" fill="#ffd86b" opacity="${(.35+r()*.5).toFixed(2)}">${i%9===0?'☾':'✦'}</text>`}return s},
- waves:()=>`<pattern id="fxp" width="110" height="46" patternUnits="userSpaceOnUse"><path d="M0 23 Q27 0 55 23 T110 23" stroke="#fff" stroke-width="4" fill="none" opacity=".28"/></pattern><rect width="1600" height="620" fill="url(#fxp)"/>`,
- leaves:()=>{const r=rnd(11);let s='';for(let i=0;i<60;i++){const x=r()*1600,y=r()*590;s+=`<ellipse cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" rx="${(10+r()*10).toFixed(0)}" ry="${(5+r()*5).toFixed(0)}" fill="${r()>.5?'#3f7a2c':'#8bc34a'}" opacity=".35" transform="rotate(${(r()*180).toFixed(0)} ${x.toFixed(0)} ${y.toFixed(0)})"/>`}return s},
- stripes:()=>`<pattern id="fxp" width="80" height="80" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="40" height="80" fill="#fff" opacity=".35"/></pattern><rect width="1600" height="620" fill="url(#fxp)"/>`,
- space:()=>{const r=rnd(3);let s='';for(let i=0;i<110;i++){s+=`<circle cx="${(r()*1600).toFixed(0)}" cy="${(r()*600).toFixed(0)}" r="${(.8+r()*2).toFixed(1)}" fill="#fff" opacity="${(.3+r()*.6).toFixed(2)}"/>`}return s+`<path d="M0 300 H1600 M0 450 H1600" stroke="#3b4268" stroke-width="4" opacity=".6"/>`}
-};
+/* ---------- 背景樣式：背景全部是完整的圖片（assets/shop/themes/主題id.png），這裡只剩木頭顏色與天色 ---------- */
 const themeSpec={
- default:{wall:['#b9773b','#9c5f2a'],line:'#8a5222',wood:'#7a4518',floor:['#f2c27e','#d9a35b'],fl:'#c48a45'},
- castle:{wall:['#9aa0ab','#7d838e'],line:'#8d939e',wood:'#4d4f58',floor:['#8e929c','#6f7480'],fl:'#5d616b',fx:'bricks'},
- magic:{wall:['#5a3d8f','#3e2970'],line:'#4a3180',wood:'#2d1b55',floor:['#6a4a9e','#4a3278'],fl:'#3a2763',fx:'stars'},
- ocean:{wall:['#5aa9d6','#3b85b8'],line:'#4d9bca',wood:'#1f5f86',floor:['#e9d7a8','#d2bd86'],fl:'#bda76d',fx:'waves'},
- forest:{wall:['#6e9c4f','#52803a'],line:'#5f8d44',wood:'#5a3a1a',floor:['#a7845a','#8a6a43'],fl:'#7a5c38',fx:'leaves'},
- candy:{wall:['#ffc2d9','#ff9fc4'],line:'#ffb0cd',wood:'#d6568a',floor:['#fff0f6','#ffd6e6'],fl:'#ffb3d0',fx:'stripes'},
- space:{wall:['#1a1f45','#0e1230'],line:'#161b3c',wood:'#5a5f8a',floor:['#3b4268','#2a3052'],fl:'#565e8c',fx:'space',sky:'space'}
+ xianxia:{wood:'#5a331c'},default:{wood:'#7a4518'},castle:{wood:'#4d4f58'},magic:{wood:'#2d1b55'},
+ ocean:{wood:'#1f5f86'},forest:{wood:'#5a3a1a'},candy:{wood:'#d6568a'},space:{wood:'#5a5f8a',sky:'space'}
 };
-window.HERO_DECOR={art,rugs,themeSpec,fxs,slotAnchor:{}};
+window.HERO_DECOR={art,rugs,themeSpec,slotAnchor:{}};
 })();

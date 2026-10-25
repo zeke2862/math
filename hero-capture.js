@@ -86,6 +86,25 @@ const css=document.createElement('style');css.textContent=`
 .cap-btn{font-size:16px;font-weight:800;padding:8px 16px;border-radius:12px;border:2px solid #8d5524;background:#fff;color:#5c2e0e;margin:4px}
 .cap-btn.go{background:#2e9e5b;border-color:#1f7a43;color:#fff}
 .cap-btn.no{background:#eee;border-color:#aaa;color:#666}
+/* ---- 手機：文字與按鈕不超出畫面 ---- */
+.cap-box{box-sizing:border-box;max-width:100%;max-height:96vh;max-height:96dvh;overflow-wrap:anywhere}
+.cap-box button{max-width:100%;box-sizing:border-box}
+.cap-card{max-width:100%;box-sizing:border-box}
+#result-overlay .modal-box{box-sizing:border-box;max-width:96%;max-height:96%;overflow-y:auto;overflow-x:hidden;overflow-wrap:anywhere}
+#result-overlay .modal-buttons{flex-wrap:wrap}
+.cap-panel{box-sizing:border-box;max-width:100%;overflow:hidden}
+.cap-ptxt{min-width:0;overflow-wrap:anywhere}
+.cap-pbtns{max-width:100%;justify-content:center}
+.cap-pbtns button{max-width:100%;white-space:normal}
+@media(max-width:520px),(max-height:480px){
+ #result-overlay .modal-box{padding:12px 16px}#result-overlay .modal-box h1{font-size:30px;margin:0 0 6px}#result-overlay .star-result{font-size:36px;margin:6px 0}
+ .cap-box{padding:10px 10px 8px}.cap-box h2{font-size:19px}
+ .cap-big{font-size:17px;padding:8px 14px}.cap-btn{font-size:15px;padding:7px 12px;margin:3px}
+ .cap-card{width:min(190px,72%)}.cap-card img,.cap-card .cap-ph{height:96px}
+ .cap-ptxt{font-size:14px;flex-basis:120px}.cap-pbtns button{font-size:14px;padding:7px 10px}
+ .cap-panel .cap-pimg img,.cap-panel .cap-pimg .cap-ph{height:56px;max-width:80px}
+}
+@media(max-height:480px){.cap-gb{width:min(210px,94%)}.cap-tbar{width:min(210px,94%)}}
 .cap-score{font-size:20px;font-weight:900;margin:2px 0 6px}
 .cap-score small{display:block;font-size:13px;font-weight:700;color:#8a6a3b}
 .cap-hint{min-height:24px;font-weight:800;font-size:16px;margin:4px 0;color:#7a3e00}
@@ -128,7 +147,10 @@ const css=document.createElement('style');css.textContent=`
 .cap-pet{position:absolute;bottom:0;pointer-events:auto;cursor:pointer;animation:capWalk var(--d) linear infinite;animation-delay:var(--dl)}
 .cap-pet img,.cap-pet .cap-ph{height:66px;max-width:100px;object-fit:contain;display:block;animation:capHop 1.6s ease-in-out infinite;animation-delay:var(--dl);line-height:66px;font-size:44px}
 .cap-pet.q4 img,.cap-pet.q5 img{filter:drop-shadow(0 0 6px var(--c))}
-@keyframes capWalk{0%{transform:translateX(0) scaleX(1)}49%{transform:translateX(var(--w)) scaleX(1)}50%{transform:translateX(var(--w)) scaleX(-1)}99%{transform:translateX(0) scaleX(-1)}100%{transform:translateX(0) scaleX(1)}}
+@keyframes capWalk{0%{transform:translateX(0)}50%{transform:translateX(var(--w))}100%{transform:translateX(0)}}
+/* 只有怪物圖片左右翻轉；對話泡泡在翻轉層外面，文字永遠不會反過來 */
+.cap-flip{animation:capFlip var(--d) steps(1,end) infinite;animation-delay:var(--dl)}
+@keyframes capFlip{0%{transform:scaleX(1)}50%{transform:scaleX(-1)}100%{transform:scaleX(1)}}
 @keyframes capHop{50%{transform:translateY(-6px)}}
 .cap-bub{position:absolute;bottom:72px;left:50%;transform:translateX(-50%);background:#fff;color:#3b2a14;border:2px solid #8d5524;border-radius:12px;padding:5px 9px;font-size:13px;font-weight:800;white-space:nowrap;box-shadow:0 2px 8px #0004;z-index:2}
 #cap-col{position:fixed;inset:0;z-index:100001;background:rgba(10,12,28,.84);display:flex;align-items:center;justify-content:center;padding:8px;font-family:inherit}
@@ -144,6 +166,10 @@ const css=document.createElement('style');css.textContent=`
 .cap-item{border-radius:14px;border:4px solid var(--c,#d8c8a8);background:#fff;padding:6px 4px 8px;text-align:center;font-size:13px;font-weight:700;position:relative}
 .cap-item img,.cap-item .cap-ph{height:84px;max-width:100%;object-fit:contain;display:block;margin:0 auto 3px;line-height:84px;font-size:50px}
 .cap-item.sil img{filter:brightness(0) opacity(.5)}.cap-item.sil .cap-ph{opacity:.4;filter:grayscale(1)}
+/* 已遇見、還沒收服：半亮、朦朧 */
+.cap-item.met{background:linear-gradient(#faf6ec,#efe7d6)}
+.cap-item.met img{filter:brightness(.82) saturate(.55) contrast(.92) blur(.7px) drop-shadow(0 0 6px rgba(255,255,255,.85));opacity:.78}
+.cap-item.met .cap-ph{opacity:.6;filter:grayscale(.5) blur(.6px)}
 .cap-item.q4,.cap-item.q5{box-shadow:0 0 12px var(--c)}
 .cap-item.q5{background:linear-gradient(135deg,#fff7e0,#ffe2f4,#e2f0ff)}
 .cap-item .nm{font-size:14px;font-weight:900}
@@ -398,7 +424,7 @@ function tick(){
  const sig=keys.join(',')+'|'+keys.map(k=>p.mons[k].best+JSON.stringify(p.mons[k].fit||{})+(p.mons[k].skin||'')).join('');
  if(sig!==restSig){restSig=sig;rest.innerHTML=keys.map((k,i)=>{const f=infoOf(k),m=p.mons[k],c=RCOL[m.best];
   const x=6+(i*(82/Math.max(1,keys.length)))+Math.random()*3,w=Math.round(40+Math.random()*60);
-  return `<div class="cap-pet q${m.best}" data-g="${f.g}" title="${esc(f.s.name)}【${RAR[m.best]}】" style="left:${x}%;--c:${c};--d:${14+Math.random()*10}s;--dl:-${Math.random()*10}s;--w:${w}px">${figM(k,p,66)}</div>`}).join('')}}
+  return `<div class="cap-pet q${m.best}" data-g="${f.g}" title="${esc(f.s.name)}【${RAR[m.best]}】" style="left:${x}%;--c:${c};--d:${14+Math.random()*10}s;--dl:-${Math.random()*10}s;--w:${w}px"><div class="cap-flip">${figM(k,p,66)}</div></div>`}).join('')}}
 setInterval(()=>{try{tick()}catch(e){}},700);
 
 let colState={tab:'add',filter:'all'};
@@ -414,7 +440,7 @@ function openCollection(){
   const items=list.filter(x=>x.g===colState.tab).filter(x=>{const m=mon(p,x.k),f=colState.filter;return f==='all'||(f==='got'&&m.n>0)||(f==='no'&&m.n===0)||(f[0]==='q'&&m.best===+f[1])}).map(x=>{
    const m=mon(p,x.k),has=m.n>0,seen=has||m.met;
    if(has)return `<div class="cap-item q${m.best}" style="--c:${RCOL[m.best]}">${figM(x.k,p,84)}<div class="nm">${esc(x.s.name)}</div><div class="cap-star" style="color:${RCOL[m.best]}">${'★'.repeat(m.best)}</div><div class="sub">最高【${RAR[m.best]}】×${m.n}</div><button data-s="${x.k}" class="${shown.has(x.k)?'on':''}">${shown.has(x.k)?'🏕️ 展示中':'放進休息區'}</button> <button data-d="${x.k}">🎨 打扮</button></div>`;
-   return `<div class="cap-item sil">${imgTag(x.s.img)}<div class="nm">${seen?esc(x.s.name):'？？？'}</div><div class="sub">${seen?'已遇見・未收服':'第 '+x.s.id+' 關的魔王'}${m.sh?`<br>🧩 ${Math.min(m.sh,CFG.shardNeed)}/${CFG.shardNeed}`:''}</div></div>`}).join('');
+   return `<div class="cap-item ${seen?'met':'sil'}">${imgTag(x.s.img)}<div class="nm">${seen?esc(x.s.name):'？？？'}</div><div class="sub">${seen?'已遇見・未收服':'第 '+x.s.id+' 關的魔王'}${m.sh?`<br>🧩 ${Math.min(m.sh,CFG.shardNeed)}/${CFG.shardNeed}`:''}</div></div>`}).join('');
   ov.innerHTML=`<div class="cap-colbox"><div class="cap-colhead"><h2>📖 怪物圖鑑 <small style="font-size:14px;color:#8a6a3b">已收服 ${got}/${total}　遇見 ${met}/${total}</small></h2><button class="cap-x" id="cap-cx">✕</button></div>
    <div class="cap-tabs">${tabs}</div><div class="cap-chips">${chips}</div>
    <div class="cap-grid">${items||'<div style="grid-column:1/-1;color:#8a6a3b;padding:20px">這裡還沒有怪物。去打倒魔王、贏下收服挑戰吧！</div>'}</div>

@@ -778,9 +778,9 @@ try{const sk=ITM.skin(EQ.skin);
   document.head.appendChild(E('style',null,sk.rainbow?`${sel}{animation:heroSkinRb 6s linear infinite}@keyframes heroSkinRb{from{filter:${rb(0)}}to{filter:${rb(360)}}}`:`${sel}{filter:${ITM.skinCss(sk)}}`))}}catch(e){}
 /* 全新角色：把遊戲裡 hero-idle.png / hero-run-right.gif … 這些圖片，自動換成 assets/shop/heroes/角色id/ 裡的同名狀態圖 */
 const CHID=ITM.charIds.includes(EQ.skin)?EQ.skin:null;
-const HRE=/assets\/hero[^\/]*\/hero-(idle|run-right|run-left|attack|hurt|lose)\.(?:png|gif)(?:\?.*)?$/;
+const HRE=/assets\/hero[^\/]*\/hero-(idle|run-right|run-left|attack|hurt|lose)\.(?:png|gif)(\?.*)?$/;
 let chOK=false;
-const swapU=(v,img)=>{if(!CHID||!chOK||(img&&img.classList&&img.classList.contains('aw')))return v;const m=HRE.exec(v);return m?SD+'heroes/'+CHID+'/'+m[1]+'.png':v};
+const swapU=(v,img)=>{if(!CHID||!chOK||(img&&img.classList&&img.classList.contains('aw')))return v;const m=HRE.exec(v);return m?SD+'heroes/'+CHID+'/'+m[1]+'.png'+(m[2]||''):v};
 if(CHID){
  try{const d=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,'src');
   Object.defineProperty(HTMLImageElement.prototype,'src',{get:d.get,set(v){v=String(v);const w=swapU(v,this);if(w!==v)this.dataset.hsw=v;d.set.call(this,w)},configurable:true,enumerable:true});
@@ -835,23 +835,28 @@ function use(id){
 /* ---- 🎒 道具列 ---- */
 let bar,tray,chips,btn,openT=false;
 function build(){if(bar)return;
- bar=E('div','position:fixed;right:6px;top:38%;z-index:250;display:none;flex-direction:column;align-items:flex-end;gap:6px;font-family:'+FONT+';-webkit-user-select:none;user-select:none');bar.id='hero-items';
- chips=E('div','display:flex;flex-direction:column;gap:3px;align-items:flex-end;pointer-events:none');
- tray=E('div','display:none;flex-direction:column;gap:5px;background:#1b1e3bf2;border:3px solid #ffd24a;border-radius:14px;padding:8px;width:min(230px,62vw);max-height:56vh;overflow:auto');
- btn=E('button','width:50px;height:50px;border-radius:50%;border:3px solid #fff;background:linear-gradient(#ffd24a,#f5a300);font-size:26px;cursor:pointer;box-shadow:0 4px 0 #0006;padding:0','🎒');btn.title='道具';
+ bar=E('div','position:fixed;right:8px;top:38%;z-index:250;display:none;flex-direction:column;align-items:flex-end;gap:8px;font-family:'+FONT+';-webkit-user-select:none;user-select:none');bar.id='hero-items';
+ chips=E('div','display:flex;flex-direction:column;gap:4px;align-items:flex-end;pointer-events:none');
+ tray=E('div','display:none;flex-direction:column;gap:6px;background:linear-gradient(135deg,#1f1b2e 0%,#141220 100%);border:2.5px solid #d4af37;border-radius:16px;padding:10px;width:min(240px,70vw);max-height:58vh;overflow:auto;box-shadow:0 8px 24px rgba(0,0,0,0.65)');
+ btn=E('button','width:52px;height:52px;border-radius:50%;border:2.5px solid #d4af37;background:radial-gradient(circle at 45% 35%,#fffdf5 0%,#f9e5be 55%,#deb173 100%);cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.5),inset 0 1px 2px rgba(255,255,255,0.8);padding:0;display:flex;align-items:center;justify-content:center','<img src="./assets/shop/ui/ic_bag.png" style="width:38px;height:38px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4))" alt="百寶袋">');btn.title='百寶袋・法寶靈藥';
  btn.onclick=()=>{openT=!openT;draw()};
  bar.appendChild(chips);bar.appendChild(tray);bar.appendChild(btn);document.body.appendChild(bar)}
 function draw(){build();
  const it=inv(),pz=cfg.type==='puzzle';
  const usable=ITM.consumables.filter(c=>c.kind!=='revive'&&it[c.id]>0&&(!pz||c.kind==='ticket')),rev=pz?[]:ITM.consumables.filter(c=>c.kind==='revive'&&it[c.id]>0);
- const chip=t=>`<span style="background:#1b1e3bdd;color:#fff;border:2px solid #ffd24a;border-radius:99px;padding:1px 10px;font:800 14px/1.5 ${FONT}">${t}</span>`;
- chips.innerHTML=(FX.shield>0?chip('🛡 擋 ×'+FX.shield):'')+(FX.tk>1?chip('🎟 積分 ×'+FX.tk):'');
+ const chip=t=>`<span style="background:linear-gradient(180deg,#2b2342,#181424);color:#faecd2;border:1.5px solid #d4af37;border-radius:99px;padding:2px 10px;font:800 13px/1.5 ${FONT};box-shadow:0 2px 6px rgba(0,0,0,0.4)">${t}</span>`;
+ chips.innerHTML=(FX.shield>0?chip('🛡️ 辟邪護體 ×'+FX.shield):'')+(FX.tk>1?chip('📜 修為倍率 ×'+FX.tk):'');
  tray.style.display=openT?'flex':'none';if(!openT)return;
  tray.innerHTML='';
- if(!usable.length&&!rev.length){tray.appendChild(E('div','color:#fff;font-size:15px;line-height:1.6;text-align:center','還沒有道具喔～<br>回小屋的 🏪 商店逛逛吧！'));return}
- usable.forEach(c=>{const b=E('button','font:800 16px/1.3 '+FONT+';padding:8px 10px;border-radius:10px;border:0;background:#4a5bd8;color:#fff;cursor:pointer;text-align:left',`${c.icon} ${c.name} <b style="color:#ffd24a">×${it[c.id]}</b><div style="font-weight:500;font-size:12px;opacity:.85">${c.desc.replace(/（.*?）/g,'')}</div>`);b.onclick=()=>use(c.id);tray.appendChild(b)});
- rev.forEach(c=>tray.appendChild(E('div','color:#9ff2ff;font-size:13px;line-height:1.5',`${c.icon} ${c.name} ×${it[c.id]}　<small>倒下時自動使用</small>`)));
- if(pz)tray.appendChild(E('div','color:#bbb;font-size:12px','（減法章沒有血量，只能用積分券）'))}
+ if(!usable.length&&!rev.length){tray.appendChild(E('div','color:#faecd2;font-size:14px;line-height:1.6;text-align:center','囊中尚無靈藥法寶～<br>回洞府的 仙閣商會 換取吧！'));return}
+ usable.forEach(c=>{
+  const b=E('button','font:800 14px/1.3 '+FONT+';padding:8px 10px;border-radius:10px;border:1.5px solid #d4af3755;background:linear-gradient(180deg,#2c2345,#181328);color:#faecd2;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;box-shadow:0 3px 6px rgba(0,0,0,0.3)',
+   `<img src="./assets/shop/items/${c.id}.png" style="width:34px;height:34px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))" onerror="this.outerHTML='${c.icon}'"><div style="flex:1"><div style="color:#fff">${c.name} <b style="color:#ffd24a">×${it[c.id]}</b></div><div style="font-weight:500;font-size:11px;opacity:.8;color:#d8c6b2">${c.desc.replace(/（.*?）/g,'')}</div></div>`);
+  b.onclick=()=>use(c.id);tray.appendChild(b)
+ });
+ rev.forEach(c=>tray.appendChild(E('div','color:#9ff2ff;font-size:13px;line-height:1.5;display:flex;align-items:center;gap:6px;padding:4px 2px',
+  `<img src="./assets/shop/items/${c.id}.png" style="width:28px;height:28px;object-fit:contain" onerror="this.outerHTML='${c.icon}'"><span>${c.name} ×${it[c.id]}　<small style="color:#94b8d7">倒下時自動護體</small></span>`)));
+ if(pz)tray.appendChild(E('div','color:#bbb;font-size:12px','（減法章沒有血量，只能用悟道卷）'))}
 setInterval(()=>{build();const on=inBattle()&&!resultOpen()&&!document.getElementById('hero-modal');bar.style.display=on?'flex':'none';if(!on&&openT){openT=false;draw()}},400);
 /* 每場新戰鬥：血瓶次數歸零；盾牌和積分券只在「同一場」有效（無限模式連續打怪時保留）*/
 const reset=()=>{if(!H.endless){FX.shield=0;FX.tk=1}FX.heal=0;if(bar)draw()};

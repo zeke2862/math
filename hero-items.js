@@ -17,16 +17,16 @@ const HEAL_CAP=3;     // 每場戰鬥最多喝幾瓶血瓶（避免變成喝水�
    kind: heal 回血｜revive 倒下自動復活｜shield 擋攻擊｜ticket 積分加成
    limit: 每天最多買幾個 */
 const consumables=[
- {id:'hp1',icon:'🧃',name:'小血瓶',kind:'heal',pct:.3,price:30,limit:10,desc:'戰鬥中使用，立刻回復 30% 血量'},
- {id:'hp2',icon:'🍷',name:'中血瓶',kind:'heal',pct:.6,price:70,limit:8,desc:'戰鬥中使用，立刻回復 60% 血量'},
- {id:'hp3',icon:'💖',name:'大血瓶',kind:'heal',pct:1,price:140,limit:5,desc:'戰鬥中使用，血量一次補滿'},
- {id:'rv1',icon:'🧪',name:'復活藥',kind:'revive',pct:.5,price:120,limit:5,desc:'血量歸零時「自動」復活，回復 50% 血量（放在包包裡就會生效）'},
- {id:'rv2',icon:'✨',name:'聖光復活藥',kind:'revive',pct:1,price:250,limit:3,desc:'血量歸零時「自動」復活，血量全滿！'},
- {id:'sh1',icon:'🪵',name:'木盾',kind:'shield',hits:1,price:50,limit:8,desc:'擋下 1 次怪物攻擊（這場戰鬥有效）'},
- {id:'sh2',icon:'🛡️',name:'鐵盾',kind:'shield',hits:3,price:130,limit:5,desc:'擋下 3 次怪物攻擊（這場戰鬥有效）'},
- {id:'sh3',icon:'🔰',name:'神聖光盾',kind:'shield',hits:5,price:220,limit:3,desc:'擋下 5 次怪物攻擊（這場戰鬥有效）'},
- {id:'tk1',icon:'🎟️',name:'積分券',kind:'ticket',mult:1.5,price:100,limit:5,desc:'這場戰鬥的積分 ×1.5（包含減法章）'},
- {id:'tk2',icon:'🎫',name:'雙倍積分券',kind:'ticket',mult:2,price:220,limit:3,desc:'這場戰鬥的積分 ×2（包含減法章）'}
+ {id:'hp1',icon:'🍶',name:'益氣凝血散',sub:'小血瓶',kind:'heal',pct:.3,price:30,limit:10,rarity:'common',desc:'戰鬥中使用，立刻回復 30% 血量（凝氣固元）'},
+ {id:'hp2',icon:'🏺',name:'回春九轉丹',sub:'中血瓶',kind:'heal',pct:.6,price:70,limit:8,rarity:'rare',desc:'戰鬥中使用，立刻回復 60% 血量（丹香四溢）'},
+ {id:'hp3',icon:'✨',name:'生生造化露',sub:'大血瓶',kind:'heal',pct:1,price:140,limit:5,rarity:'epic',desc:'戰鬥中使用，血量瞬間回滿（逆轉乾坤）'},
+ {id:'rv1',icon:'🔮',name:'涅槃還魂丹',sub:'復活藥',kind:'revive',pct:.5,price:120,limit:5,rarity:'rare',desc:'血量歸零時「自動」復活，回復 50% 血量（存於儲物袋即生效）'},
+ {id:'rv2',icon:'☀️',name:'九轉金丹',sub:'聖光復活藥',kind:'revive',pct:1,price:250,limit:3,rarity:'legend',desc:'血量歸零時「自動」復活，血量全滿！（仙家神品）'},
+ {id:'sh1',icon:'🪵',name:'青木辟邪符',sub:'木盾',kind:'shield',hits:1,price:50,limit:8,rarity:'common',desc:'擋下 1 次怪物攻擊（這場戰鬥有效）'},
+ {id:'sh2',icon:'🛡️',name:'玄鐵重光盾',sub:'鐵盾',kind:'shield',hits:3,price:130,limit:5,rarity:'rare',desc:'擋下 3 次怪物攻擊（這場戰鬥有效）'},
+ {id:'sh3',icon:'🔰',name:'金鐘乾坤罩',sub:'神聖光盾',kind:'shield',hits:5,price:220,limit:3,rarity:'epic',desc:'擋下 5 次怪物攻擊（這場戰鬥有效）'},
+ {id:'tk1',icon:'📜',name:'悟道歷練卷',sub:'積分券',kind:'ticket',mult:1.5,price:100,limit:5,rarity:'rare',desc:'這場戰鬥的積分 ×1.5（包含減法章）'},
+ {id:'tk2',icon:'📑',name:'天道加持令',sub:'雙倍積分券',kind:'ticket',mult:2,price:220,limit:3,rarity:'legend',desc:'這場戰鬥的積分 ×2（包含減法章）'}
 ];
 
 /* ---------- 勇者造型（用現有勇者圖換色＋光環，不需要新圖檔）----------
@@ -51,7 +51,12 @@ const chars=[
  {id:'ninja',icon:'🥷',name:'疾風忍者',price:2500,char:1,desc:'紅頭巾、動作超快的忍者'},
  {id:'princess',icon:'👸',name:'公主騎士',price:3000,lv:6,char:1,desc:'戴著皇冠、拿著細劍的公主（需要 Lv.6）'},
  {id:'robot',icon:'🤖',name:'數算機器人',price:3500,lv:8,char:1,desc:'眼睛會發光的計算機器人（需要 Lv.8）'},
- {id:'dragon',icon:'🐲',name:'小龍勇者',price:3500,lv:8,char:1,desc:'長著小翅膀和尾巴的龍族勇者（需要 Lv.8）'}
+ {id:'dragon',icon:'🐲',name:'小龍勇者',price:3500,lv:8,char:1,desc:'長著小翅膀和尾巴的龍族勇者（需要 Lv.8）'},
+ /* 仙俠系新角色：尺寸、動作、影格時間完全比照原版勇者（111×112，動作是會動的 GIF，檔名維持 .png） */
+ {id:'swordsman',icon:'🗡️',name:'劍仙少俠',price:2800,char:1,rarity:'rare',desc:'白衣青帶、背著仙劍的少年劍客，揮劍會有劍氣'},
+ {id:'alchemist',icon:'⚗️',name:'丹童',price:2800,char:1,rarity:'rare',desc:'抱著小丹爐的煉丹小道士，攻擊是丟出火焰丹丸'},
+ {id:'foxfairy',icon:'🦊',name:'九尾狐仙',price:3500,lv:6,char:1,rarity:'epic',desc:'白髮狐耳、身後九條蓬鬆大尾巴，搖扇放出狐火（需要 Lv.6）'},
+ {id:'monk',icon:'📿',name:'少林小和尚',price:3500,lv:6,char:1,rarity:'epic',desc:'圓圓光頭、掛著念珠，一掌推出金色氣浪（需要 Lv.6）'}
 ];
 skins.push.apply(skins,chars);
 const charIds=chars.map(c=>c.id);
@@ -68,34 +73,35 @@ const gearSlots=[
  {id:'expr',icon:'💬',name:'表情氣泡'}
 ];
 const gear=[
- {id:'g_cape_red',slot:'cape',icon:'🧣',name:'紅披風',price:400,a:{cx:.5,cy:.57,w:.88},desc:'經典的英雄紅披風'},
- {id:'g_cape_blue',slot:'cape',icon:'🌌',name:'星空披風',price:600,a:{cx:.5,cy:.57,w:.88},desc:'藍色披風上有閃亮的星星'},
- {id:'g_cape_gold',slot:'cape',icon:'👑',name:'皇家披風',price:1500,lv:8,a:{cx:.5,cy:.57,w:.88},desc:'紫色配白色毛領，國王等級（需要 Lv.8）'},
- {id:'g_santa',slot:'outfit',icon:'🎅',name:'聖誕套裝',price:1200,a:{cx:.5,cy:.66,w:.36},desc:'紅色聖誕外套，搭配聖誕帽更有氣氛'},
- {id:'g_grad',slot:'outfit',icon:'🎓',name:'畢業袍',price:1000,a:{cx:.5,cy:.66,w:.36},desc:'黑色畢業袍，搭配學士帽'},
- {id:'g_space',slot:'outfit',icon:'🧑‍🚀',name:'太空衣',price:1500,a:{cx:.5,cy:.66,w:.36},desc:'白色太空衣、橘色領口'},
- {id:'g_crown',slot:'head',icon:'👑',name:'黃金皇冠',price:1500,lv:6,a:{cx:.5,cy:.075,w:.44},desc:'鑲著寶石的皇冠（需要 Lv.6）'},
- {id:'g_santahat',slot:'head',icon:'🎄',name:'聖誕帽',price:500,a:{cx:.5,cy:.06,w:.56},desc:'毛茸茸的聖誕帽'},
- {id:'g_wizhat',slot:'head',icon:'🧙',name:'巫師帽',price:600,a:{cx:.5,cy:.0,w:.62},desc:'藍色的星星巫師帽'},
- {id:'g_flower',slot:'head',icon:'🌸',name:'花環',price:400,a:{cx:.5,cy:.16,w:.5},desc:'五顏六色的小花環'},
- {id:'g_cat',slot:'head',icon:'🐱',name:'貓耳髮箍',price:500,a:{cx:.5,cy:.1,w:.5},desc:'黑色貓耳朵，粉紅色耳心'},
- {id:'g_gradcap',slot:'head',icon:'🎓',name:'學士帽',price:500,a:{cx:.5,cy:.12,w:.54},desc:'流蘇會晃動的學士帽'},
- {id:'g_glasses',slot:'face',icon:'👓',name:'圓眼鏡',price:300,a:{cx:.5,cy:.34,w:.32},desc:'聰明學者的圓眼鏡'},
- {id:'g_shades',slot:'face',icon:'🕶️',name:'酷炫墨鏡',price:500,a:{cx:.5,cy:.34,w:.32},desc:'戴上就變酷'},
- {id:'g_mustache',slot:'face',icon:'🥸',name:'小鬍子',price:300,a:{cx:.5,cy:.43,w:.2},desc:'紳士的小鬍子'},
- {id:'g_mask',slot:'face',icon:'😷',name:'口罩',price:200,a:{cx:.5,cy:.43,w:.32},desc:'白色口罩'},
- {id:'e_heart',slot:'expr',icon:'💗',name:'愛心氣泡',price:300,a:{cx:.86,cy:.1,w:.27},desc:'頭上飄著愛心'},
- {id:'e_angry',slot:'expr',icon:'💢',name:'生氣氣泡',price:300,a:{cx:.86,cy:.1,w:.27},desc:'頭上冒出怒氣'},
- {id:'e_sparkle',slot:'expr',icon:'✨',name:'閃亮氣泡',price:400,a:{cx:.86,cy:.1,w:.27},desc:'閃閃發亮的好心情'},
- {id:'e_music',slot:'expr',icon:'🎵',name:'哼歌氣泡',price:300,a:{cx:.86,cy:.1,w:.27},desc:'開心地哼著歌'},
- {id:'e_sleep',slot:'expr',icon:'💤',name:'瞌睡氣泡',price:300,a:{cx:.86,cy:.1,w:.27},desc:'呼呼～想睡覺'}
+ {id:'g_cape_red',slot:'cape',icon:'🧣',name:'赤霞仙錦披風',sub:'紅披風',price:400,a:{cx:.5,cy:.57,w:.88},desc:'金龍吞口、赤錦流光的俠客披風'},
+ {id:'g_cape_blue',slot:'cape',icon:'🌌',name:'星宿玄冥披風',sub:'星空披風',price:600,a:{cx:.5,cy:.57,w:.88},desc:'深藍雲錦繡著閃爍銀河星象'},
+ {id:'g_cape_gold',slot:'cape',icon:'👑',name:'紫霄金龍皇袍',sub:'皇家披風',price:1500,lv:8,a:{cx:.5,cy:.57,w:.88},desc:'紫綾金龍盤踞、雪貂絨領，帝王尊貴（需要 Lv.8）'},
+ {id:'g_santa',slot:'outfit',icon:'🎅',name:'紅雲暖冬錦袍',sub:'冬節袍',price:1200,a:{cx:.5,cy:.66,w:.36},desc:'朱紅暖金冬裝，配白絨翻領'},
+ {id:'g_grad',slot:'outfit',icon:'🎓',name:'墨玉文士儒袍',sub:'學士袍',price:1000,a:{cx:.5,cy:.66,w:.36},desc:'儒雅沉穩的墨黑文道儒袍'},
+ {id:'g_space',slot:'outfit',icon:'🧑‍🚀',name:'九霄星曜天衣',sub:'星曜衣',price:1500,a:{cx:.5,cy:.66,w:.36},desc:'銀白星輝凝鑄的凌虛天衣'},
+ {id:'g_crown',slot:'head',icon:'👑',name:'紫金雙鳳龍冠',sub:'紫金冠',price:1500,lv:6,a:{cx:.5,cy:.075,w:.44},desc:'金雕雙鳳朝陽、嵌靈玉翡翠（需要 Lv.6）'},
+ {id:'g_santahat',slot:'head',icon:'🎄',name:'瑞雪絨暖道冠',sub:'冬帽',price:500,a:{cx:.5,cy:.06,w:.56},desc:'毛茸茸的溫暖紅絨軟帽'},
+ {id:'g_wizhat',slot:'head',icon:'🧙',name:'太極星宿仙冠',sub:'巫師帽',price:600,a:{cx:.5,cy:.0,w:.62},desc:'繡滿乾坤二十八星宿的道玄仙冠'},
+ {id:'g_flower',slot:'head',icon:'🌸',name:'仙靈百花靈環',sub:'百花環',price:400,a:{cx:.5,cy:.16,w:.5},desc:'瑤池採擷的五彩仙蓮與靈花'},
+ {id:'g_cat',slot:'head',icon:'🐱',name:'靈狐仙耳髮箍',sub:'狐耳',price:500,a:{cx:.5,cy:.1,w:.5},desc:'雪絨白狐耳，隨風靈動'},
+ {id:'g_gradcap',slot:'head',icon:'🎓',name:'文曲進士綸巾',sub:'進士冠',price:500,a:{cx:.5,cy:.12,w:.54},desc:'文曲星官金榜進士冠帶'},
+ {id:'g_glasses',slot:'face',icon:'👓',name:'乾坤水晶明眸鏡',sub:'水晶鏡',price:300,a:{cx:.5,cy:.34,w:.32},desc:'天工琉璃磨製的學者寶鏡'},
+ {id:'g_shades',slot:'face',icon:'🕶️',name:'琉璃玄晶墨鏡',sub:'玄晶鏡',price:500,a:{cx:.5,cy:.34,w:.32},desc:'黑曜玄晶打造的瀟灑墨鏡'},
+ {id:'g_mustache',slot:'face',icon:'🥸',name:'逍遙俠客微髭',sub:'微髭',price:300,a:{cx:.5,cy:.43,w:.2},desc:'風流瀟灑的名士小短髭'},
+ {id:'g_mask',slot:'face',icon:'😷',name:'玄影幽冥面罩',sub:'面罩',price:200,a:{cx:.5,cy:.43,w:.32},desc:'暗影織錦面紗，匿氣遮顏'},
+ {id:'e_heart',slot:'expr',icon:'💗',name:'道心情深氣泡',sub:'愛心',price:300,a:{cx:.86,cy:.1,w:.27},desc:'頭頂飄逸的靈犀愛心'},
+ {id:'e_angry',slot:'expr',icon:'💢',name:'怒火乾坤氣泡',sub:'怒氣',price:300,a:{cx:.86,cy:.1,w:.27},desc:'頭上冒出凌厲劍氣怒火'},
+ {id:'e_sparkle',slot:'expr',icon:'✨',name:'星輝靈光氣泡',sub:'星輝',price:400,a:{cx:.86,cy:.1,w:.27},desc:'周身閃耀的道韻靈光'},
+ {id:'e_music',slot:'expr',icon:'🎵',name:'天籟仙音氣泡',sub:'仙音',price:300,a:{cx:.86,cy:.1,w:.27},desc:'耳畔飄揚的古琴宮商仙曲'},
+ {id:'e_sleep',slot:'expr',icon:'💤',name:'閉關入定氣泡',sub:'入定',price:300,a:{cx:.86,cy:.1,w:.27},desc:'呼呼～正在冥想入定中'}
 ];
 /* 位置微調：ANCHORS = { 角色id: { 配件id或位置名稱: {cx,cy,w} } }；角色 id 是 default（原版勇者與換色造型）、mage、ninja、princess、robot、dragon */
-const ANCHORS={default:{},mage:{},ninja:{},princess:{},robot:{},dragon:{}};
+const ANCHORS={default:{},mage:{},ninja:{},princess:{},robot:{},dragon:{},swordsman:{},alchemist:{},foxfairy:{},monk:{}};
 
 /* ---------- 小屋背景樣式 ---------- */
 const themes=[
- {id:'default',icon:'🏠',name:'溫馨木屋',price:0,desc:'最原始的勇者小屋'},
+ {id:'xianxia',icon:'🏯',name:'仙境洞府',price:0,fullArt:true,desc:'雲霧繚繞、精雕博古多寶閣與月亮窗的修仙聖境（問道／問劍修仙風格）'},
+ {id:'default',icon:'🏠',name:'奇幻工坊',price:0,fullArt:true,desc:'石砌壁爐、實木藥櫃與晨光山景的精緻手繪木屋'},
  {id:'castle',icon:'🏰',name:'石頭城堡',price:1500,desc:'厚厚的石牆，超有安全感'},
  {id:'magic',icon:'🔮',name:'魔法學院',price:2000,desc:'牆上飄著金色星星和月亮'},
  {id:'ocean',icon:'🌊',name:'海洋小屋',price:2000,desc:'藍藍的牆、沙灘色的地板'},
@@ -115,31 +121,31 @@ const slots=[
  {id:'pet',icon:'🐾',name:'寵物夥伴'}
 ];
 const decor=[
- {id:'w_frame',slot:'wall',icon:'🖼️',name:'風景畫',price:300,desc:'藍天、青山、太陽'},
- {id:'w_map',slot:'wall',icon:'🗺️',name:'藏寶圖',price:500,desc:'X 記號就是寶藏的位置'},
- {id:'w_portrait',slot:'wall',icon:'👤',name:'勇者畫像',price:800,desc:'戴著頭盔的英雄肖像'},
- {id:'w_banner',slot:'wall',icon:'🚩',name:'公會旗幟',price:1200,desc:'紅底金劍，冒險者公會的標誌'},
- {id:'m_candle',slot:'mantel',icon:'🕯️',name:'三支蠟燭',price:200,desc:'火光搖搖晃晃'},
- {id:'m_vase',slot:'mantel',icon:'💐',name:'花瓶',price:300,desc:'插著紅花和黃花'},
- {id:'m_hourglass',slot:'mantel',icon:'⏳',name:'沙漏',price:400,desc:'提醒你時間很寶貴'},
- {id:'m_trophy',slot:'mantel',icon:'🏆',name:'冠軍獎盃',price:600,desc:'第一名的味道'},
- {id:'cu_red',slot:'curtain',icon:'🟥',name:'紅色窗簾',price:400,desc:'溫暖的紅'},
- {id:'cu_blue',slot:'curtain',icon:'🟦',name:'藍色窗簾',price:400,desc:'沉穩的藍'},
- {id:'cu_pink',slot:'curtain',icon:'🌸',name:'點點窗簾',price:600,desc:'粉紅色加白色圓點'},
- {id:'c_bunting',slot:'ceil',icon:'🎏',name:'慶典彩旗',price:400,desc:'每天都像在慶祝'},
- {id:'c_lights',slot:'ceil',icon:'✨',name:'星星串燈',price:600,desc:'五顏六色一閃一閃'},
- {id:'c_lamp',slot:'ceil',icon:'🪔',name:'水晶吊燈',price:800,desc:'五支蠟燭的華麗吊燈'},
- {id:'r_blue',slot:'rug',icon:'🟦',name:'藍星地毯',price:500,desc:'深藍底、白色星星'},
- {id:'r_green',slot:'rug',icon:'🟩',name:'森林地毯',price:500,desc:'綠色的草地感'},
- {id:'r_rainbow',slot:'rug',icon:'🌈',name:'彩虹地毯',price:900,desc:'一圈一圈的彩虹'},
- {id:'r_gold',slot:'rug',icon:'🟪',name:'皇家金邊地毯',price:1500,desc:'紫色配金邊，國王等級'},
- {id:'p_cactus',slot:'plant',icon:'🌵',name:'仙人掌',price:250,desc:'不用澆水的好夥伴'},
- {id:'p_pot',slot:'plant',icon:'🪴',name:'大葉盆栽',price:350,desc:'綠油油的大葉子'},
- {id:'p_tree',slot:'plant',icon:'🌳',name:'結果小樹',price:600,desc:'樹上還有紅色小果子'},
- {id:'pet_cat',slot:'pet',icon:'🐱',name:'橘貓',price:1500,desc:'尾巴會搖來搖去'},
- {id:'pet_dog',slot:'pet',icon:'🐶',name:'小狗',price:1500,desc:'吐舌頭、尾巴搖不停'},
- {id:'pet_owl',slot:'pet',icon:'🦉',name:'阿基米貓頭鷹',price:2000,desc:'戴著圓眼鏡的數學老師'},
- {id:'pet_dragon',slot:'pet',icon:'🐲',name:'小綠龍',price:3000,lv:6,desc:'會噴小火花的寵物龍（需要 Lv.6）'}
+ {id:'w_frame',slot:'wall',icon:'🖼️',name:'仙山雲海圖',price:300,desc:'峰巒疊翠、飛瀑流泉的仙家墨寶'},
+ {id:'w_map',slot:'wall',icon:'🗺️',name:'九州山河圖',price:500,desc:'朱砂紅印、暗藏乾坤的天下秘圖'},
+ {id:'w_portrait',slot:'wall',icon:'👤',name:'白衣劍仙像',price:800,desc:'手持靈劍、氣宇軒昂的先祖聖像'},
+ {id:'w_banner',slot:'wall',icon:'🚩',name:'宗門乾坤戰旗',price:1200,desc:'赤金織錦金龍翻騰的宗門旌旗'},
+ {id:'m_candle',slot:'mantel',icon:'🕯️',name:'鶴首長明燭',price:200,desc:'青銅仙鶴托燭，火光搖曳生香'},
+ {id:'m_vase',slot:'mantel',icon:'💐',name:'青花折枝梅瓶',price:300,desc:'細瓷白釉、幽蘭寒梅點綴雅室'},
+ {id:'m_hourglass',slot:'mantel',icon:'⏳',name:'乾坤星砂儀',price:400,desc:'渾天流轉，星辰金砂計錄光陰'},
+ {id:'m_trophy',slot:'mantel',icon:'🏆',name:'魁星點斗金尊',price:600,desc:'青銅三足金鼎，問鼎天下之證'},
+ {id:'cu_red',slot:'curtain',icon:'🟥',name:'赤霞織錦簾',price:400,desc:'端莊華貴的赤霞雲錦門簾'},
+ {id:'cu_blue',slot:'curtain',icon:'🟦',name:'碧波幽嵐簾',price:400,desc:'清淨深邃的碧波垂簾'},
+ {id:'cu_pink',slot:'curtain',icon:'🌸',name:'桃花微雨簾',price:600,desc:'若隱若現的桃花輕紗'},
+ {id:'c_bunting',slot:'ceil',icon:'🎏',name:'迎仙祈福彩旗',price:400,desc:'喜慶祥和的仙門節慶幡旗'},
+ {id:'c_lights',slot:'ceil',icon:'✨',name:'靈光星宿燈串',price:600,desc:'星光點點、仙氣瀰漫的靈晶燈'},
+ {id:'c_lamp',slot:'ceil',icon:'🪔',name:'八寶琉璃宮燈',price:800,desc:'六面雕花、紅纓垂落的古風宮燈'},
+ {id:'r_blue',slot:'rug',icon:'🟦',name:'乾坤星宿毯',price:500,desc:'深藍底色繡刻周天星斗'},
+ {id:'r_green',slot:'rug',icon:'🟩',name:'青藤碧玉毯',price:500,desc:'如茵翠玉般的清涼草席毯'},
+ {id:'r_rainbow',slot:'rug',icon:'🌈',name:'五色祥雲毯',price:900,desc:'霞光萬道、五彩流轉的吉祥錦毯'},
+ {id:'r_gold',slot:'rug',icon:'🟪',name:'紫宸金龍毯',price:1500,desc:'至尊紫底金龍，仙宗掌門尊貴規格'},
+ {id:'p_cactus',slot:'plant',icon:'🌵',name:'萬年玄靈肉肉',price:250,desc:'紫砂盆栽種的通靈金仙掌'},
+ {id:'p_pot',slot:'plant',icon:'🪴',name:'靈泉碧玉翠竹',price:350,desc:'青瓷盆栽、挺拔清脆的靈竹'},
+ {id:'p_tree',slot:'plant',icon:'🌳',name:'朱果仙靈盆景',price:600,desc:'靈根老樁，枝頭掛滿朱紅仙果'},
+ {id:'pet_cat',slot:'pet',icon:'🐱',name:'橘靈貓',price:1500,desc:'尾巴輕搖的通靈橘貓'},
+ {id:'pet_dog',slot:'pet',icon:'🐶',name:'哮天幼犬',price:1500,desc:'忠誠勇猛的靈獸犬'},
+ {id:'pet_owl',slot:'pet',icon:'🦉',name:'阿基米夜鴞',price:2000,desc:'戴著金絲圓鏡的博學靈鳥'},
+ {id:'pet_dragon',slot:'pet',icon:'🐲',name:'青麟小靈龍',price:3000,lv:6,desc:'周身泛著微光的小神龍（需要 Lv.6）'}
 ];
 
 const all=[].concat(consumables.map(x=>Object.assign({cat:'item'},x)),skins.map(x=>Object.assign({cat:'skin',slot:'skin'},x)),themes.map(x=>Object.assign({cat:'theme',slot:'theme'},x)),decor.map(x=>Object.assign({cat:'decor'},x)),gear.map(x=>Object.assign({cat:'gear'},x)));
