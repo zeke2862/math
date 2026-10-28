@@ -81,8 +81,9 @@ button{font:inherit;cursor:pointer;color:inherit}
 /* 遊戲畫面 */
 #stage{position:fixed;inset:0;background:#000;z-index:80;display:none}#stage.on{display:block}
 #stage iframe{width:100%;height:100%;border:0;display:block}
-#home{position:absolute;left:8px;top:8px;z-index:5;display:none;align-items:center;padding:0;margin:0;background:linear-gradient(180deg,#fffdf7,#faecd2);color:#3e1f06;border:2px solid #b88636;border-radius:99px;font-size:14px;font-weight:900;box-shadow:0 4px 10px rgba(0,0,0,0.35);touch-action:manipulation;height:34px;font-family:'Noto Serif TC','Noto Sans TC',serif}
+#home{position:absolute;left:8px;top:120px;z-index:5;display:none;align-items:center;padding:0;margin:0;background:linear-gradient(180deg,#fffdf7,#faecd2);color:#3e1f06;border:2px solid #b88636;border-radius:99px;font-size:14px;font-weight:900;box-shadow:0 4px 10px rgba(0,0,0,0.35);touch-action:manipulation;height:34px;font-family:'Noto Serif TC','Noto Sans TC',serif}
 #home.show{display:flex}
+@media(max-height:480px){#home{top:116px}}
 #home .hd{width:28px;text-align:center;font-size:16px;line-height:1}
 #home .tx{display:none;padding:0 12px 0 2px;white-space:nowrap}
 #home.open .tx{display:inline}
